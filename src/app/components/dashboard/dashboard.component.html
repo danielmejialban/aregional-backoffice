@@ -1,0 +1,54 @@
+<div class="dashboard-container">
+  <h1>Dashboard</h1>
+  
+  <div class="welcome-card" *ngIf="currentUser$ | async as user">
+    <mat-card>
+      <mat-card-header>
+        <mat-icon mat-card-avatar>account_circle</mat-icon>
+        <mat-card-title>Bienvenido, {{user.nombreUsuario}}</mat-card-title>
+        <mat-card-subtitle>Rol: {{user.rol}}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>Sistema de Gestión de Voluntarios - Asamblea Regional</p>
+        <p *ngIf="user.voluntario">
+          <strong>Voluntario:</strong> {{user.voluntario.nombre}} {{user.voluntario.apellido1}}
+        </p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="stats-grid">
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <mat-icon>business</mat-icon>
+        <h3>Departamentos</h3>
+        <p class="stat-number">-</p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <mat-icon>people</mat-icon>
+        <h3>Voluntarios</h3>
+        <p class="stat-number">-</p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <mat-icon>event</mat-icon>
+        <h3>Eventos</h3>
+        <p class="stat-number">-</p>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <mat-icon>qr_code_scanner</mat-icon>
+        <h3>Check-Ins</h3>
+        <p class="stat-number">-</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
