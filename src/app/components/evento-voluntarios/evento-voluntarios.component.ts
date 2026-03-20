@@ -5,75 +5,108 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatChipsModule } from '@angular/material/chips';
+import { forkJoin } from 'rxjs';
 import { EventoVoluntarioService } from '../../services/evento-voluntario.service';
+import { EventoService } from '../../services/evento.service';
+import { VoluntarioService } from '../../services/voluntario.service';
 import { EventoVoluntarioDTO } from '../../models/evento-voluntario.model';
+import { EventoDTO } from '../../models/evento.model';
+import { VoluntarioDTO } from '../../models/voluntario.model';
+import { AsignacionDialogComponent } from './asignacion-dialog/asignacion-dialog.component';
 
 @Component({
   selector: 'app-evento-voluntarios',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule, MatSnackBarModule],
-  template: `
-    <div class="page-container">
-      <div class="page-header">
-        <h1>Asignaciones Evento-Voluntario</h1>
-        <button mat-raised-button color="primary"><mat-icon>add</mat-icon> Nueva Asignación</button>
-      </div>
-      <mat-card>
-        <mat-card-content>
-          <div *ngIf="loading" class="loading-container"><mat-spinner></mat-spinner></div>
-          <table mat-table [dataSource]="asignaciones" *ngIf="!loading" class="full-width-table">
-            <ng-container matColumnDef="id">
-              <th mat-header-cell *matHeaderCellDef>ID</th>
-              <td mat-cell *matCellDef="let element">{{element.id}}</td>
-            </ng-container>
-            <ng-container matColumnDef="voluntario">
-              <th mat-header-cell *matHeaderCellDef>Voluntario</th>
-              <td mat-cell *matCellDef="let element">{{element.voluntarioNombre}}</td>
-            </ng-container>
-            <ng-container matColumnDef="evento">
-              <th mat-header-cell *matHeaderCellDef>Evento</th>
-              <td mat-cell *matCellDef="let element">{{element.eventoNombre}}</td>
-            </ng-container>
-            <ng-container matColumnDef="qr">
-              <th mat-header-cell *matHeaderCellDef>QR</th>
-              <td mat-cell *matCellDef="let element">
-                <button mat-icon-button color="primary" *ngIf="element.qrImageBase64">
-                  <mat-icon>qr_code</mat-icon>
-                </button>
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="acciones">
-              <th mat-header-cell *matHeaderCellDef>Acciones</th>
-              <td mat-cell *matCellDef="let element">
-                <button mat-icon-button color="primary"><mat-icon>edit</mat-icon></button>
-                <button mat-icon-button color="warn"><mat-icon>delete</mat-icon></button>
-              </td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  `,
-  styles: [`.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .loading-container { display: flex; justify-content: center; padding: 40px; }
-    .full-width-table { width: 100%; }`]
+  imports: [
+    CommonModule,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule,
+    MatDialogModule,
+    MatTooltipModule,
+    MatChipsModule
+  ],
+  templateUrl: './evento-voluntarios.component.html',
+  styleUrls: ['./evento-voluntarios.component.scss']
 })
 export class EventoVoluntariosComponent implements OnInit {
   asignaciones: EventoVoluntarioDTO[] = [];
+  voluntarios: VoluntarioDTO[] = [];
+  eventos: EventoDTO[] = [];
   displayedColumns = ['id', 'voluntario', 'evento', 'qr', 'acciones'];
   loading = false;
 
-  constructor(private eventoVoluntarioService: EventoVoluntarioService) {}
+  constructor(
+    private eventoVoluntarioService: EventoVoluntarioService,
+    private eventoService: EventoService,
+    private voluntarioService: VoluntarioService,
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
+    this.loadAll();
+  }
+
+  loadAll(): void {
     this.loading = true;
-    this.eventoVoluntarioService.getAll().subscribe({
-      next: (data) => { this.asignaciones = data; this.loading = false; },
-      error: () => this.loading = false
+    forkJoin({
+      asignaciones: this.eventoVoluntarioService.getAll(),
+      voluntarios: this.voluntarioService.getAll(),
+      eventos: this.eventoService.getAll()
+    }).subscribe({
+      next: ({ asignaciones, voluntarios, eventos }) => {
+        this.asignaciones = asignaciones;
+        this.voluntarios = voluntarios;
+        this.eventos = eventos;
+        this.loading = false;
+      },
+      error: () => { this.loading = false; this.showError('Error al cargar los datos'); }
     });
+  }
+
+  openCreateDialog(): void {
+    const ref = this.dialog.open(AsignacionDialogComponent, {
+      width: '520px',
+      disableClose: true,
+      data: { voluntarios: this.voluntarios, eventos: this.eventos }
+    });
+    ref.afterClosed().subscribe(result => {
+      if (result) this.createAsignacion(result);
+    });
+  }
+
+  createAsignacion(asignacion: EventoVoluntarioDTO): void {
+    this.loading = true;
+    this.eventoVoluntarioService.create(asignacion).subscribe({
+      next: () => { this.showSuccess('Asignación creada y QR generado'); this.loadAll(); },
+      error: () => { this.loading = false; this.showError('Error al crear la asignación'); }
+    });
+  }
+
+  deleteAsignacion(asignacion: EventoVoluntarioDTO): void {
+    const nombre = `${asignacion.voluntarioNombre} → ${asignacion.eventoNombre}`;
+    if (!confirm(`¿Eliminar la asignación "${nombre}"?`)) return;
+    this.loading = true;
+    this.eventoVoluntarioService.delete(asignacion.id!).subscribe({
+      next: () => { this.showSuccess('Asignación eliminada'); this.loadAll(); },
+      error: () => { this.loading = false; this.showError('Error al eliminar la asignación'); }
+    });
+  }
+
+  private showSuccess(msg: string): void {
+    this.snackBar.open(msg, 'Cerrar', { duration: 3000, panelClass: ['success-snackbar'] });
+  }
+
+  private showError(msg: string): void {
+    this.snackBar.open(msg, 'Cerrar', { duration: 4000, panelClass: ['error-snackbar'] });
   }
 }
 

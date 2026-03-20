@@ -1,0 +1,203 @@
+.pases-container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 8px;
+}
+
+// ── Header ──────────────────────────────────────────────────────────────────
+
+.page-header {
+  margin-bottom: 28px;
+
+  h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 4px;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+
+  .header-icon {
+    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+    color: #1976d2;
+  }
+
+  .subtitle {
+    margin: 0;
+    color: rgba(0, 0, 0, 0.55);
+    font-size: 0.95rem;
+  }
+}
+
+// ── Loading / Empty ──────────────────────────────────────────────────────────
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 60px 0;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 24px;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.55);
+
+  h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+}
+
+.empty-icon {
+  font-size: 72px;
+  width: 72px;
+  height: 72px;
+  color: rgba(0, 0, 0, 0.2);
+
+  &.error-icon {
+    color: #f44336;
+    opacity: 0.6;
+  }
+}
+
+// ── Grid ─────────────────────────────────────────────────────────────────────
+
+.pases-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+// ── Pase card ────────────────────────────────────────────────────────────────
+
+.pase-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(25, 118, 210, 0.18);
+  }
+}
+
+.event-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1976d2, #42a5f5);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+
+  mat-icon {
+    color: white;
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+}
+
+// ── Event details ─────────────────────────────────────────────────────────────
+
+.event-details {
+  margin-bottom: 20px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.detail-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #1976d2;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+// ── QR section ───────────────────────────────────────────────────────────────
+
+.qr-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.qr-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.qr-wrapper {
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.qr-image {
+  display: block;
+  width: 250px;
+  height: 250px;
+  object-fit: contain;
+  image-rendering: pixelated; // keep QR crisp at any size
+}
+
+.qr-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.45);
+  text-align: center;
+}
+
+// ── Mobile ───────────────────────────────────────────────────────────────────
+
+@media (max-width: 480px) {
+  .pases-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .qr-image {
+    width: 220px;
+    height: 220px;
+  }
+}
+

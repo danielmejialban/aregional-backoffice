@@ -16,16 +16,24 @@ export class EventoVoluntarioService {
     return this.http.get<EventoVoluntarioDTO[]>(this.API_URL);
   }
 
+  getByVoluntario(voluntarioId: number): Observable<EventoVoluntarioDTO[]> {
+    return this.http.get<EventoVoluntarioDTO[]>(`${this.API_URL}/voluntario/${voluntarioId}`);
+  }
+
+  getByEvento(eventoId: number): Observable<EventoVoluntarioDTO[]> {
+    return this.http.get<EventoVoluntarioDTO[]>(`${this.API_URL}/evento/${eventoId}`);
+  }
+
   getById(id: number): Observable<EventoVoluntarioDTO> {
     return this.http.get<EventoVoluntarioDTO>(`${this.API_URL}/${id}`);
   }
 
-  create(eventoVoluntario: EventoVoluntarioDTO): Observable<EventoVoluntarioDTO> {
-    return this.http.post<EventoVoluntarioDTO>(this.API_URL, eventoVoluntario);
+  getQrImage(id: number): Observable<Blob> {
+    return this.http.get(`${this.API_URL}/${id}/qr`, { responseType: 'blob' });
   }
 
-  update(id: number, eventoVoluntario: EventoVoluntarioDTO): Observable<EventoVoluntarioDTO> {
-    return this.http.put<EventoVoluntarioDTO>(`${this.API_URL}/${id}`, eventoVoluntario);
+  create(eventoVoluntario: EventoVoluntarioDTO): Observable<EventoVoluntarioDTO> {
+    return this.http.post<EventoVoluntarioDTO>(this.API_URL, eventoVoluntario);
   }
 
   delete(id: number): Observable<void> {

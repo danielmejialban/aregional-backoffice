@@ -3,7 +3,10 @@ export interface EventoDTO {
   nombre: string;
   tipoEvento?: string;
   direccion?: string;
-  fechaInicio?: string;
-  fechaFin?: string;
+  fechaInicioEvento?: string;
+  fechaFinEvento?: string;
+  fechaInicioConvocatoria?: string;
+  fechaFinConvocatoria?: string;
+  sesion?: string;
 }
 

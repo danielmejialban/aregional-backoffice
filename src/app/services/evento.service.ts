@@ -31,5 +31,13 @@ export class EventoService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
+
+  getByTipo(tipoEvento: string): Observable<EventoDTO[]> {
+    return this.http.get<EventoDTO[]>(`${this.API_URL}/tipo/${tipoEvento}`);
+  }
+
+  getConvocatoriaActiva(): Observable<EventoDTO[]> {
+    return this.http.get<EventoDTO[]>(`${this.API_URL}/convocatoria-activa`);
+  }
 }
 

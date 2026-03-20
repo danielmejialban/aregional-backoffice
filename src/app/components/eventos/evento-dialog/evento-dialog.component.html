@@ -1,0 +1,78 @@
+<h2 mat-dialog-title>
+  <mat-icon>{{ isEdit ? 'edit' : 'add_circle' }}</mat-icon>
+  {{ isEdit ? 'Editar Evento' : 'Nuevo Evento' }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="dialog-form">
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Nombre del evento *</mat-label>
+      <input matInput formControlName="nombre" placeholder="Asamblea Regional 2026">
+      <mat-error *ngIf="form.get('nombre')?.hasError('required')">El nombre es obligatorio</mat-error>
+      <mat-error *ngIf="form.get('nombre')?.hasError('minlength')">Mínimo 3 caracteres</mat-error>
+    </mat-form-field>
+
+    <div class="row-2">
+      <mat-form-field appearance="outline">
+        <mat-label>Tipo de evento</mat-label>
+        <mat-select formControlName="tipoEvento">
+          <mat-option value="">— Sin tipo —</mat-option>
+          <mat-option *ngFor="let t of tiposEvento" [value]="t">{{ t }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Sesión</mat-label>
+        <mat-select formControlName="sesion">
+          <mat-option value="">— Sin sesión —</mat-option>
+          <mat-option *ngFor="let s of sesiones" [value]="s">{{ s }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Dirección</mat-label>
+      <input matInput formControlName="direccion" placeholder="Av. Principal 123, Madrid">
+      <mat-icon matSuffix>place</mat-icon>
+    </mat-form-field>
+
+    <p class="section-label">Fechas del evento</p>
+    <div class="row-2">
+      <mat-form-field appearance="outline">
+        <mat-label>Inicio del evento *</mat-label>
+        <input matInput type="datetime-local" formControlName="fechaInicioEvento">
+        <mat-error *ngIf="form.get('fechaInicioEvento')?.hasError('required')">Obligatorio</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Fin del evento *</mat-label>
+        <input matInput type="datetime-local" formControlName="fechaFinEvento">
+        <mat-error *ngIf="form.get('fechaFinEvento')?.hasError('required')">Obligatorio</mat-error>
+      </mat-form-field>
+    </div>
+
+    <p class="section-label">Convocatoria (opcional)</p>
+    <div class="row-2">
+      <mat-form-field appearance="outline">
+        <mat-label>Inicio convocatoria</mat-label>
+        <input matInput type="datetime-local" formControlName="fechaInicioConvocatoria">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Fin convocatoria</mat-label>
+        <input matInput type="datetime-local" formControlName="fechaFinConvocatoria">
+      </mat-form-field>
+    </div>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid">
+    <mat-icon>save</mat-icon>
+    {{ isEdit ? 'Guardar cambios' : 'Crear evento' }}
+  </button>
+</mat-dialog-actions>
+

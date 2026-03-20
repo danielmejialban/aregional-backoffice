@@ -1,0 +1,107 @@
+<div class="pases-container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-text">
+      <h1>
+        <mat-icon class="header-icon">confirmation_number</mat-icon>
+        Mis Pases
+      </h1>
+      <p class="subtitle" *ngIf="currentUser?.voluntario as v">
+        {{ v.nombre }} {{ v.apellido1 }} {{ v.apellido2 }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner diameter="56"></mat-spinner>
+    <p>Cargando tus pases...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="empty-state" *ngIf="!loading && error">
+    <mat-icon class="empty-icon error-icon">error_outline</mat-icon>
+    <h3>{{ error }}</h3>
+    <p>Intenta recargar la página.</p>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && !error && pases.length === 0">
+    <mat-icon class="empty-icon">event_busy</mat-icon>
+    <h3>No tienes eventos asignados actualmente</h3>
+    <p>Cuando seas asignado a un evento, tu pase con código QR aparecerá aquí.</p>
+  </div>
+
+  <!-- Pases grid -->
+  <div class="pases-grid" *ngIf="!loading && !error && pases.length > 0">
+    <mat-card class="pase-card" *ngFor="let pase of pases">
+
+      <!-- Card header with event info -->
+      <mat-card-header>
+        <div mat-card-avatar class="event-avatar">
+          <mat-icon>event</mat-icon>
+        </div>
+        <mat-card-title>
+          {{ pase.evento?.nombre || pase.asignacion.eventoNombre || 'Evento' }}
+        </mat-card-title>
+        <mat-card-subtitle *ngIf="pase.evento?.tipoEvento">
+          <mat-chip-set>
+            <mat-chip>{{ pase.evento!.tipoEvento }}</mat-chip>
+          </mat-chip-set>
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <!-- Event details -->
+      <mat-card-content>
+        <div class="event-details" *ngIf="pase.evento">
+          <div class="detail-row" *ngIf="pase.evento.fechaInicioEvento">
+            <mat-icon class="detail-icon">schedule</mat-icon>
+            <span>
+              <strong>Inicio:</strong>
+              {{ pase.evento.fechaInicioEvento | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </div>
+          <div class="detail-row" *ngIf="pase.evento.fechaFinEvento">
+            <mat-icon class="detail-icon">event_available</mat-icon>
+            <span>
+              <strong>Fin:</strong>
+              {{ pase.evento.fechaFinEvento | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </div>
+          <div class="detail-row" *ngIf="pase.evento.direccion">
+            <mat-icon class="detail-icon">place</mat-icon>
+            <span>{{ pase.evento.direccion }}</span>
+          </div>
+        </div>
+
+        <!-- QR Code -->
+        <div class="qr-section">
+          <p class="qr-label">
+            <mat-icon>qr_code_2</mat-icon>
+            Tu código QR de acceso
+          </p>
+          <div class="qr-wrapper">
+            <img
+              [src]="getQrSrc(pase.asignacion.qrImageBase64!)"
+              alt="Código QR de acceso"
+              class="qr-image"
+            />
+          </div>
+          <p class="qr-hint">Presenta este código en la entrada del evento</p>
+        </div>
+      </mat-card-content>
+
+      <!-- Actions -->
+      <mat-card-actions align="end">
+        <button mat-stroked-button color="primary" (click)="downloadQr(pase)">
+          <mat-icon>download</mat-icon>
+          Guardar QR
+        </button>
+      </mat-card-actions>
+
+    </mat-card>
+  </div>
+
+</div>
+

@@ -1,0 +1,42 @@
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  mat-icon { color: #1976d2; }
+}
+
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 520px;
+  padding-top: 8px;
+
+  @media (max-width: 600px) {
+    min-width: unset;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-label {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(0,0,0,0.5);
+}
+

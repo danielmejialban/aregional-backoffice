@@ -5,71 +5,109 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatChipsModule } from '@angular/material/chips';
 import { EventoService } from '../../services/evento.service';
 import { EventoDTO } from '../../models/evento.model';
+import { EventoDialogComponent } from './evento-dialog/evento-dialog.component';
 
 @Component({
   selector: 'app-eventos',
   standalone: true,
-  imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule, MatSnackBarModule],
-  template: `
-    <div class="page-container">
-      <div class="page-header">
-        <h1>Eventos</h1>
-        <button mat-raised-button color="primary"><mat-icon>add</mat-icon> Nuevo Evento</button>
-      </div>
-      <mat-card>
-        <mat-card-content>
-          <div *ngIf="loading" class="loading-container"><mat-spinner></mat-spinner></div>
-          <table mat-table [dataSource]="eventos" *ngIf="!loading" class="full-width-table">
-            <ng-container matColumnDef="id">
-              <th mat-header-cell *matHeaderCellDef>ID</th>
-              <td mat-cell *matCellDef="let element">{{element.id}}</td>
-            </ng-container>
-            <ng-container matColumnDef="nombre">
-              <th mat-header-cell *matHeaderCellDef>Nombre</th>
-              <td mat-cell *matCellDef="let element">{{element.nombre}}</td>
-            </ng-container>
-            <ng-container matColumnDef="tipo">
-              <th mat-header-cell *matHeaderCellDef>Tipo</th>
-              <td mat-cell *matCellDef="let element">{{element.tipoEvento || '-'}}</td>
-            </ng-container>
-            <ng-container matColumnDef="fechas">
-              <th mat-header-cell *matHeaderCellDef>Fechas</th>
-              <td mat-cell *matCellDef="let element">{{element.fechaInicio | date:'short'}} - {{element.fechaFin | date:'short'}}</td>
-            </ng-container>
-            <ng-container matColumnDef="acciones">
-              <th mat-header-cell *matHeaderCellDef>Acciones</th>
-              <td mat-cell *matCellDef="let element">
-                <button mat-icon-button color="primary"><mat-icon>edit</mat-icon></button>
-                <button mat-icon-button color="warn"><mat-icon>delete</mat-icon></button>
-              </td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  `,
-  styles: [`.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .loading-container { display: flex; justify-content: center; padding: 40px; }
-    .full-width-table { width: 100%; }`]
+  imports: [
+    CommonModule,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule,
+    MatDialogModule,
+    MatTooltipModule,
+    MatChipsModule
+  ],
+  templateUrl: './eventos.component.html',
+  styleUrls: ['./eventos.component.scss']
 })
 export class EventosComponent implements OnInit {
   eventos: EventoDTO[] = [];
-  displayedColumns = ['id', 'nombre', 'tipo', 'fechas', 'acciones'];
+  displayedColumns = ['id', 'nombre', 'tipo', 'fechas', 'direccion', 'acciones'];
   loading = false;
 
-  constructor(private eventoService: EventoService) {}
+  constructor(
+    private eventoService: EventoService,
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
+    this.loadEventos();
+  }
+
+  loadEventos(): void {
     this.loading = true;
     this.eventoService.getAll().subscribe({
       next: (data) => { this.eventos = data; this.loading = false; },
-      error: () => this.loading = false
+      error: () => { this.loading = false; this.showError('Error al cargar eventos'); }
     });
+  }
+
+  openCreateDialog(): void {
+    const ref = this.dialog.open(EventoDialogComponent, {
+      width: '620px',
+      disableClose: true,
+      data: {}
+    });
+    ref.afterClosed().subscribe(result => {
+      if (result) this.createEvento(result);
+    });
+  }
+
+  openEditDialog(evento: EventoDTO): void {
+    const ref = this.dialog.open(EventoDialogComponent, {
+      width: '620px',
+      disableClose: true,
+      data: { evento }
+    });
+    ref.afterClosed().subscribe(result => {
+      if (result) this.updateEvento(result);
+    });
+  }
+
+  createEvento(evento: EventoDTO): void {
+    this.loading = true;
+    this.eventoService.create(evento).subscribe({
+      next: () => { this.showSuccess('Evento creado correctamente'); this.loadEventos(); },
+      error: () => { this.loading = false; this.showError('Error al crear el evento'); }
+    });
+  }
+
+  updateEvento(evento: EventoDTO): void {
+    if (!evento.id) return;
+    this.loading = true;
+    this.eventoService.update(evento.id, evento).subscribe({
+      next: () => { this.showSuccess('Evento actualizado correctamente'); this.loadEventos(); },
+      error: () => { this.loading = false; this.showError('Error al actualizar el evento'); }
+    });
+  }
+
+  deleteEvento(evento: EventoDTO): void {
+    if (!confirm(`¿Eliminar el evento "${evento.nombre}"?`)) return;
+    this.loading = true;
+    this.eventoService.delete(evento.id!).subscribe({
+      next: () => { this.showSuccess('Evento eliminado'); this.loadEventos(); },
+      error: () => { this.loading = false; this.showError('Error al eliminar el evento'); }
+    });
+  }
+
+  private showSuccess(msg: string): void {
+    this.snackBar.open(msg, 'Cerrar', { duration: 3000, panelClass: ['success-snackbar'] });
+  }
+
+  private showError(msg: string): void {
+    this.snackBar.open(msg, 'Cerrar', { duration: 4000, panelClass: ['error-snackbar'] });
   }
 }
 

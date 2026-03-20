@@ -36,7 +36,8 @@ export class LayoutComponent {
     { icon: 'event', label: 'Eventos', route: '/eventos', roles: ['ADMIN', 'COORDINADOR'] },
     { icon: 'assignment', label: 'Asignaciones', route: '/evento-voluntarios', roles: ['ADMIN', 'COORDINADOR'] },
     { icon: 'qr_code_scanner', label: 'Check-In', route: '/check-in', roles: ['ADMIN', 'CHECK_IN'] },
-    { icon: 'bar_chart', label: 'Estadísticas', route: '/estadisticas', roles: ['ADMIN', 'COORDINADOR'] }
+    { icon: 'bar_chart', label: 'Estadísticas', route: '/estadisticas', roles: ['ADMIN', 'COORDINADOR'] },
+    { icon: 'confirmation_number', label: 'Mis Pases', route: '/mis-pases', roles: ['VOLUNTARIO', 'ADMIN', 'COORDINADOR'] }
   ];
 
   constructor(

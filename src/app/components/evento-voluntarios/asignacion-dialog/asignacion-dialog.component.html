@@ -1,0 +1,48 @@
+<h2 mat-dialog-title>
+  <mat-icon>person_add</mat-icon>
+  Nueva Asignación
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="dialog-form">
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Voluntario *</mat-label>
+      <mat-select formControlName="voluntarioId">
+        <mat-option *ngFor="let v of voluntarios" [value]="v.id">
+          {{ getVoluntarioNombre(v) }}
+          <span class="dni-hint"> — {{ v.dni }}</span>
+        </mat-option>
+      </mat-select>
+      <mat-icon matSuffix>person</mat-icon>
+      <mat-error *ngIf="form.get('voluntarioId')?.hasError('required')">Selecciona un voluntario</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Evento *</mat-label>
+      <mat-select formControlName="eventoId">
+        <mat-option *ngFor="let e of eventos" [value]="e.id">
+          {{ e.nombre }}
+          <span class="tipo-hint" *ngIf="e.tipoEvento"> — {{ e.tipoEvento }}</span>
+        </mat-option>
+      </mat-select>
+      <mat-icon matSuffix>event</mat-icon>
+      <mat-error *ngIf="form.get('eventoId')?.hasError('required')">Selecciona un evento</mat-error>
+    </mat-form-field>
+
+    <p class="info-note">
+      <mat-icon>info</mat-icon>
+      Al crear la asignación, el sistema generará automáticamente el código QR de acceso para el voluntario.
+    </p>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid">
+    <mat-icon>assignment_turned_in</mat-icon>
+    Asignar
+  </button>
+</mat-dialog-actions>
+
