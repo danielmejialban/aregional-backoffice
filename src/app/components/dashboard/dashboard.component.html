@@ -1,6 +1,6 @@
 <div class="dashboard-container">
   <h1>Dashboard</h1>
-  
+
   <div class="welcome-card" *ngIf="currentUser$ | async as user">
     <mat-card>
       <mat-card-header>
@@ -18,37 +18,55 @@
   </div>
 
   <div class="stats-grid">
-    <mat-card class="stat-card">
+    <mat-card class="stat-card" routerLink="/departamentos">
       <mat-card-content>
         <mat-icon>business</mat-icon>
         <h3>Departamentos</h3>
-        <p class="stat-number">-</p>
+        <p class="stat-number">
+          <mat-spinner *ngIf="loadingStats" diameter="24"></mat-spinner>
+          <span *ngIf="!loadingStats">{{ totalDepartamentos }}</span>
+        </p>
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="stat-card">
+    <mat-card class="stat-card" routerLink="/voluntarios">
       <mat-card-content>
         <mat-icon>people</mat-icon>
         <h3>Voluntarios</h3>
-        <p class="stat-number">-</p>
+        <p class="stat-number">
+          <mat-spinner *ngIf="loadingStats" diameter="24"></mat-spinner>
+          <span *ngIf="!loadingStats">{{ totalVoluntarios }}</span>
+        </p>
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="stat-card">
+    <mat-card class="stat-card" routerLink="/eventos">
       <mat-card-content>
         <mat-icon>event</mat-icon>
         <h3>Eventos</h3>
-        <p class="stat-number">-</p>
+        <p class="stat-number">
+          <mat-spinner *ngIf="loadingStats" diameter="24"></mat-spinner>
+          <span *ngIf="!loadingStats">{{ totalEventos }}</span>
+        </p>
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="stat-card">
+    <mat-card class="stat-card" routerLink="/check-in">
       <mat-card-content>
         <mat-icon>qr_code_scanner</mat-icon>
         <h3>Check-Ins</h3>
-        <p class="stat-number">-</p>
+        <p class="stat-number">
+          <mat-spinner *ngIf="loadingStats" diameter="24"></mat-spinner>
+          <span *ngIf="!loadingStats">{{ totalCheckIns }}</span>
+        </p>
       </mat-card-content>
     </mat-card>
+  </div>
+
+  <div class="quick-actions" *ngIf="!loadingStats">
+    <a mat-raised-button color="accent" routerLink="/estadisticas">
+      <mat-icon>bar_chart</mat-icon> Ver Estadísticas
+    </a>
   </div>
 </div>
 
