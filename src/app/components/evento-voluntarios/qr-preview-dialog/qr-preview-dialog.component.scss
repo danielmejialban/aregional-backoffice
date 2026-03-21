@@ -1,0 +1,68 @@
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  mat-icon { color: #1976d2; }
+}
+
+.qr-dialog-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px 8px;
+  min-width: 320px;
+}
+
+.voluntario-info {
+  text-align: center;
+
+  .nombre {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #222;
+  }
+
+  .evento {
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+    color: #1976d2;
+  }
+}
+
+.qr-wrapper {
+  padding: 12px;
+  border: 2px solid #e3f2fd;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(25, 118, 210, 0.1);
+}
+
+.qr-image {
+  width: 240px;
+  height: 240px;
+  display: block;
+  object-fit: contain;
+}
+
+.token-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.78rem;
+  color: #888;
+  font-family: monospace;
+  word-break: break-all;
+  text-align: center;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: #bbb;
+  }
+}
+

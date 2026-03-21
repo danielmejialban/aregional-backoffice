@@ -1,0 +1,141 @@
+<div class="page-container">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-text">
+      <h1><mat-icon class="header-icon">download_for_offline</mat-icon> Descarga Masiva de QR</h1>
+      <p class="subtitle">Filtra y descarga los códigos QR de acceso de los voluntarios</p>
+    </div>
+  </div>
+
+  <!-- Loading inicial -->
+  <div class="loading-container" *ngIf="loadingDatos">
+    <mat-spinner diameter="52"></mat-spinner>
+    <p>Cargando datos...</p>
+  </div>
+
+  <ng-container *ngIf="!loadingDatos">
+
+    <!-- Panel de filtros -->
+    <mat-card class="filtros-card">
+      <mat-card-header>
+        <mat-card-title><mat-icon>filter_list</mat-icon> Filtros</mat-card-title>
+        <mat-card-subtitle>Combina filtros para acotar la selección. Sin filtros se muestran todos los QR disponibles.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="form" class="filtros-form">
+
+          <mat-form-field appearance="outline">
+            <mat-label>Evento</mat-label>
+            <mat-select formControlName="eventoId">
+              <mat-option [value]="null">— Todos los eventos —</mat-option>
+              <mat-option *ngFor="let e of eventos" [value]="e.id">{{ e.nombre }}</mat-option>
+            </mat-select>
+            <mat-icon matSuffix>event</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Departamento</mat-label>
+            <mat-select formControlName="departamentoId">
+              <mat-option [value]="null">— Todos los departamentos —</mat-option>
+              <mat-option *ngFor="let d of departamentos" [value]="d.id">{{ d.nombre }}</mat-option>
+            </mat-select>
+            <mat-icon matSuffix>business</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Voluntario</mat-label>
+            <mat-select formControlName="voluntarioId">
+              <mat-option [value]="null">— Todos los voluntarios —</mat-option>
+              <mat-option *ngFor="let v of voluntarios" [value]="v.id">
+                {{ v.nombre }} {{ v.apellido1 }} {{ v.apellido2 }}
+              </mat-option>
+            </mat-select>
+            <mat-icon matSuffix>person</mat-icon>
+          </mat-form-field>
+
+          <button mat-stroked-button type="button" (click)="limpiarFiltros()" class="clear-btn">
+            <mat-icon>clear</mat-icon> Limpiar filtros
+          </button>
+
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Barra de progreso descarga -->
+    <mat-progress-bar *ngIf="descargando" mode="determinate" [value]="progresoDescarga" class="progress-bar"></mat-progress-bar>
+
+    <!-- Panel de resultados -->
+    <mat-card class="resultados-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>qr_code_2</mat-icon>
+          Vista previa
+          <span class="count-badge">{{ asignacionesFiltradas.length }} QR disponibles</span>
+        </mat-card-title>
+        <mat-card-subtitle *ngIf="asignacionesFiltradas.length > 0">
+          {{ seleccionadas.length }} seleccionados para descargar
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+
+        <!-- Empty state -->
+        <div class="empty-state" *ngIf="asignacionesFiltradas.length === 0">
+          <mat-icon>search_off</mat-icon>
+          <p>No hay QR generados con los filtros aplicados</p>
+        </div>
+
+        <!-- Controles de selección + descarga -->
+        <div class="acciones-bar" *ngIf="asignacionesFiltradas.length > 0">
+          <mat-checkbox
+            [checked]="todasSeleccionadas"
+            [indeterminate]="algunaSeleccionada"
+            (change)="toggleTodas($event.checked)">
+            Seleccionar todos
+          </mat-checkbox>
+
+          <div class="acciones-right">
+            <button mat-raised-button color="primary"
+              [disabled]="seleccionadas.length === 0 || descargando"
+              (click)="descargarZip()">
+              <mat-spinner diameter="18" *ngIf="descargando"></mat-spinner>
+              <mat-icon *ngIf="!descargando">download</mat-icon>
+              {{ descargando ? 'Generando ZIP...' : 'Descargar ' + seleccionadas.length + ' QR' + (seleccionadas.length !== 1 ? 's' : '') }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Grid de tarjetas QR -->
+        <div class="qr-grid" *ngIf="asignacionesFiltradas.length > 0">
+          <div class="qr-card" *ngFor="let a of asignacionesFiltradas"
+               [class.qr-card--selected]="a.seleccionada"
+               (click)="a.seleccionada = !a.seleccionada">
+
+            <div class="qr-card__checkbox" (click)="$event.stopPropagation()">
+              <mat-checkbox [(ngModel)]="a.seleccionada"></mat-checkbox>
+            </div>
+
+            <img [src]="getQrSrc(a.qrImageBase64!)" [alt]="a.voluntarioNombre" class="qr-img" />
+
+            <div class="qr-card__info">
+              <p class="qr-card__nombre">{{ a.voluntarioNombre }}</p>
+              <p class="qr-card__evento">{{ a.eventoNombre }}</p>
+              <p class="qr-card__depto">{{ getVoluntarioDepartamento(a.voluntarioId) }}</p>
+            </div>
+
+            <button mat-icon-button class="qr-card__download"
+              matTooltip="Descargar este QR"
+              (click)="$event.stopPropagation(); descargarIndividual(a)">
+              <mat-icon>download</mat-icon>
+            </button>
+
+          </div>
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+
+  </ng-container>
+</div>
+

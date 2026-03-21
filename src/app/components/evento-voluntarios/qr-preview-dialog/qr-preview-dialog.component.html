@@ -1,0 +1,28 @@
+<h2 mat-dialog-title>
+  <mat-icon>qr_code_2</mat-icon>
+  Código QR de Acceso
+</h2>
+
+<mat-dialog-content class="qr-dialog-content">
+  <div class="voluntario-info">
+    <p class="nombre">{{ asignacion.voluntarioNombre }}</p>
+    <p class="evento">{{ asignacion.eventoNombre }}</p>
+  </div>
+
+  <div class="qr-wrapper">
+    <img [src]="qrSrc" [alt]="'QR ' + asignacion.voluntarioNombre" class="qr-image" />
+  </div>
+
+  <p class="token-label" *ngIf="asignacion.qrToken">
+    <mat-icon>key</mat-icon>
+    <span>{{ asignacion.qrToken }}</span>
+  </p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="cerrar()">Cerrar</button>
+  <button mat-raised-button color="primary" (click)="descargar()">
+    <mat-icon>download</mat-icon> Descargar PNG
+  </button>
+</mat-dialog-actions>
+

@@ -17,6 +17,7 @@ import { EventoVoluntarioDTO } from '../../models/evento-voluntario.model';
 import { EventoDTO } from '../../models/evento.model';
 import { VoluntarioDTO } from '../../models/voluntario.model';
 import { AsignacionDialogComponent } from './asignacion-dialog/asignacion-dialog.component';
+import { QrPreviewDialogComponent } from './qr-preview-dialog/qr-preview-dialog.component';
 
 @Component({
   selector: 'app-evento-voluntarios',
@@ -42,6 +43,8 @@ export class EventoVoluntariosComponent implements OnInit {
   eventos: EventoDTO[] = [];
   displayedColumns = ['id', 'voluntario', 'evento', 'qr', 'acciones'];
   loading = false;
+  /** IDs de asignaciones cuyo QR se está generando en este momento */
+  generandoQrIds = new Set<number>();
 
   constructor(
     private eventoVoluntarioService: EventoVoluntarioService,
@@ -91,12 +94,53 @@ export class EventoVoluntariosComponent implements OnInit {
     });
   }
 
+  generarQr(asignacion: EventoVoluntarioDTO): void {
+    const id = asignacion.id!;
+    this.generandoQrIds.add(id);
+    this.eventoVoluntarioService.getQrImage(id).subscribe({
+      next: (blob) => {
+        // Convertir el Blob PNG devuelto por el backend a base64
+        const reader = new FileReader();
+        reader.onload = () => {
+          this.generandoQrIds.delete(id);
+          // reader.result es "data:image/png;base64,XXXX" — extraemos solo la parte base64
+          const dataUrl = reader.result as string;
+          const base64 = dataUrl.split(',')[1];
+          // Actualizar la fila en memoria sin recargar toda la tabla
+          const idx = this.asignaciones.findIndex(a => a.id === id);
+          if (idx !== -1) {
+            this.asignaciones[idx] = { ...this.asignaciones[idx], qrImageBase64: base64 };
+            this.asignaciones = [...this.asignaciones];
+          }
+          this.showSuccess('QR generado correctamente');
+          // Abrir el diálogo de vista previa automáticamente
+          this.verQr(this.asignaciones[idx]);
+        };
+        reader.readAsDataURL(blob);
+      },
+      error: () => {
+        this.generandoQrIds.delete(id);
+        this.showError('Error al obtener el QR del servidor');
+      }
+    });
+  }
+
+  verQr(asignacion: EventoVoluntarioDTO): void {
+    this.dialog.open(QrPreviewDialogComponent, {
+      width: '400px',
+      data: { asignacion }
+    });
+  }
+
   deleteAsignacion(asignacion: EventoVoluntarioDTO): void {
     const nombre = `${asignacion.voluntarioNombre} → ${asignacion.eventoNombre}`;
     if (!confirm(`¿Eliminar la asignación "${nombre}"?`)) return;
     this.loading = true;
     this.eventoVoluntarioService.delete(asignacion.id!).subscribe({
-      next: () => { this.showSuccess('Asignación eliminada'); this.loadAll(); },
+      next: () => {
+        this.showSuccess('Asignación eliminada');
+        this.loadAll();
+      },
       error: () => { this.loading = false; this.showError('Error al eliminar la asignación'); }
     });
   }

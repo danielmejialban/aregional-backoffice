@@ -10,6 +10,7 @@ import { EventoVoluntariosComponent } from './components/evento-voluntarios/even
 import { CheckInComponent } from './components/check-in/check-in.component';
 import { EstadisticasComponent } from './components/estadisticas/estadisticas.component';
 import { MisPasesComponent } from './components/mis-pases/mis-pases.component';
+import { DescargaQrComponent } from './components/descarga-qr/descarga-qr.component';
 import { authGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -28,7 +29,8 @@ export const routes: Routes = [
       { path: 'evento-voluntarios', component: EventoVoluntariosComponent, canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
       { path: 'check-in', component: CheckInComponent, canActivate: [roleGuard(['ADMIN', 'CHECK_IN'])] },
       { path: 'estadisticas', component: EstadisticasComponent, canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
-      { path: 'mis-pases', component: MisPasesComponent, canActivate: [roleGuard(['VOLUNTARIO', 'ADMIN', 'COORDINADOR'])] }
+      { path: 'mis-pases', component: MisPasesComponent, canActivate: [roleGuard(['VOLUNTARIO', 'ADMIN', 'COORDINADOR'])] },
+      { path: 'descarga-qr', component: DescargaQrComponent, canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] }
     ]
   },
   { path: '**', redirectTo: '' }

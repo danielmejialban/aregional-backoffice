@@ -29,7 +29,7 @@ export class EventoVoluntarioService {
   }
 
   getQrImage(id: number): Observable<Blob> {
-    return this.http.get(`${this.API_URL}/${id}/qr`, { responseType: 'blob' });
+    return this.http.post(`${this.API_URL}/${id}/qr`, {}, { responseType: 'blob' });
   }
 
   create(eventoVoluntario: EventoVoluntarioDTO): Observable<EventoVoluntarioDTO> {
