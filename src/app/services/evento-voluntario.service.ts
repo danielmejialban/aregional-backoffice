@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { EventoVoluntarioDTO } from '../models/evento-voluntario.model';
+import { AsignacionMasivaRequestDTO, AsignacionMasivaResultadoDTO, EventoVoluntarioDTO } from '../models/evento-voluntario.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -38,6 +38,10 @@ export class EventoVoluntarioService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
+  }
+
+  asignacionMasiva(request: AsignacionMasivaRequestDTO): Observable<AsignacionMasivaResultadoDTO> {
+    return this.http.post<AsignacionMasivaResultadoDTO>(`${this.API_URL}/asignacion-masiva`, request);
   }
 }
 

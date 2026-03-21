@@ -20,6 +20,12 @@
   }
 }
 
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 .header-icon {
   font-size: 2rem;
   width: 2rem;

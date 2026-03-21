@@ -1,0 +1,61 @@
+.dialog-icon {
+  vertical-align: middle;
+  margin-right: 8px;
+  color: #3f51b5;
+}
+
+.masiva-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 480px;
+  padding-top: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.checkbox-row {
+  margin: 4px 0 8px 0;
+}
+
+.spinner-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+  color: #666;
+}
+
+.resultado-container {
+  min-width: 560px;
+}
+
+.resumen-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+
+  mat-chip {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+  }
+}
+
+.detalle-table {
+  width: 100%;
+  font-size: 13px;
+
+  th.mat-header-cell {
+    font-weight: 700;
+    color: #333;
+  }
+
+  td.mat-cell {
+    padding: 6px 8px;
+  }
+}
+

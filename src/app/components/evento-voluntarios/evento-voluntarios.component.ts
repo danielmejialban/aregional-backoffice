@@ -13,11 +13,14 @@ import { forkJoin } from 'rxjs';
 import { EventoVoluntarioService } from '../../services/evento-voluntario.service';
 import { EventoService } from '../../services/evento.service';
 import { VoluntarioService } from '../../services/voluntario.service';
+import { DepartamentoService } from '../../services/departamento.service';
 import { EventoVoluntarioDTO } from '../../models/evento-voluntario.model';
 import { EventoDTO } from '../../models/evento.model';
 import { VoluntarioDTO } from '../../models/voluntario.model';
+import { DepartamentoDTO } from '../../models/departamento.model';
 import { AsignacionDialogComponent } from './asignacion-dialog/asignacion-dialog.component';
 import { QrPreviewDialogComponent } from './qr-preview-dialog/qr-preview-dialog.component';
+import { AsignacionMasivaDialogComponent } from './asignacion-masiva-dialog/asignacion-masiva-dialog.component';
 
 @Component({
   selector: 'app-evento-voluntarios',
@@ -41,6 +44,7 @@ export class EventoVoluntariosComponent implements OnInit {
   asignaciones: EventoVoluntarioDTO[] = [];
   voluntarios: VoluntarioDTO[] = [];
   eventos: EventoDTO[] = [];
+  departamentos: DepartamentoDTO[] = [];
   displayedColumns = ['id', 'voluntario', 'evento', 'qr', 'acciones'];
   loading = false;
   /** IDs de asignaciones cuyo QR se está generando en este momento */
@@ -50,6 +54,7 @@ export class EventoVoluntariosComponent implements OnInit {
     private eventoVoluntarioService: EventoVoluntarioService,
     private eventoService: EventoService,
     private voluntarioService: VoluntarioService,
+    private departamentoService: DepartamentoService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog
   ) {}
@@ -63,12 +68,14 @@ export class EventoVoluntariosComponent implements OnInit {
     forkJoin({
       asignaciones: this.eventoVoluntarioService.getAll(),
       voluntarios: this.voluntarioService.getAll(),
-      eventos: this.eventoService.getAll()
+      eventos: this.eventoService.getAll(),
+      departamentos: this.departamentoService.getAll()
     }).subscribe({
-      next: ({ asignaciones, voluntarios, eventos }) => {
+      next: ({ asignaciones, voluntarios, eventos, departamentos }) => {
         this.asignaciones = asignaciones;
         this.voluntarios = voluntarios;
         this.eventos = eventos;
+        this.departamentos = departamentos;
         this.loading = false;
       },
       error: () => { this.loading = false; this.showError('Error al cargar los datos'); }
@@ -83,6 +90,17 @@ export class EventoVoluntariosComponent implements OnInit {
     });
     ref.afterClosed().subscribe(result => {
       if (result) this.createAsignacion(result);
+    });
+  }
+
+  openAsignacionMasivaDialog(): void {
+    const ref = this.dialog.open(AsignacionMasivaDialogComponent, {
+      width: '640px',
+      disableClose: true,
+      data: { eventos: this.eventos, departamentos: this.departamentos }
+    });
+    ref.afterClosed().subscribe((recargar: boolean) => {
+      if (recargar) this.loadAll();
     });
   }
 

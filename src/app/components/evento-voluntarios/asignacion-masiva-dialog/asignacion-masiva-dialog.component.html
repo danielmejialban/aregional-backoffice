@@ -1,0 +1,109 @@
+<h2 mat-dialog-title>
+  <mat-icon class="dialog-icon">group_add</mat-icon>
+  Asignación Masiva por Departamento
+</h2>
+
+<mat-dialog-content>
+
+  <!-- Formulario -->
+  <form [formGroup]="form" *ngIf="!resultado" class="masiva-form">
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Evento</mat-label>
+      <mat-select formControlName="eventoId">
+        <mat-option *ngFor="let e of data.eventos" [value]="e.id">{{ e.nombre }}</mat-option>
+      </mat-select>
+      <mat-error>Selecciona un evento</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Departamento</mat-label>
+      <mat-select formControlName="departamentoId">
+        <mat-option *ngFor="let d of data.departamentos" [value]="d.id">{{ d.nombre }}</mat-option>
+      </mat-select>
+      <mat-error>Selecciona un departamento</mat-error>
+    </mat-form-field>
+
+    <div class="checkbox-row">
+      <mat-checkbox formControlName="generarQr" color="primary">
+        Generar códigos QR automáticamente
+      </mat-checkbox>
+    </div>
+
+    <!-- Spinner mientras carga -->
+    <div *ngIf="loading" class="spinner-row">
+      <mat-spinner diameter="36"></mat-spinner>
+      <span>Procesando asignaciones...</span>
+    </div>
+
+  </form>
+
+  <!-- Resultado -->
+  <div *ngIf="resultado" class="resultado-container">
+
+    <!-- Resumen -->
+    <div class="resumen-chips">
+      <mat-chip color="primary" highlighted>
+        <mat-icon>people</mat-icon>&nbsp;Total: {{ resultado.totalVoluntarios }}
+      </mat-chip>
+      <mat-chip color="primary" highlighted>
+        <mat-icon>check_circle</mat-icon>&nbsp;Creadas: {{ resultado.asignacionesCreadas }}
+      </mat-chip>
+      <mat-chip color="accent" highlighted>
+        <mat-icon>skip_next</mat-icon>&nbsp;Omitidas: {{ resultado.omitidas }}
+      </mat-chip>
+      <mat-chip color="warn" highlighted *ngIf="resultado.errores > 0">
+        <mat-icon>error</mat-icon>&nbsp;Errores: {{ resultado.errores }}
+      </mat-chip>
+    </div>
+
+    <!-- Tabla de detalle -->
+    <table mat-table [dataSource]="resultado.detalle" class="detalle-table">
+
+      <ng-container matColumnDef="nombre">
+        <th mat-header-cell *matHeaderCellDef>Voluntario</th>
+        <td mat-cell *matCellDef="let r">{{ r.nombreCompleto }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="dni">
+        <th mat-header-cell *matHeaderCellDef>DNI</th>
+        <td mat-cell *matCellDef="let r">{{ r.dni }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let r">
+          <mat-chip [color]="getEstadoColor(r.estado)" highlighted>{{ r.estado }}</mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="mensaje">
+        <th mat-header-cell *matHeaderCellDef>Mensaje</th>
+        <td mat-cell *matCellDef="let r">{{ r.mensaje }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="detalleColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: detalleColumns;"></tr>
+    </table>
+
+  </div>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <ng-container *ngIf="!resultado">
+    <button mat-button (click)="onCerrar(false)" [disabled]="loading">Cancelar</button>
+    <button mat-raised-button color="primary"
+      [disabled]="!canSubmit"
+      (click)="onAsignar()">
+      <mat-icon>group_add</mat-icon> Asignar departamento completo
+    </button>
+  </ng-container>
+  <ng-container *ngIf="resultado">
+    <button mat-button (click)="onCerrar(false)">Cerrar</button>
+    <button mat-raised-button color="primary" (click)="onCerrar(true)">
+      <mat-icon>refresh</mat-icon> Recargar asignaciones
+    </button>
+  </ng-container>
+</mat-dialog-actions>
+

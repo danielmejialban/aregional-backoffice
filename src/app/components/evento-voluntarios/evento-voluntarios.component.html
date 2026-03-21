@@ -3,9 +3,14 @@
   <!-- Header -->
   <div class="page-header">
     <h1><mat-icon class="header-icon">assignment_ind</mat-icon> Asignaciones</h1>
-    <button mat-raised-button color="primary" (click)="openCreateDialog()">
-      <mat-icon>person_add</mat-icon> Nueva Asignación
-    </button>
+    <div class="header-actions">
+      <button mat-stroked-button color="primary" (click)="openAsignacionMasivaDialog()">
+        <mat-icon>group_add</mat-icon> Asignación Masiva
+      </button>
+      <button mat-raised-button color="primary" (click)="openCreateDialog()">
+        <mat-icon>person_add</mat-icon> Nueva Asignación
+      </button>
+    </div>
   </div>
 
   <mat-card>
