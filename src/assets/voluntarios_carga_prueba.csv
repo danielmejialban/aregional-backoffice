@@ -1,0 +1,17 @@
+nombre,apellido1,apellido2,dni,telefono,email,departamentoId
+Ana,García,López,12345678A,612345678,ana.garcia@email.com,34
+Carlos,Martínez,Ruiz,87654321B,699887766,carlos.martinez@email.com,34
+Laura,Sánchez,,23456789C,611223344,laura.sanchez@email.com,37
+Pedro,Fernández,Gómez,34567890D,,pedro.fernandez@email.com,37
+Isabel,Torres,Díaz,45678901E,655443322,,37
+Miguel,Ramírez,,56789012F,677889900,miguel.ramirez@email.com,37
+Sofía,Moreno,Castillo,67890123G,633221100,sofia.moreno@email.com,36
+Javier,Jiménez,,78901234H,,javier.jimenez@email.com,2
+Elena,Álvarez,Herrero,89012345I,644556677,elena.alvarez@email.com,36
+Roberto,Romero,,90123456J,688990011,,36
+Ana,García,López,12345678A,612345678,ana.garcia@email.com,34
+María,López,,12345678K,611111111,maria.lopez@email.com,34
+Luis,González,Pérez,11111111,699000000,luis.gonzalez@email.com,36
+Carmen,Ruiz,,22222222L,,carmen.ruiz@email.com,36
+,Blanco,Vega,33333333M,677000000,sin.nombre@email.com,33
+

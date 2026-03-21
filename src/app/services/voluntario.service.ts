@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { VoluntarioDTO } from '../models/voluntario.model';
+import { CargaMasivaResultadoDTO } from '../models/carga-masiva-resultado.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -30,6 +31,12 @@ export class VoluntarioService {
 
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
+  }
+
+  uploadCsv(archivo: File): Observable<CargaMasivaResultadoDTO> {
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+    return this.http.post<CargaMasivaResultadoDTO>(`${this.API_URL}/carga-masiva`, formData);
   }
 }
 

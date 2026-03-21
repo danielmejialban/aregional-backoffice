@@ -1,0 +1,72 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Voluntarios</h1>
+    <div class="header-actions">
+      <!-- Input oculto para seleccionar CSV -->
+      <input #csvInput type="file" accept=".csv" style="display:none"
+             (change)="onCsvSeleccionado($event)">
+
+      <button mat-stroked-button color="accent"
+              [disabled]="subiendoCsv"
+              (click)="abrirSelectorCsv()"
+              matTooltip="Sube un CSV con cabecera: nombre,apellido1,apellido2,dni,telefono,email,departamentoId">
+        <mat-icon>upload_file</mat-icon>
+        {{ subiendoCsv ? 'Subiendo...' : 'Carga masiva CSV' }}
+      </button>
+
+      <button mat-raised-button color="primary">
+        <mat-icon>add</mat-icon> Nuevo Voluntario
+      </button>
+    </div>
+  </div>
+
+  <mat-card>
+    <mat-card-content>
+      <div *ngIf="loading || subiendoCsv" class="loading-container">
+        <mat-spinner diameter="48"></mat-spinner>
+        <p *ngIf="subiendoCsv">Procesando CSV…</p>
+      </div>
+
+      <table mat-table [dataSource]="voluntarios" *ngIf="!loading && !subiendoCsv" class="full-width-table">
+
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>ID</th>
+          <td mat-cell *matCellDef="let v">{{ v.id }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="nombre">
+          <th mat-header-cell *matHeaderCellDef>Nombre Completo</th>
+          <td mat-cell *matCellDef="let v">
+            {{ v.nombre }} {{ v.apellido1 }} {{ v.apellido2 }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="dni">
+          <th mat-header-cell *matHeaderCellDef>DNI</th>
+          <td mat-cell *matCellDef="let v">{{ v.dni }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="departamento">
+          <th mat-header-cell *matHeaderCellDef>Departamento</th>
+          <td mat-cell *matCellDef="let v">{{ v.departamentoNombre || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef>Acciones</th>
+          <td mat-cell *matCellDef="let v">
+            <button mat-icon-button color="primary" matTooltip="Editar">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" matTooltip="Eliminar">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>
+
