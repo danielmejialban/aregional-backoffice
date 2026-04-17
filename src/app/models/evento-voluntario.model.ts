@@ -4,6 +4,7 @@ export interface EventoVoluntarioDTO {
   voluntarioNombre?: string;
   eventoId: number;
   eventoNombre?: string;
+  fechaInicioEvento?: string;
   qrToken?: string;
   qrImageBase64?: string;
 }

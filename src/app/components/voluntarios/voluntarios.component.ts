@@ -15,41 +15,60 @@ import { VoluntarioDTO } from '../../models/voluntario.model';
 import { CargaMasivaResultadoDTO, FilaResultadoDTO } from '../../models/carga-masiva-resultado.model';
 
 // ── Diálogo de resultado ────────────────────────────────────────────────────
+import { MatTabsModule } from '@angular/material/tabs';
+
 @Component({
   selector: 'app-carga-masiva-resultado-dialog',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatTableModule, MatChipsModule, MatDialogModule],
+  imports: [CommonModule, MatButtonModule, MatTableModule, MatChipsModule, MatDialogModule, MatTabsModule, MatIconModule],
   template: `
     <h2 mat-dialog-title>Resultado de la carga masiva</h2>
     <mat-dialog-content>
+      <!-- Resumen -->
       <div class="resumen">
+        <span class="chip total">📋 Total: {{ data.totalFilas }}</span>
         <span class="chip creado">✔ Creados: {{ data.creados }}</span>
         <span class="chip omitido">⚠ Omitidos: {{ data.omitidos }}</span>
         <span class="chip error">✖ Errores: {{ data.errores }}</span>
-        <span class="chip total">Total filas: {{ data.totalFilas }}</span>
       </div>
-      <table mat-table [dataSource]="detalleFiltrado" class="detalle-table" *ngIf="detalleFiltrado.length > 0">
-        <ng-container matColumnDef="fila">
-          <th mat-header-cell *matHeaderCellDef>Fila</th>
-          <td mat-cell *matCellDef="let r">{{ r.fila }}</td>
-        </ng-container>
-        <ng-container matColumnDef="estado">
-          <th mat-header-cell *matHeaderCellDef>Estado</th>
-          <td mat-cell *matCellDef="let r">
-            <span [class]="'chip ' + r.estado.toLowerCase()">{{ r.estado }}</span>
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="dni">
-          <th mat-header-cell *matHeaderCellDef>DNI</th>
-          <td mat-cell *matCellDef="let r">{{ r.dni || '-' }}</td>
-        </ng-container>
-        <ng-container matColumnDef="mensaje">
-          <th mat-header-cell *matHeaderCellDef>Mensaje</th>
-          <td mat-cell *matCellDef="let r">{{ r.mensaje }}</td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="cols"></tr>
-        <tr mat-row *matRowDef="let row; columns: cols;"></tr>
-      </table>
+      <!-- Pestañas por estado -->
+      <mat-tab-group>
+        <mat-tab [label]="'Errores (' + errores.length + ')'">
+          <ng-container *ngTemplateOutlet="tablaDetalle; context: { $implicit: errores }"></ng-container>
+        </mat-tab>
+        <mat-tab [label]="'Omitidos (' + omitidos.length + ')'">
+          <ng-container *ngTemplateOutlet="tablaDetalle; context: { $implicit: omitidos }"></ng-container>
+        </mat-tab>
+        <mat-tab [label]="'Creados (' + creados.length + ')'">
+          <ng-container *ngTemplateOutlet="tablaDetalle; context: { $implicit: creados }"></ng-container>
+        </mat-tab>
+      </mat-tab-group>
+      <!-- Template reutilizable de tabla -->
+      <ng-template #tablaDetalle let-filas>
+        <p *ngIf="filas.length === 0" class="empty-tab">Sin registros en esta categoría.</p>
+        <table mat-table [dataSource]="filas" class="detalle-table" *ngIf="filas.length > 0">
+          <ng-container matColumnDef="fila">
+            <th mat-header-cell *matHeaderCellDef>Fila</th>
+            <td mat-cell *matCellDef="let r">{{ r.fila }}</td>
+          </ng-container>
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let r">
+              <span [class]="'chip ' + r.estado.toLowerCase()">{{ r.estado }}</span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="dni">
+            <th mat-header-cell *matHeaderCellDef>DNI / NIE</th>
+            <td mat-cell *matCellDef="let r">{{ r.dni || '-' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="mensaje">
+            <th mat-header-cell *matHeaderCellDef>Mensaje</th>
+            <td mat-cell *matCellDef="let r">{{ r.mensaje }}</td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="cols"></tr>
+          <tr mat-row *matRowDef="let row; columns: cols;"></tr>
+        </table>
+      </ng-template>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-raised-button color="primary" (click)="dialogRef.close()">Cerrar</button>
@@ -62,19 +81,23 @@ import { CargaMasivaResultadoDTO, FilaResultadoDTO } from '../../models/carga-ma
     .chip.omitido { background: #fff8e1; color: #f57f17; }
     .chip.error   { background: #ffebee; color: #c62828; }
     .chip.total   { background: #e3f2fd; color: #1565c0; }
-    .detalle-table { width: 100%; }
+    .detalle-table { width: 100%; margin-top: 8px; }
+    .empty-tab { color: #999; font-style: italic; padding: 16px 0; }
   `]
 })
 export class CargaMasivaResultadoDialogComponent {
   cols = ['fila', 'estado', 'dni', 'mensaje'];
-  detalleFiltrado: FilaResultadoDTO[];
+  creados:  FilaResultadoDTO[];
+  omitidos: FilaResultadoDTO[];
+  errores:  FilaResultadoDTO[];
 
   constructor(
     public dialogRef: MatDialogRef<CargaMasivaResultadoDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: CargaMasivaResultadoDTO
   ) {
-    // Mostrar solo omitidos y errores en el detalle (los creados no aportan info extra)
-    this.detalleFiltrado = data.detalle.filter(f => f.estado !== 'CREADO');
+    this.creados  = data.detalle.filter(f => f.estado === 'CREADO');
+    this.omitidos = data.detalle.filter(f => f.estado === 'OMITIDO');
+    this.errores  = data.detalle.filter(f => f.estado === 'ERROR');
   }
 }
 
@@ -119,6 +142,20 @@ export class VoluntariosComponent implements OnInit {
   abrirSelectorCsv(): void {
     this.csvInput.nativeElement.value = '';
     this.csvInput.nativeElement.click();
+  }
+
+  descargarPlantillaCsv(): void {
+    const cabecera = 'nombre,apellido1,apellido2,dni,telefono,email,departamento,responsable,auxiliares';
+    // auxiliares entre comillas porque contiene comas (RFC 4180)
+    const ejemplo  = 'Juan,García,López,12345678A,+34 612 345 678,juan.garcia@email.com,Acomodación,98765432B,"11111111C,22222222D"';
+    const contenido = `${cabecera}\n${ejemplo}\n`;
+    const blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'plantilla_voluntarios.csv';
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   onCsvSeleccionado(event: Event): void {

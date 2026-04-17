@@ -6,10 +6,16 @@
       <input #csvInput type="file" accept=".csv" style="display:none"
              (change)="onCsvSeleccionado($event)">
 
+      <button mat-stroked-button
+              (click)="descargarPlantillaCsv()"
+              matTooltip="Descarga una plantilla CSV con la cabecera y un ejemplo">
+        <mat-icon>download</mat-icon> Plantilla CSV
+      </button>
+
       <button mat-stroked-button color="accent"
               [disabled]="subiendoCsv"
               (click)="abrirSelectorCsv()"
-              matTooltip="Sube un CSV con cabecera: nombre,apellido1,apellido2,dni,telefono,email,departamentoId">
+              matTooltip="Sube un CSV con cabecera: nombre,apellido1,apellido2,dni,telefono,email,departamento,responsable,auxiliares">
         <mat-icon>upload_file</mat-icon>
         {{ subiendoCsv ? 'Subiendo...' : 'Carga masiva CSV' }}
       </button>

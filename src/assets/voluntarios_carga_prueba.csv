@@ -1,17 +1,17 @@
-nombre,apellido1,apellido2,dni,telefono,email,departamentoId
-Ana,García,López,12345678A,612345678,ana.garcia@email.com,34
-Carlos,Martínez,Ruiz,87654321B,699887766,carlos.martinez@email.com,34
-Laura,Sánchez,,23456789C,611223344,laura.sanchez@email.com,37
-Pedro,Fernández,Gómez,34567890D,,pedro.fernandez@email.com,37
-Isabel,Torres,Díaz,45678901E,655443322,,37
-Miguel,Ramírez,,56789012F,677889900,miguel.ramirez@email.com,37
-Sofía,Moreno,Castillo,67890123G,633221100,sofia.moreno@email.com,36
-Javier,Jiménez,,78901234H,,javier.jimenez@email.com,2
-Elena,Álvarez,Herrero,89012345I,644556677,elena.alvarez@email.com,36
-Roberto,Romero,,90123456J,688990011,,36
-Ana,García,López,12345678A,612345678,ana.garcia@email.com,34
-María,López,,12345678K,611111111,maria.lopez@email.com,34
-Luis,González,Pérez,11111111,699000000,luis.gonzalez@email.com,36
-Carmen,Ruiz,,22222222L,,carmen.ruiz@email.com,36
-,Blanco,Vega,33333333M,677000000,sin.nombre@email.com,33
+nombre,apellido1,apellido2,dni,telefono,email,departamento,responsable,auxiliares
+Ana,García,López,12345678A,+34 612345678,ana.garcia@email.com,Acomodación,98765432B,"11111111C,22222222D"
+Carlos,Martínez,Ruiz,87654321B,+34 699887766,carlos.martinez@email.com,Acomodación,,
+Laura,Sánchez,,23456789C,+34 611223344,laura.sanchez@email.com,Sonido,34567890D,
+Pedro,Fernández,Gómez,34567890D,,pedro.fernandez@email.com,Sonido,,
+Isabel,Torres,Díaz,45678901E,+34 655443322,,Seguridad,56789012F,"67890123G,78901234H"
+Miguel,Ramírez,,56789012F,+34 677889900,miguel.ramirez@email.com,Seguridad,,
+Sofía,Moreno,Castillo,67890123G,+34 633221100,sofia.moreno@email.com,Acomodación,,
+Javier,Jiménez,,78901234H,,javier.jimenez@email.com,Sonido,,
+Elena,Álvarez,Herrero,89012345I,+34 644556677,elena.alvarez@email.com,Seguridad,,
+Roberto,Romero,,90123456J,+34 688990011,,Acomodación,,
+Ana,García,López,12345678A,+34 612345678,ana.garcia@email.com,Acomodación,,
+María,López,,12345678K,+34 611111111,maria.lopez@email.com,Acomodación,,
+Luis,González,Pérez,11111111,+34 699000000,luis.gonzalez@email.com,Sonido,,
+Carmen,Ruiz,,22222222L,,carmen.ruiz@email.com,DepartamentoInexistente,,
+,Blanco,Vega,33333333M,+34 677000000,sin.nombre@email.com,Acomodación,,
 

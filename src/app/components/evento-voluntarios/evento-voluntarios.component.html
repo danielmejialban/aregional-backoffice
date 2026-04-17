@@ -7,6 +7,11 @@
       <button mat-stroked-button color="primary" (click)="openAsignacionMasivaDialog()">
         <mat-icon>group_add</mat-icon> Asignación Masiva
       </button>
+      <button mat-stroked-button color="accent"
+              matTooltip="Descargar PDF con todas las tarjetas QR generadas"
+              (click)="descargarPdfGlobal()">
+        <mat-icon>picture_as_pdf</mat-icon> Descargar PDF
+      </button>
       <button mat-raised-button color="primary" (click)="openCreateDialog()">
         <mat-icon>person_add</mat-icon> Nueva Asignación
       </button>
@@ -85,6 +90,13 @@
               matTooltip="Ver QR"
               (click)="verQr(a)">
               <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button
+              *ngIf="a.qrImageBase64"
+              matTooltip="Descargar tarjeta PDF"
+              style="color: #c62828;"
+              (click)="descargarPdfIndividual(a)">
+              <mat-icon>picture_as_pdf</mat-icon>
             </button>
             <button mat-icon-button color="warn" matTooltip="Eliminar asignación" (click)="deleteAsignacion(a)">
               <mat-icon>delete</mat-icon>

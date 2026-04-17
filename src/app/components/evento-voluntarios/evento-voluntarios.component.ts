@@ -21,6 +21,7 @@ import { DepartamentoDTO } from '../../models/departamento.model';
 import { AsignacionDialogComponent } from './asignacion-dialog/asignacion-dialog.component';
 import { QrPreviewDialogComponent } from './qr-preview-dialog/qr-preview-dialog.component';
 import { AsignacionMasivaDialogComponent } from './asignacion-masiva-dialog/asignacion-masiva-dialog.component';
+import { QrPdfService } from '../../services/qr-pdf.service';
 
 @Component({
   selector: 'app-evento-voluntarios',
@@ -56,7 +57,8 @@ export class EventoVoluntariosComponent implements OnInit {
     private voluntarioService: VoluntarioService,
     private departamentoService: DepartamentoService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private qrPdfService: QrPdfService
   ) {}
 
   ngOnInit(): void {
@@ -161,6 +163,23 @@ export class EventoVoluntariosComponent implements OnInit {
       },
       error: () => { this.loading = false; this.showError('Error al eliminar la asignación'); }
     });
+  }
+
+  /** Descarga el PDF con la tarjeta QR de una única asignación */
+  descargarPdfIndividual(asignacion: EventoVoluntarioDTO): void {
+    const vol = (asignacion.voluntarioNombre ?? 'voluntario').replace(/\s+/g, '_');
+    const ev  = (asignacion.eventoNombre ?? 'evento').replace(/\s+/g, '_');
+    this.qrPdfService.generarPdf([asignacion], `QR_${vol}_${ev}.pdf`);
+  }
+
+  /** Descarga el PDF con todas las tarjetas QR que ya están generadas */
+  descargarPdfGlobal(): void {
+    const conQr = this.asignaciones.filter(a => !!a.qrImageBase64);
+    if (!conQr.length) {
+      this.showError('No hay ningún QR generado aún. Genera los QR primero.');
+      return;
+    }
+    this.qrPdfService.generarPdf(conQr, 'tarjetas_qr_todas.pdf');
   }
 
   private showSuccess(msg: string): void {
