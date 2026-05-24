@@ -33,6 +33,7 @@ export class LayoutComponent {
     { icon: 'business', label: 'Departamentos', route: '/departamentos', roles: ['ADMIN'] },
     { icon: 'admin_panel_settings', label: 'Roles', route: '/roles', roles: ['ADMIN'] },
     { icon: 'people', label: 'Voluntarios', route: '/voluntarios', roles: ['ADMIN', 'COORDINADOR'] },
+    { icon: 'school', label: 'Formaciones', route: '/formaciones', roles: ['ADMIN', 'COORDINADOR'] },
     { icon: 'event', label: 'Eventos', route: '/eventos', roles: ['ADMIN', 'COORDINADOR'] },
     { icon: 'assignment', label: 'Asignaciones', route: '/evento-voluntarios', roles: ['ADMIN', 'COORDINADOR'] },
     { icon: 'download_for_offline', label: 'Descarga QR', route: '/descarga-qr', roles: ['ADMIN', 'COORDINADOR'] },

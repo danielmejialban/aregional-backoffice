@@ -5,6 +5,9 @@ export interface EventoVoluntarioDTO {
   eventoId: number;
   eventoNombre?: string;
   fechaInicioEvento?: string;
+  fechaFinEvento?: string;
+  /** Fechas de acceso permitidas separadas por "|". null = acceso total al evento */
+  diasAcceso?: string;
   qrToken?: string;
   qrImageBase64?: string;
 }

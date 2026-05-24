@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, Inject } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, ViewChild, ElementRef, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -107,7 +107,7 @@ export interface QrScannerDialogData {
     mat-dialog-content { min-width: 340px; }
   `]
 })
-export class QrScannerDialogComponent implements OnInit, OnDestroy {
+export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
   @ViewChild('videoElement', { static: false }) videoElement!: ElementRef<HTMLVideoElement>;
 
   loadingCamera = true;
@@ -126,29 +126,50 @@ export class QrScannerDialogComponent implements OnInit, OnDestroy {
     private checkInService: CheckInService
   ) {}
 
-  ngOnInit(): void {
-    setTimeout(() => this.startCamera(), 300);
+  ngAfterViewInit(): void {
+    this.startCamera();
   }
 
   private async startCamera(): Promise<void> {
-    try {
-      const video = this.videoElement?.nativeElement;
-      if (!video) return;
-      this.loadingCamera = true;
-      this.scannerControls = await this.codeReader.decodeFromConstraints(
-        { video: { facingMode: 'environment' } },
-        video,
-        (result, err) => {
-          if (result && !this.processing && !this.scanResult) {
-            this.onQrDetected(result.getText());
-          }
-        }
-      );
+    const video = this.videoElement?.nativeElement;
+    if (!video) {
       this.loadingCamera = false;
-    } catch (err: any) {
-      this.loadingCamera = false;
-      this.cameraError = 'No se pudo acceder a la cámara. Verifica los permisos del navegador.';
+      this.cameraError = 'No se encontró el elemento de vídeo. Intenta reabrir el diálogo.';
+      return;
     }
+    this.loadingCamera = true;
+    this.cameraError = null;
+
+    // Intenta primero con cámara trasera (ideal), si falla prueba cualquier cámara
+    const constraints: MediaStreamConstraints[] = [
+      { video: { facingMode: { ideal: 'environment' } } },
+      { video: true }
+    ];
+
+    for (const constraint of constraints) {
+      try {
+        this.scannerControls = await this.codeReader.decodeFromConstraints(
+          constraint,
+          video,
+          (result) => {
+            if (result && !this.processing && !this.scanResult) {
+              this.onQrDetected(result.getText());
+            }
+          }
+        );
+        this.loadingCamera = false;
+        return;
+      } catch {
+        this.stopCamera();
+      }
+    }
+
+    // Ambos intentos fallaron
+    this.loadingCamera = false;
+    const isInsecure = location.protocol !== 'https:' && location.hostname !== 'localhost';
+    this.cameraError = isInsecure
+      ? 'La cámara requiere HTTPS. Accede a la aplicación mediante una URL segura (https://).'
+      : 'No se pudo acceder a la cámara. Verifica que hayas concedido el permiso en el navegador.';
   }
 
   private onQrDetected(token: string): void {
@@ -170,7 +191,7 @@ export class QrScannerDialogComponent implements OnInit, OnDestroy {
     this.cameraError = null;
     this.observaciones = '';
     this.loadingCamera = true;
-    setTimeout(() => this.startCamera(), 300);
+    this.startCamera();
   }
 
   private stopCamera(): void {

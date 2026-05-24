@@ -33,7 +33,13 @@ export class EventoDialogComponent implements OnInit {
   form!: FormGroup;
   isEdit: boolean = false;
 
-  tiposEvento = ['Asamblea', 'Formación', 'Servicio', 'Reunión', 'Otro'];
+  tiposEvento = [
+    { value: 'Asamblea',  label: 'Asamblea' },
+    { value: 'FORMACION', label: 'Formación' },
+    { value: 'Servicio',  label: 'Servicio' },
+    { value: 'Reunión',   label: 'Reunión' },
+    { value: 'Otro',      label: 'Otro' },
+  ];
   sesiones = ['Mañana', 'Tarde', 'Noche', 'Todo el día'];
 
   constructor(
@@ -54,7 +60,8 @@ export class EventoDialogComponent implements OnInit {
       fechaInicioEvento: [this.toDatetimeLocal(e?.fechaInicioEvento), Validators.required],
       fechaFinEvento: [this.toDatetimeLocal(e?.fechaFinEvento), Validators.required],
       fechaInicioConvocatoria: [this.toDatetimeLocal(e?.fechaInicioConvocatoria)],
-      fechaFinConvocatoria: [this.toDatetimeLocal(e?.fechaFinConvocatoria)]
+      fechaFinConvocatoria: [this.toDatetimeLocal(e?.fechaFinConvocatoria)],
+      diasPreEvento: [e?.diasPreEvento ?? 0, [Validators.required, Validators.min(0), Validators.max(30)]]
     });
   }
 
@@ -70,7 +77,8 @@ export class EventoDialogComponent implements OnInit {
       fechaInicioEvento: this.toIso(v.fechaInicioEvento),
       fechaFinEvento: this.toIso(v.fechaFinEvento),
       fechaInicioConvocatoria: this.toIso(v.fechaInicioConvocatoria),
-      fechaFinConvocatoria: this.toIso(v.fechaFinConvocatoria)
+      fechaFinConvocatoria: this.toIso(v.fechaFinConvocatoria),
+      diasPreEvento: v.diasPreEvento ?? 0
     };
     this.dialogRef.close(result);
   }
@@ -87,7 +95,8 @@ export class EventoDialogComponent implements OnInit {
 
   private toIso(datetimeLocal?: string): string | undefined {
     if (!datetimeLocal) return undefined;
-    return new Date(datetimeLocal).toISOString();
+    // datetime-local inputs give "yyyy-MM-ddTHH:mm" — append :00 so Jackson parses LocalDateTime
+    return datetimeLocal.length === 16 ? datetimeLocal + ':00' : datetimeLocal;
   }
 }
 

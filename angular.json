@@ -62,6 +62,10 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "ssl": true,
+            "host": "0.0.0.0"
+          },
           "configurations": {
             "production": {
               "buildTarget": "asamblea-regional-backoffice:build:production"

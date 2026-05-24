@@ -33,6 +33,14 @@ export class VoluntarioService {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
 
+  activar(id: number): Observable<VoluntarioDTO> {
+    return this.http.patch<VoluntarioDTO>(`${this.API_URL}/${id}/activar`, {});
+  }
+
+  desactivar(id: number): Observable<VoluntarioDTO> {
+    return this.http.patch<VoluntarioDTO>(`${this.API_URL}/${id}/desactivar`, {});
+  }
+
   uploadCsv(archivo: File): Observable<CargaMasivaResultadoDTO> {
     const formData = new FormData();
     formData.append('archivo', archivo);

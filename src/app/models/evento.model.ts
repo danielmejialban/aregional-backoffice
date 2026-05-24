@@ -8,5 +8,6 @@ export interface EventoDTO {
   fechaInicioConvocatoria?: string;
   fechaFinConvocatoria?: string;
   sesion?: string;
+  diasPreEvento?: number;
 }
 

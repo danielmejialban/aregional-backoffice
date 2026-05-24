@@ -1,0 +1,116 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-content">
+      <h1><mat-icon>school</mat-icon> Formaciones</h1>
+      <p class="subtitle">Asistencia y aprobación por evento de formación</p>
+    </div>
+  </div>
+
+  <!-- Selector de evento -->
+  <mat-card class="selector-card">
+    <mat-card-content>
+      <div *ngIf="loading" class="loading-inline">
+        <mat-spinner diameter="24"></mat-spinner>
+        <span>Cargando eventos...</span>
+      </div>
+
+      <div *ngIf="!loading" class="selector-row">
+        <mat-form-field appearance="outline" class="evento-select">
+          <mat-label>Selecciona un evento de formación</mat-label>
+          <mat-select (selectionChange)="onEventoChange($event.value)" [value]="eventoSeleccionado">
+            <mat-option *ngFor="let e of eventosFormacion" [value]="e">
+              {{ e.nombre }}
+              <span class="fecha-hint" *ngIf="e.fechaInicioEvento">
+                — {{ e.fechaInicioEvento | date:'dd/MM/yyyy' }}
+              </span>
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+<!--        <button mat-raised-button color="primary"-->
+<!--                [disabled]="!eventoSeleccionado"-->
+<!--                (click)="abrirDialogoRegistrar()">-->
+<!--          <mat-icon>person_add</mat-icon> Registrar voluntario-->
+<!--        </button>-->
+      </div>
+
+      <div *ngIf="!loading && eventosFormacion.length === 0" class="empty-state-inline">
+        <mat-icon>info</mat-icon>
+        No hay eventos de tipo FORMACION. Crea uno en la sección Eventos.
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Tabla de registros -->
+  <mat-card *ngIf="eventoSeleccionado">
+    <mat-card-content>
+      <div class="table-header">
+        <h3>{{ eventoSeleccionado.nombre }}</h3>
+        <span class="contadores">
+          Total: {{ registros.length }} |
+          Asistieron: {{ countAsistio() }} |
+          Aprobados: {{ countAprobados() }}
+        </span>
+      </div>
+
+      <div *ngIf="loadingRegistros" class="loading-inline">
+        <mat-spinner diameter="32"></mat-spinner>
+        <span>Cargando registros...</span>
+      </div>
+
+      <div *ngIf="!loadingRegistros && registros.length === 0" class="empty-state">
+        <mat-icon>how_to_reg</mat-icon>
+        <h3>Sin registros</h3>
+        <p>Registra voluntarios manualmente o escanea su QR en el evento.</p>
+      </div>
+
+      <table mat-table [dataSource]="registros"
+             *ngIf="!loadingRegistros && registros.length > 0"
+             class="full-width-table">
+
+        <ng-container matColumnDef="voluntarioNombre">
+          <th mat-header-cell *matHeaderCellDef>Voluntario</th>
+          <td mat-cell *matCellDef="let r">{{ r.voluntarioNombre }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="voluntarioDni">
+          <th mat-header-cell *matHeaderCellDef>DNI / NIE</th>
+          <td mat-cell *matCellDef="let r">{{ r.voluntarioDni }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="asistio">
+          <th mat-header-cell *matHeaderCellDef>Asistió</th>
+          <td mat-cell *matCellDef="let r">
+            <span class="badge" [class.badge-ok]="r.asistio" [class.badge-no]="!r.asistio">
+              {{ r.asistio ? 'Sí' : 'No' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="aprobada">
+          <th mat-header-cell *matHeaderCellDef>Aprobada</th>
+          <td mat-cell *matCellDef="let r">
+            <mat-slide-toggle
+              [checked]="!!r.aprobada"
+              (change)="toggleAprobada(r)"
+              color="primary"
+              matTooltip="{{ r.aprobada ? 'Desmarcar' : 'Marcar como aprobado' }}">
+            </mat-slide-toggle>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef>Acciones</th>
+          <td mat-cell *matCellDef="let r">
+            <button mat-icon-button color="warn" (click)="eliminar(r)" matTooltip="Eliminar registro">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>

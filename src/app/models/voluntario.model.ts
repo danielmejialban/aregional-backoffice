@@ -6,9 +6,13 @@ export interface VoluntarioDTO {
   dni: string;
   telefono?: string;
   email?: string;
-  direccion?: string;
-  fechaNacimiento?: string;
+  activo?: boolean;
   departamentoId: number;
   departamentoNombre?: string;
+  congregacion?: string;
+  circuito?: string;
+  correoJw?: string;
+  formacion?: boolean;
+  preAsamblea?: boolean;
 }
 
