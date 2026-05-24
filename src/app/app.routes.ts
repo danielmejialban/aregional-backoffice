@@ -21,18 +21,52 @@ export const routes: Routes = [
     component: LayoutComponent,
     canActivate: [authGuard],
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: DashboardComponent },
-      { path: 'departamentos', component: DepartamentosComponent, canActivate: [roleGuard(['ADMIN'])] },
-      { path: 'roles', component: RolesComponent, canActivate: [roleGuard(['ADMIN'])] },
-      { path: 'voluntarios', component: VoluntariosComponent, canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
-      { path: 'formaciones', component: FormacionesComponent, canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
-      { path: 'eventos', component: EventosComponent, canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
-      { path: 'evento-voluntarios', component: EventoVoluntariosComponent, canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
-      { path: 'check-in', component: CheckInComponent, canActivate: [roleGuard(['ADMIN', 'CHECK_IN'])] },
-      { path: 'estadisticas', component: EstadisticasComponent, canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
-      { path: 'mis-pases', component: MisPasesComponent, canActivate: [roleGuard(['VOLUNTARIO', 'ADMIN', 'COORDINADOR'])] },
-      { path: 'descarga-qr', component: DescargaQrComponent, canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] }
+      { path: '',
+        redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard',
+        loadComponent: () => import('./components/dashboard/dashboard.component')
+          .then(m => m.DashboardComponent)
+        },
+      { path: 'departamentos',
+        loadComponent: () => import('./components/departamentos/departamentos.component')
+          .then(m => m.DepartamentosComponent)
+        , canActivate: [roleGuard(['ADMIN'])] },
+      { path: 'roles',
+        loadComponent: () => import('./components/roles/roles.component')
+          .then( m => m.RolesComponent),
+        canActivate: [roleGuard(['ADMIN'])] },
+      { path: 'voluntarios',
+        loadComponent: () => import('./components/voluntarios/voluntarios.component')
+          .then(m => m.VoluntariosComponent),
+        canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
+      { path: 'formaciones',
+        loadComponent: () => import('./components/formaciones/formaciones.component')
+          .then( m => m.FormacionesComponent),
+         canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
+      { path: 'eventos',
+        loadComponent: () => import('./components/eventos/eventos.component')
+          .then( m => m.EventosComponent),
+         canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
+      { path: 'evento-voluntarios',
+        loadComponent: () => import('./components/evento-voluntarios/evento-voluntarios.component')
+          .then( m => m.EventoVoluntariosComponent),
+         canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
+      { path: 'check-in',
+        loadComponent: () => import('./components/check-in/check-in.component')
+          .then( m => m.CheckInComponent),
+       canActivate: [roleGuard(['ADMIN', 'CHECK_IN'])] },
+      { path: 'estadisticas',
+        loadComponent: () => import('./components/estadisticas/estadisticas.component')
+          .then(m => m.EstadisticasComponent),
+         canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
+      { path: 'mis-pases',
+        loadComponent: () => import('./components/mis-pases/mis-pases.component')
+          .then(m => m.MisPasesComponent),
+         canActivate: [roleGuard(['VOLUNTARIO', 'ADMIN', 'COORDINADOR'])] },
+      { path: 'descarga-qr',
+        loadComponent: () => import('./components/descarga-qr/descarga-qr.component')
+          .then(m => m.DescargaQrComponent),
+        canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] }
     ]
   },
   { path: '**', redirectTo: '' }
