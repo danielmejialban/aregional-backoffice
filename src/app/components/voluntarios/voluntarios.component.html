@@ -2,7 +2,8 @@
   <div class="page-header">
     <h1>Voluntarios</h1>
     <div class="header-actions">
-      <input #csvInput type="file" accept=".csv" style="display:none" (change)="onCsvSeleccionado($event)">
+      <input #fileInput type="file" accept=".csv,.xlsx,.xls" style="display:none"
+             (change)="onArchivoSeleccionado($event)">
 
       <button mat-stroked-button color="primary"
               (click)="descargarPlantillaMaestra()"
@@ -12,16 +13,16 @@
 
       <button mat-stroked-button
               (click)="descargarPlantillaCsv()"
-              matTooltip="Plantilla CSV: apellido1,apellido2,nombre,dni,congregacion,circuito,departamento,correo_jw,pre_asamblea">
+              matTooltip="Plantilla CSV sencilla">
         <mat-icon>download</mat-icon> Plantilla CSV
       </button>
 
       <button mat-stroked-button color="accent"
-              [disabled]="subiendoCsv"
-              (click)="abrirSelectorCsv()"
-              matTooltip="Sube un CSV con la plantilla descargada">
+              [disabled]="subiendoArchivo"
+              (click)="abrirSelectorArchivo()"
+              matTooltip="Sube un CSV o Excel con la plantilla descargada">
         <mat-icon>upload_file</mat-icon>
-        {{ subiendoCsv ? 'Subiendo...' : 'Carga masiva CSV' }}
+        {{ subiendoArchivo ? 'Subiendo...' : 'Carga masiva CSV/Excel' }}
       </button>
 
       <button mat-raised-button color="primary" (click)="openCreateDialog()">
@@ -32,97 +33,22 @@
 
   <mat-card>
     <mat-card-content>
-      <div *ngIf="loading || subiendoCsv" class="loading-container">
-        <mat-spinner diameter="48"></mat-spinner>
-        <p *ngIf="subiendoCsv">Procesando CSV…</p>
-      </div>
-
-      <table mat-table [dataSource]="voluntarios" *ngIf="!loading && !subiendoCsv" class="full-width-table">
-
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef>ID</th>
-          <td mat-cell *matCellDef="let v">{{ v.id }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="nombre">
-          <th mat-header-cell *matHeaderCellDef>Nombre Completo</th>
-          <td mat-cell *matCellDef="let v">
-            {{ v.nombre }} {{ v.apellido1 }} {{ v.apellido2 }}
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="dni">
-          <th mat-header-cell *matHeaderCellDef>DNI / NIE</th>
-          <td mat-cell *matCellDef="let v">{{ v.dni }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="departamento">
-          <th mat-header-cell *matHeaderCellDef>Departamento</th>
-          <td mat-cell *matCellDef="let v">{{ v.departamentoNombre || '-' }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="congregacion">
-          <th mat-header-cell *matHeaderCellDef>Congregación</th>
-          <td mat-cell *matCellDef="let v">{{ v.congregacion || '-' }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="circuito">
-          <th mat-header-cell *matHeaderCellDef>Circuito</th>
-          <td mat-cell *matCellDef="let v">{{ v.circuito || '-' }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="correoJw">
-          <th mat-header-cell *matHeaderCellDef>Correo JW</th>
-          <td mat-cell *matCellDef="let v">{{ v.correoJw || '-' }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="preAsamblea">
-          <th mat-header-cell *matHeaderCellDef>Pre-asamblea</th>
-          <td mat-cell *matCellDef="let v">
-            <span class="badge" [class.badge-ok]="v.preAsamblea" [class.badge-no]="!v.preAsamblea">
-              {{ v.preAsamblea ? 'Sí' : 'No' }}
-            </span>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="activo">
-          <th mat-header-cell *matHeaderCellDef>Estado</th>
-          <td mat-cell *matCellDef="let v">
-            <span class="badge" [class.badge-ok]="v.activo" [class.badge-no]="!v.activo">
-              {{ v.activo ? 'Activo' : 'Inactivo' }}
-            </span>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="formacion">
-          <th mat-header-cell *matHeaderCellDef>Formación</th>
-          <td mat-cell *matCellDef="let v">
-            <span class="badge" [class.badge-ok]="v.formacion" [class.badge-no]="!v.formacion">
-              {{ v.formacion ? 'Completada' : 'Pendiente' }}
-            </span>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="acciones">
-          <th mat-header-cell *matHeaderCellDef>Acciones</th>
-          <td mat-cell *matCellDef="let v">
-            <button mat-icon-button color="primary" (click)="openEditDialog(v)" matTooltip="Editar">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button (click)="toggleActivo(v)"
-                    [color]="v.activo ? 'warn' : 'accent'"
-                    [matTooltip]="v.activo ? 'Desactivar' : 'Activar'">
-              <mat-icon>{{ v.activo ? 'person_off' : 'person' }}</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="delete(v)" matTooltip="Eliminar">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      </table>
+      <app-data-table
+        [columns]="columns"
+        [data]="voluntarios"
+        [isLoading]="loading || subiendoArchivo"
+        [serverSide]="true"
+        [totalItems]="totalElements"
+        [pageSize]="pageSize"
+        [pageIndex]="currentPage"
+        [pageSizeOptions]="[10, 25, 50]"
+        [showColumnToggle]="true"
+        [showExportButton]="true"
+        exportFileName="voluntarios"
+        (filterChange)="onFilterChange($event)"
+        (pageChange)="onPageChange($event)"
+        (actionClick)="onActionClick($event)"
+      />
     </mat-card-content>
   </mat-card>
 </div>

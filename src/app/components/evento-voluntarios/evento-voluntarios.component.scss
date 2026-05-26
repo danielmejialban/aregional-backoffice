@@ -105,3 +105,21 @@
   font-style: italic;
 }
 
+.filters-row {
+  display: flex;
+  gap: 16px;
+  padding: 8px 0 16px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.filter-search {
+  min-width: 280px;
+  flex: 1 1 280px;
+}
+
+.filter-select {
+  min-width: 200px;
+  flex: 0 1 240px;
+}
+

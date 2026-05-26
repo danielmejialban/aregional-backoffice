@@ -1,0 +1,347 @@
+<div class="dt-shell">
+  <!-- ─── Toolbar + summary ───────────────────────────────────────────────── -->
+  <div class="dt-toolbar">
+    @if (showResultsSummary) {
+    <div class="dt-toolbar-summary">
+      <div class="dt-toolbar-summary-card">
+        <span class="dt-toolbar-summary-value">{{ totalResultsCount }}</span>
+        <span class="dt-toolbar-summary-label">{{ 'DataTable.Results' | translate }}</span>
+      </div>
+
+      @if (serverSide) {
+      <div class="dt-toolbar-summary-card dt-toolbar-summary-card--subtle">
+        <span class="dt-toolbar-summary-value">{{ filteredResultsCount }}</span>
+        <span class="dt-toolbar-summary-label">{{ 'DataTable.ResultsShown' | translate }}</span>
+      </div>
+      } @if (hasActiveFilters) {
+      <div class="dt-toolbar-summary-card dt-toolbar-summary-card--accent">
+        <span class="dt-toolbar-summary-value">{{ activeFilterChips.length }}</span>
+        <span class="dt-toolbar-summary-label">{{ 'DataTable.FiltersActive' | translate }}</span>
+      </div>
+      } @if (isManualFilterMode) {
+      <div class="dt-toolbar-mode-group">
+        <span class="dt-toolbar-mode-badge">
+          <mat-icon>manage_search</mat-icon>
+          {{ 'DataTable.ManualMode' | translate }}
+        </span>
+
+        <span
+          class="dt-toolbar-status-badge"
+          [class.dt-toolbar-status-badge--pending]="hasPendingFilterChanges"
+          [class.dt-toolbar-status-badge--applied]="!hasPendingFilterChanges"
+        >
+          <mat-icon>{{ hasPendingFilterChanges ? 'pending_actions' : 'task_alt' }}</mat-icon>
+          {{ (hasPendingFilterChanges ? 'DataTable.PendingChanges' : 'DataTable.FiltersApplied') | translate }}
+        </span>
+      </div>
+      }
+    </div>
+    }
+
+    <div class="dt-toolbar-actions">
+      @if (showColumnToggle) {
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="columnMenu"
+        [matTooltip]="'DataTable.ToggleColumns' | translate"
+        class="dt-toolbar-icon-btn"
+      >
+        <mat-icon>view_column</mat-icon>
+      </button>
+
+      <mat-menu #columnMenu="matMenu" class="dt-column-menu">
+        @for (col of toggleableColumns; track col.key) {
+        <button mat-menu-item (click)="toggleColumn(col.key)">
+          <mat-icon>{{ isColumnVisible(col.key) ? 'visibility' : 'visibility_off' }}</mat-icon>
+          <span>{{ col.header | translate }}</span>
+        </button>
+        }
+      </mat-menu>
+      } @if (showExportButton) {
+      <button
+        mat-icon-button
+        color="primary"
+        (click)="exportToCsv()"
+        [matTooltip]="'DataTable.ExportCsv' | translate"
+        class="dt-toolbar-icon-btn"
+      >
+        <mat-icon>download</mat-icon>
+      </button>
+      } @if (showSearchButton) {
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="search()"
+        [disabled]="!hasPendingFilterChanges"
+        [class.dt-search-button--pending]="hasPendingFilterChanges"
+      >
+        <mat-icon>search</mat-icon>
+        {{ 'DataTable.Search' | translate }}
+      </button>
+      } @if (showClearButton) {
+      <button mat-stroked-button (click)="clearFilters()" [disabled]="!hasActiveFilters">
+        <mat-icon>filter_alt_off</mat-icon>
+        {{ 'DataTable.ClearFilters' | translate }}
+      </button>
+      }
+    </div>
+  </div>
+
+  @if (showActiveFilterChips && activeFilterChips.length) {
+  <div class="dt-active-filters">
+    <div class="dt-active-filters-header">
+      <span class="dt-active-filters-title">{{ 'DataTable.ActiveFilters' | translate }}</span>
+    </div>
+
+    <div class="dt-active-filters-list">
+      @for (chip of activeFilterChips; track chip.key) {
+      <button
+        type="button"
+        class="dt-filter-chip"
+        (click)="clearFilterChip(chip.key)"
+        [matTooltip]="'DataTable.ClearFilter' | translate"
+      >
+        <span class="dt-filter-chip-label">{{ chip.label | translate }}:</span>
+        <span class="dt-filter-chip-value">{{ chip.value | translate }}</span>
+        <mat-icon>close</mat-icon>
+      </button>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- ─── Table + overlay wrapper ────────────────────────────────────────── -->
+  <div class="dt-content-wrapper">
+    <!-- Spinner overlay — table stays visible underneath while loading -->
+    @if (isLoading) {
+    <div class="dt-loading-overlay">
+      <div class="dt-loading-state">
+        <app-loader [isLoading]="true" [size]="1.5" />
+        <span>{{ 'DataTable.Loading' | translate }}</span>
+      </div>
+    </div>
+    }
+
+    <!-- ─── Table container ─────────────────────────────────────────────── -->
+    <div class="dt-table-container" [class.dt-scrollable]="!!maxHeight" [style.max-height]="maxHeight">
+      <table mat-table [dataSource]="dataSource" matSort class="dt-table" [class.dt-no-sort-arrow]="!showSortArrow">
+        <!-- ── Selection column (always registered, shown via visibleColumns) ── -->
+        <ng-container matColumnDef="_select" sticky>
+          <th mat-header-cell *matHeaderCellDef class="dt-select-cell">
+            @if (selectionMode === 'multi') {
+            <mat-checkbox
+              [checked]="isAllSelected()"
+              [indeterminate]="isSomeSelected()"
+              (change)="masterToggle()"
+              [matTooltip]="'DataTable.SelectAll' | translate"
+            />
+            }
+          </th>
+          <td mat-cell *matCellDef="let row" class="dt-select-cell">
+            <mat-checkbox
+              [checked]="selection.isSelected(row)"
+              (click)="$event.stopPropagation()"
+              (change)="toggleRow(row)"
+            />
+          </td>
+        </ng-container>
+
+        <!-- ── Dynamic columns ─────────────────────────────────────────────── -->
+        @for (col of columns; track col.key) {
+
+        <ng-container [matColumnDef]="col.key" [sticky]="col.sticky === 'start'" [stickyEnd]="col.sticky === 'end'">
+          <ng-template matHeaderCellDef>
+            <ng-template #filterControlsTemplate>
+              @switch (col.filterType) { @case ('text') {
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                class="dt-filter-field"
+                (click)="$event.stopPropagation()"
+              >
+                <input
+                  matInput
+                  [formControl]="filterControls[col.key]"
+                  [placeholder]="'DataTable.FilterValue' | translate"
+                  autocomplete="off"
+                />
+              </mat-form-field>
+              } @case ('autocomplete') {
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                class="dt-filter-field"
+                (click)="$event.stopPropagation()"
+              >
+                @if (col.combo !== false) {
+                <input
+                  matInput
+                  [formControl]="filterControls[col.key]"
+                  [matAutocomplete]="autoRef"
+                  [placeholder]="'DataTable.FilterValue' | translate"
+                  autocomplete="off"
+                />
+                <mat-autocomplete #autoRef="matAutocomplete">
+                  @for (opt of (filteredOptionsMap[col.key] | async) ?? []; track opt) {
+                  <mat-option [value]="opt">{{ opt | translate }}</mat-option>
+                  }
+                </mat-autocomplete>
+                } @else {
+                <input
+                  matInput
+                  [formControl]="filterControls[col.key]"
+                  [placeholder]="'DataTable.FilterValue' | translate"
+                  autocomplete="off"
+                />
+                }
+              </mat-form-field>
+              } @case ('select') {
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                class="dt-filter-field"
+                (click)="$event.stopPropagation()"
+              >
+                <mat-select [formControl]="filterControls[col.key]" [placeholder]="'DataTable.SelectValue' | translate">
+                  <mat-option [value]="null">—</mat-option>
+                  @for (opt of col.filterOptions; track opt) {
+                  <mat-option [value]="opt">{{ opt | translate }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              } @case ('dateRange') {
+              <mat-form-field
+                appearance="outline"
+                subscriptSizing="dynamic"
+                class="dt-filter-field dt-date-range-field"
+                (click)="$event.stopPropagation()"
+              >
+                <mat-date-range-input [rangePicker]="rangePicker" [separator]="' - '">
+                  <input
+                    class="separator"
+                    matStartDate
+                    [formControl]="dateRangeControls[col.key].start"
+                    [placeholder]="'DataTable.From' | translate"
+                  />
+                  <input
+                    class="separator"
+                    matEndDate
+                    [formControl]="dateRangeControls[col.key].end"
+                    [placeholder]="'DataTable.To' | translate"
+                  />
+                </mat-date-range-input>
+                <mat-datepicker-toggle matIconSuffix [for]="rangePicker" (click)="$event.stopPropagation()" />
+                <mat-date-range-picker #rangePicker></mat-date-range-picker>
+              </mat-form-field>
+              } @default {
+              <div class="dt-filter-placeholder" aria-hidden="true">
+                <span>{{ 'DataTable.NotFilterable' | translate }}</span>
+              </div>
+              } }
+            </ng-template>
+
+            <th
+              mat-header-cell
+              [style.min-width]="col.width ?? null"
+              [class.dt-col-no-filter]="!col.filterType || col.filterType === 'none'"
+              class="dt-header-cell"
+            >
+              <div class="dt-column-shell" [class.dt-column-shell--with-filters]="showFilterRow">
+                @if (col.sortable) {
+                <div class="dt-column-title-row dt-column-title-row--sortable" [mat-sort-header]="col.key">
+                  <span class="dt-column-title">{{ col.header | translate }}</span>
+                  @if (showFilterIndicators && col.filterType && col.filterType !== 'none') {
+                  <mat-icon class="dt-filter-indicator">filter_alt</mat-icon>
+                  }
+                </div>
+                } @else {
+                <div class="dt-column-title-row">
+                  <span class="dt-column-title">{{ col.header | translate }}</span>
+                  @if (showFilterIndicators && col.filterType && col.filterType !== 'none') {
+                  <mat-icon class="dt-filter-indicator">filter_alt</mat-icon>
+                  }
+                </div>
+                } @if (showFilterRow) {
+                <div
+                  class="dt-column-filter-row"
+                  [class.dt-column-filter-row--empty]="!col.filterType || col.filterType === 'none'"
+                >
+                  <ng-container [ngTemplateOutlet]="filterControlsTemplate" />
+                </div>
+                }
+              </div>
+            </th>
+          </ng-template>
+
+          <!-- Data cell -->
+          <td
+            mat-cell
+            *matCellDef="let row"
+            [matTooltip]="col.tooltip ? col.tooltip(row) : ''"
+            [matTooltipDisabled]="!col.tooltip"
+            (click)="onRowClick(row)"
+          >
+            @switch (col.type) { @case ('date') {
+            {{ row[col.key] | date : col.dateFormat ?? 'dd/MM/yyyy HH:mm' }}
+            } @case ('number') {
+            {{ row[col.key] | number }}
+            } @case ('badge') {
+            <span class="dt-badge" [class]="'dt-badge ' + (col.badgeMap?.[row[col.key]] ?? 'dt-badge--neutral')">
+              {{ row[col.key] | translate }}
+            </span>
+            } @case ('actions') {
+            <div class="dt-actions" (click)="$event.stopPropagation()">
+              @for (action of col.actions; track action.id) {
+                @if (!action.hidden || !action.hidden(row)) {
+                <button
+                  mat-icon-button
+                  [color]="action.color ?? ''"
+                  [matTooltip]="action.label | translate"
+                  [disabled]="action.disabled ? action.disabled(row) : false"
+                  (click)="onAction(action.id, row, $event)"
+                >
+                  <mat-icon>{{ action.iconFn ? action.iconFn(row) : action.icon }}</mat-icon>
+                </button>
+                }
+              }
+            </div>
+            } @case ('custom') { @if (col.cellTemplate) {
+            <ng-container *ngTemplateOutlet="col.cellTemplate; context: { $implicit: row }" />
+            } } @default {
+            {{ row[col.key] }}
+            } }
+          </td>
+        </ng-container>
+        }
+
+        <!-- ── Row definitions ──────────────────────────────────────────────── -->
+        <tr mat-header-row *matHeaderRowDef="visibleColumns; sticky: true"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: visibleColumns"
+          [class.dt-row-selected]="selection.isSelected(row)"
+          (click)="onRowClick(row)"
+        ></tr>
+
+        <!-- Empty state row -->
+        <tr class="mat-mdc-row" *matNoDataRow>
+          <td [attr.colspan]="visibleColumns.length" class="dt-no-data-cell">
+            <mat-icon class="dt-empty-icon">{{ emptyIcon }}</mat-icon>
+            <p class="dt-empty-message">{{ emptyMessage | translate }}</p>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <!-- dt-table-container -->
+  </div>
+  <!-- dt-content-wrapper -->
+</div>
+
+<!-- ─── Paginator ─────────────────────────────────────────────────────────── -->
+<mat-paginator
+  [pageIndex]="pageIndex"
+  [pageSize]="pageSize ?? pageSizeOptions[0]"
+  [pageSizeOptions]="pageSizeOptions"
+  [length]="serverSide ? totalItems : undefined"
+  showFirstLastButtons
+/>

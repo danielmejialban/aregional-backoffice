@@ -1,8 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AsignacionMasivaRequestDTO, AsignacionMasivaResultadoDTO, EventoVoluntarioDTO } from '../models/evento-voluntario.model';
+import { PageDTO } from '../models/page.model';
 import { environment } from '../../environments/environment';
+
+export interface AsignacionFiltros {
+  busqueda?: string;
+  eventoId?: number | null;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +20,19 @@ export class EventoVoluntarioService {
 
   getAll(): Observable<EventoVoluntarioDTO[]> {
     return this.http.get<EventoVoluntarioDTO[]>(this.API_URL);
+  }
+
+  getAllPaged(page: number, size: number, filtros?: AsignacionFiltros): Observable<PageDTO<EventoVoluntarioDTO>> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (filtros?.busqueda?.trim()) params = params.set('busqueda', filtros.busqueda.trim());
+
+    if (filtros?.eventoId != null) {
+      return this.http.get<PageDTO<EventoVoluntarioDTO>>(
+        `${this.API_URL}/evento/${filtros.eventoId}`, { params }
+      );
+    }
+
+    return this.http.get<PageDTO<EventoVoluntarioDTO>>(this.API_URL, { params });
   }
 
   getByVoluntario(voluntarioId: number): Observable<EventoVoluntarioDTO[]> {
@@ -44,4 +63,3 @@ export class EventoVoluntarioService {
     return this.http.post<AsignacionMasivaResultadoDTO>(`${this.API_URL}/asignacion-masiva`, request);
   }
 }
-

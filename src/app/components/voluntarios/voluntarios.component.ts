@@ -1,11 +1,9 @@
-import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, Inject, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatTableModule } from '@angular/material/table';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -15,12 +13,19 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTabsModule } from '@angular/material/tabs';
-import { VoluntarioService } from '../../services/voluntario.service';
+import { MatTableModule } from '@angular/material/table';
+import { PageEvent } from '@angular/material/paginator';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { forkJoin } from 'rxjs';
+import { VoluntarioService, VoluntarioFiltros } from '../../services/voluntario.service';
 import { VoluntarioDTO } from '../../models/voluntario.model';
 import { DepartamentoService } from '../../services/departamento.service';
 import { DepartamentoDTO } from '../../models/departamento.model';
 import { CargaMasivaResultadoDTO, FilaResultadoDTO } from '../../models/carga-masiva-resultado.model';
 import { PlantillaExcelService } from '../../services/plantilla-excel.service';
+import { DataTableComponent } from '../data-table/data-table/data-table.component';
+import { ColumnDef, TableActionEvent, ActiveFilters } from '@app/@core';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 export interface VoluntarioDialogData {
   voluntario?: VoluntarioDTO;
@@ -32,15 +37,9 @@ export interface VoluntarioDialogData {
   selector: 'app-voluntario-dialog',
   standalone: true,
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSelectModule,
-    MatSlideToggleModule
+    CommonModule, ReactiveFormsModule,
+    MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule,
+    MatIconModule, MatSelectModule, MatSlideToggleModule
   ],
   template: `
     <h2 mat-dialog-title>{{ data.voluntario?.id ? 'Editar Voluntario' : 'Nuevo Voluntario' }}</h2>
@@ -67,7 +66,7 @@ export interface VoluntarioDialogData {
             <mat-label>DNI / NIE</mat-label>
             <input matInput formControlName="dni" required placeholder="12345678A">
             <mat-error *ngIf="form.get('dni')?.hasError('required')">Obligatorio</mat-error>
-            <mat-error *ngIf="form.get('dni')?.hasError('pattern')">Formato inválido (DNI: 8 dígitos + letra, NIE: X/Y/Z + 7 dígitos + letra)</mat-error>
+            <mat-error *ngIf="form.get('dni')?.hasError('pattern')">Formato inválido</mat-error>
           </mat-form-field>
         </div>
         <div class="row-2">
@@ -134,18 +133,18 @@ export class VoluntarioDialogComponent implements OnInit {
   ngOnInit(): void {
     const v = this.data.voluntario;
     this.form = this.fb.group({
-      nombre:        [v?.nombre    || '', Validators.required],
-      apellido1:     [v?.apellido1 || '', Validators.required],
-      apellido2:     [v?.apellido2 || ''],
-      dni:           [v?.dni       || '', [Validators.required, Validators.pattern(/^[0-9]{8}[A-Z]$|^[XYZ][0-9]{7}[A-Z]$/)]],
-      telefono:      [v?.telefono  || ''],
-      email:         [v?.email     || '', Validators.email],
-      congregacion:  [v?.congregacion || ''],
-      circuito:      [v?.circuito     || ''],
-      correoJw:      [v?.correoJw     || ''],
-      departamentoId:[v?.departamentoId ?? null, Validators.required],
-      activo:        [v?.activo        ?? true],
-      preAsamblea:   [v?.preAsamblea   ?? false]
+      nombre:         [v?.nombre      || '', Validators.required],
+      apellido1:      [v?.apellido1   || '', Validators.required],
+      apellido2:      [v?.apellido2   || ''],
+      dni:            [v?.dni         || '', [Validators.required, Validators.pattern(/^[0-9]{8}[A-Z]$|^[XYZ][0-9]{7}[A-Z]$/)]],
+      telefono:       [v?.telefono    || ''],
+      email:          [v?.email       || '', Validators.email],
+      congregacion:   [v?.congregacion || ''],
+      circuito:       [v?.circuito    || ''],
+      correoJw:       [v?.correoJw    || ''],
+      departamentoId: [v?.departamentoId ?? null, Validators.required],
+      activo:         [v?.activo      ?? true],
+      preAsamblea:    [v?.preAsamblea ?? false],
     });
   }
 
@@ -153,25 +152,25 @@ export class VoluntarioDialogComponent implements OnInit {
     if (!this.form.valid) return;
     const val = this.form.value;
     const dto: VoluntarioDTO = {
-      id:            this.data.voluntario?.id,
-      nombre:        val.nombre.trim(),
-      apellido1:     val.apellido1.trim(),
-      apellido2:     val.apellido2?.trim() || undefined,
-      dni:           val.dni.toUpperCase().trim(),
-      telefono:      val.telefono?.trim()     || undefined,
-      email:         val.email?.trim()        || undefined,
-      congregacion:  val.congregacion?.trim() || undefined,
-      circuito:      val.circuito?.trim()     || undefined,
-      correoJw:      val.correoJw?.trim()     || undefined,
+      id:             this.data.voluntario?.id,
+      nombre:         val.nombre.trim(),
+      apellido1:      val.apellido1.trim(),
+      apellido2:      val.apellido2?.trim() || undefined,
+      dni:            val.dni.toUpperCase().trim(),
+      telefono:       val.telefono?.trim()     || undefined,
+      email:          val.email?.trim()        || undefined,
+      congregacion:   val.congregacion?.trim() || undefined,
+      circuito:       val.circuito?.trim()     || undefined,
+      correoJw:       val.correoJw?.trim()     || undefined,
       departamentoId: val.departamentoId,
-      activo:        val.activo,
-      preAsamblea:   val.preAsamblea
+      activo:         val.activo,
+      preAsamblea:    val.preAsamblea,
     };
     this.dialogRef.close(dto);
   }
 }
 
-// ── Diálogo de resultado CSV ───────────────────────────────────────────────
+// ── Diálogo de resultado carga masiva ─────────────────────────────────────────
 @Component({
   selector: 'app-carga-masiva-resultado-dialog',
   standalone: true,
@@ -258,22 +257,29 @@ export class CargaMasivaResultadoDialogComponent {
   selector: 'app-voluntarios',
   standalone: true,
   imports: [
-    CommonModule,
-    MatTableModule, MatButtonModule, MatIconModule,
-    MatCardModule, MatProgressSpinnerModule, MatSnackBarModule,
-    MatDialogModule, MatTooltipModule, MatChipsModule
+    CommonModule, FormsModule,
+    MatButtonModule, MatIconModule, MatCardModule,
+    MatSnackBarModule, MatDialogModule, MatTooltipModule,
+    DataTableComponent,
   ],
   templateUrl: './voluntarios.component.html',
   styleUrls: ['./voluntarios.component.scss']
 })
 export class VoluntariosComponent implements OnInit {
-  @ViewChild('csvInput') csvInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
-  voluntarios: VoluntarioDTO[]  = [];
-  departamentos: DepartamentoDTO[] = [];
-  displayedColumns = ['id', 'nombre', 'dni', 'departamento', 'congregacion', 'circuito', 'correoJw', 'preAsamblea', 'activo', 'formacion', 'acciones'];
+  voluntarios: any[] = [];
+  columns: ColumnDef[] = [];
   loading = false;
-  subiendoCsv = false;
+  subiendoArchivo = false;
+
+  totalElements = 0;
+  pageSize = 10;
+  currentPage = 0;
+
+  departamentos: DepartamentoDTO[] = [];
+  private currentFiltros: VoluntarioFiltros = {};
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(
     private voluntarioService: VoluntarioService,
@@ -284,75 +290,191 @@ export class VoluntariosComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.departamentoService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(data => {
+      this.departamentos = data;
+      this.columns = this.buildColumns();
+    });
     this.loadVoluntarios();
-    this.departamentoService.getAll().subscribe(data => this.departamentos = data);
   }
 
-  loadVoluntarios(): void {
+  private buildColumns(): ColumnDef[] {
+    return [
+      { key: 'id', header: 'ID', type: 'text', width: '60px' },
+      {
+        key: 'nombreCompleto', header: 'Nombre', type: 'text',
+        filterType: 'text', sortable: true,
+      },
+      { key: 'dni', header: 'DNI/NIE', type: 'text', filterType: 'text' },
+      {
+        key: 'departamentoNombre', header: 'Departamento', type: 'text',
+        filterType: 'select',
+        filterOptions: this.departamentos.map(d => d.nombre),
+      },
+      { key: 'congregacion', header: 'Congregación', type: 'text' },
+      { key: 'circuito', header: 'Circuito', type: 'text' },
+      { key: 'correoJw', header: 'Correo JW', type: 'text', hidden: true },
+      {
+        key: 'preAsambleaLabel', header: 'Pre-asamblea', type: 'badge',
+        badgeMap: { 'Sí': 'dt-badge--primary', 'No': 'dt-badge--neutral' },
+      },
+      {
+        key: 'activoLabel', header: 'Estado', type: 'badge',
+        filterType: 'select', filterOptions: ['Activo', 'Inactivo'],
+        badgeMap: { 'Activo': 'dt-badge--success', 'Inactivo': 'dt-badge--danger' },
+      },
+      {
+        key: 'formacionLabel', header: 'Formación', type: 'badge',
+        badgeMap: { 'Completada': 'dt-badge--success', 'Pendiente': 'dt-badge--warn' },
+      },
+      {
+        key: 'acciones', header: 'Acciones', type: 'actions', sticky: 'end',
+        actions: [
+          { id: 'edit', icon: 'edit', label: 'Editar', color: 'primary' },
+          {
+            id: 'toggle',
+            icon: 'person_off',
+            iconFn: (row) => row.activo ? 'person_off' : 'person',
+            label: 'Activar/Desactivar',
+            color: 'accent',
+          },
+          { id: 'delete', icon: 'delete', label: 'Eliminar', color: 'warn' },
+        ],
+      },
+    ];
+  }
+
+  loadVoluntarios(page = this.currentPage): void {
+    this.currentPage = page;
     this.loading = true;
-    this.voluntarioService.getAll().subscribe({
-      next: (data) => { this.voluntarios = data; this.loading = false; },
-      error: () => { this.loading = false; this.showError('Error al cargar voluntarios'); }
+    this.voluntarioService.getAllPaged(page, this.pageSize, this.currentFiltros).subscribe({
+      next: (data) => {
+        this.voluntarios = data.content.map(v => this.mapRow(v));
+        this.totalElements = data.totalElements;
+        this.loading = false;
+      },
+      error: () => { this.loading = false; this.showError('Error al cargar voluntarios'); },
     });
+  }
+
+  private mapRow(v: VoluntarioDTO) {
+    return {
+      ...v,
+      nombreCompleto: [v.nombre, v.apellido1, v.apellido2].filter(Boolean).join(' '),
+      activoLabel:    v.activo      ? 'Activo'     : 'Inactivo',
+      preAsambleaLabel: v.preAsamblea ? 'Sí'       : 'No',
+      formacionLabel: v.formacion   ? 'Completada' : 'Pendiente',
+    };
+  }
+
+  onFilterChange(filters: ActiveFilters): void {
+    const nombre = (filters['nombreCompleto'] as string) || undefined;
+    const dni    = (filters['dni']            as string) || undefined;
+    const deptoNombre = filters['departamentoNombre'] as string | null;
+    const activoLabel = filters['activoLabel']        as string | null;
+
+    const depto = deptoNombre ? this.departamentos.find(d => d.nombre === deptoNombre) : null;
+
+    this.currentFiltros = {
+      busqueda:       nombre || dni || undefined,
+      departamentoId: depto?.id ?? null,
+      activo:         activoLabel === 'Activo' ? true : activoLabel === 'Inactivo' ? false : null,
+    };
+    this.loadVoluntarios(0);
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageSize = event.pageSize;
+    this.loadVoluntarios(event.pageIndex);
+  }
+
+  onActionClick(event: TableActionEvent): void {
+    const row = event.row as VoluntarioDTO;
+    switch (event.action) {
+      case 'edit':   this.openEditDialog(row);          break;
+      case 'toggle': this.confirmToggleActivo(row);     break;
+      case 'delete': this.confirmDelete(row);           break;
+    }
   }
 
   openCreateDialog(): void {
     const ref = this.dialog.open(VoluntarioDialogComponent, {
-      width: '600px',
-      disableClose: true,
-      data: { departamentos: this.departamentos } as VoluntarioDialogData
+      width: '600px', disableClose: true,
+      data: { departamentos: this.departamentos } as VoluntarioDialogData,
     });
-    ref.afterClosed().subscribe(dto => {
-      if (dto) this.create(dto);
-    });
+    ref.afterClosed().subscribe(dto => { if (dto) this.create(dto); });
   }
 
   openEditDialog(voluntario: VoluntarioDTO): void {
     const ref = this.dialog.open(VoluntarioDialogComponent, {
-      width: '600px',
-      disableClose: true,
-      data: { voluntario, departamentos: this.departamentos } as VoluntarioDialogData
+      width: '600px', disableClose: true,
+      data: { voluntario, departamentos: this.departamentos } as VoluntarioDialogData,
     });
-    ref.afterClosed().subscribe(dto => {
-      if (dto) this.update(voluntario.id!, dto);
+    ref.afterClosed().subscribe(dto => { if (dto) this.update(voluntario.id!, dto); });
+  }
+
+  confirmDelete(v: VoluntarioDTO): void {
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Eliminar voluntario',
+        message: `¿Estás seguro de que quieres eliminar a ${v.nombre} ${v.apellido1}? Esta acción no se puede deshacer.`,
+        confirmText: 'Eliminar',
+        confirmColor: 'warn',
+        icon: 'delete',
+      },
     });
+    ref.afterClosed().subscribe((ok: boolean) => { if (ok) this.delete(v); });
+  }
+
+  confirmToggleActivo(v: VoluntarioDTO): void {
+    const desactivando = v.activo;
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: desactivando ? 'Desactivar voluntario' : 'Activar voluntario',
+        message: `¿Deseas ${desactivando ? 'desactivar' : 'activar'} a ${v.nombre} ${v.apellido1}?`,
+        confirmText: desactivando ? 'Desactivar' : 'Activar',
+        confirmColor: desactivando ? 'warn' : 'primary',
+        icon: desactivando ? 'person_off' : 'person',
+      },
+    });
+    ref.afterClosed().subscribe((ok: boolean) => { if (ok) this.toggleActivo(v); });
   }
 
   create(dto: VoluntarioDTO): void {
     this.voluntarioService.create(dto).subscribe({
-      next: () => { this.showSuccess('Voluntario creado'); this.loadVoluntarios(); },
-      error: (err) => this.showError(err?.error?.message || 'Error al crear voluntario')
+      next: () => { this.showSuccess('Voluntario creado'); this.loadVoluntarios(0); },
+      error: (err) => this.showError(err?.error?.message || 'Error al crear voluntario'),
     });
   }
 
   update(id: number, dto: VoluntarioDTO): void {
     this.voluntarioService.update(id, dto).subscribe({
       next: () => { this.showSuccess('Voluntario actualizado'); this.loadVoluntarios(); },
-      error: (err) => this.showError(err?.error?.message || 'Error al actualizar voluntario')
+      error: (err) => this.showError(err?.error?.message || 'Error al actualizar voluntario'),
     });
   }
 
-  delete(voluntario: VoluntarioDTO): void {
-    if (!confirm(`¿Eliminar a ${voluntario.nombre} ${voluntario.apellido1}?`)) return;
-    this.voluntarioService.delete(voluntario.id!).subscribe({
+  delete(v: VoluntarioDTO): void {
+    this.voluntarioService.delete(v.id!).subscribe({
       next: () => { this.showSuccess('Voluntario eliminado'); this.loadVoluntarios(); },
-      error: () => this.showError('Error al eliminar voluntario')
+      error: () => this.showError('Error al eliminar voluntario'),
     });
   }
 
-  toggleActivo(voluntario: VoluntarioDTO): void {
-    const accion = voluntario.activo
-      ? this.voluntarioService.desactivar(voluntario.id!)
-      : this.voluntarioService.activar(voluntario.id!);
+  toggleActivo(v: VoluntarioDTO): void {
+    const accion = v.activo
+      ? this.voluntarioService.desactivar(v.id!)
+      : this.voluntarioService.activar(v.id!);
     accion.subscribe({
       next: () => { this.showSuccess('Estado actualizado'); this.loadVoluntarios(); },
-      error: () => this.showError('Error al cambiar estado')
+      error: () => this.showError('Error al cambiar estado'),
     });
   }
 
-  abrirSelectorCsv(): void {
-    this.csvInput.nativeElement.value = '';
-    this.csvInput.nativeElement.click();
+  abrirSelectorArchivo(): void {
+    this.fileInput.nativeElement.value = '';
+    this.fileInput.nativeElement.click();
   }
 
   descargarPlantillaMaestra(): void {
@@ -364,32 +486,36 @@ export class VoluntariosComponent implements OnInit {
     const ejemplo  = 'García,López,Juan,12345678A,Madrid Norte,Circuito 5,Acomodación,juan@jw.org,false';
     const blob = new Blob([`${cabecera}\n${ejemplo}\n`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'plantilla_voluntarios.csv';
-    link.click();
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'plantilla_voluntarios.csv';
+    a.click();
     URL.revokeObjectURL(url);
   }
 
-  onCsvSeleccionado(event: Event): void {
+  onArchivoSeleccionado(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
     const archivo = input.files[0];
-    if (!archivo.name.endsWith('.csv')) {
-      this.showError('El archivo debe ser un CSV (.csv)');
+
+    const ext = archivo.name.toLowerCase();
+    const allowed = ext.endsWith('.csv') || ext.endsWith('.xlsx') || ext.endsWith('.xls');
+    if (!allowed) {
+      this.showError('El archivo debe ser CSV (.csv) o Excel (.xlsx, .xls)');
       return;
     }
-    this.subiendoCsv = true;
-    this.voluntarioService.uploadCsv(archivo).subscribe({
+
+    this.subiendoArchivo = true;
+    this.voluntarioService.uploadMasivo(archivo).subscribe({
       next: (resultado) => {
-        this.subiendoCsv = false;
-        this.loadVoluntarios();
+        this.subiendoArchivo = false;
+        this.loadVoluntarios(0);
         this.dialog.open(CargaMasivaResultadoDialogComponent, { width: '750px', data: resultado });
       },
       error: (err) => {
-        this.subiendoCsv = false;
-        this.showError(err?.error?.message || 'Error al procesar el CSV');
-      }
+        this.subiendoArchivo = false;
+        this.showError(err?.error?.message || 'Error al procesar el archivo');
+      },
     });
   }
 

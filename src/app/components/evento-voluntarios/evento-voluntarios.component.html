@@ -1,6 +1,5 @@
 <div class="page-container">
 
-  <!-- Header -->
   <div class="page-header">
     <h1><mat-icon class="header-icon">assignment_ind</mat-icon> Asignaciones</h1>
     <div class="header-actions">
@@ -8,7 +7,7 @@
         <mat-icon>group_add</mat-icon> Asignación Masiva
       </button>
       <button mat-stroked-button color="accent"
-              matTooltip="Descargar PDF con todas las tarjetas QR generadas"
+              matTooltip="Descargar PDF con todas las tarjetas QR generadas de esta página"
               (click)="descargarPdfGlobal()">
         <mat-icon>picture_as_pdf</mat-icon> Descargar PDF
       </button>
@@ -18,104 +17,44 @@
     </div>
   </div>
 
+  <!-- Template para la celda QR personalizada -->
+  <ng-template #qrCellTpl let-row>
+    <div class="qr-status-cell">
+      @if (row.qrImageBase64) {
+        <mat-chip class="qr-chip" (click)="verQr(row)" style="cursor:pointer">
+          <mat-icon>qr_code_2</mat-icon>&nbsp;Generado
+        </mat-chip>
+      } @else {
+        <button mat-stroked-button color="primary" class="gen-qr-btn"
+                [disabled]="generandoQrIds.has(row.id)"
+                matTooltip="Generar código QR"
+                (click)="generarQr(row)">
+          @if (generandoQrIds.has(row.id)) {
+            <mat-spinner diameter="16" />
+          } @else {
+            <mat-icon>qr_code</mat-icon>
+          }
+          {{ generandoQrIds.has(row.id) ? 'Generando...' : 'Generar QR' }}
+        </button>
+      }
+    </div>
+  </ng-template>
+
   <mat-card>
     <mat-card-content>
-
-      <!-- Loading -->
-      <div *ngIf="loading" class="loading-container">
-        <mat-spinner diameter="48"></mat-spinner>
-      </div>
-
-      <!-- Tabla -->
-      <table mat-table [dataSource]="asignaciones" *ngIf="!loading" class="full-width-table">
-
-        <!-- ID -->
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef>ID</th>
-          <td mat-cell *matCellDef="let a">{{ a.id }}</td>
-        </ng-container>
-
-        <!-- Voluntario -->
-        <ng-container matColumnDef="voluntario">
-          <th mat-header-cell *matHeaderCellDef>Voluntario</th>
-          <td mat-cell *matCellDef="let a">
-            <div class="person-cell">
-              <mat-icon class="person-icon">person</mat-icon>
-              {{ a.voluntarioNombre }}
-            </div>
-          </td>
-        </ng-container>
-
-        <!-- Evento -->
-        <ng-container matColumnDef="evento">
-          <th mat-header-cell *matHeaderCellDef>Evento</th>
-          <td mat-cell *matCellDef="let a">
-            <div class="person-cell">
-              <mat-icon class="event-icon">event</mat-icon>
-              {{ a.eventoNombre }}
-            </div>
-          </td>
-        </ng-container>
-
-        <!-- QR -->
-        <ng-container matColumnDef="qr">
-          <th mat-header-cell *matHeaderCellDef>QR</th>
-          <td mat-cell *matCellDef="let a">
-            <!-- QR ya generado: chip clickeable para ver -->
-            <div *ngIf="a.qrImageBase64" class="qr-status-cell">
-              <mat-chip class="qr-chip" (click)="verQr(a)" matTooltip="Ver código QR">
-                <mat-icon>qr_code_2</mat-icon> Generado
-              </mat-chip>
-            </div>
-            <!-- Sin QR: botón para generar -->
-            <div *ngIf="!a.qrImageBase64" class="qr-status-cell">
-              <button mat-stroked-button color="primary" class="gen-qr-btn"
-                [disabled]="generandoQrIds.has(a.id!)"
-                matTooltip="Generar código QR"
-                (click)="generarQr(a)">
-                <mat-spinner diameter="16" *ngIf="generandoQrIds.has(a.id!)"></mat-spinner>
-                <mat-icon *ngIf="!generandoQrIds.has(a.id!)">qr_code</mat-icon>
-                {{ generandoQrIds.has(a.id!) ? 'Generando...' : 'Generar QR' }}
-              </button>
-            </div>
-          </td>
-        </ng-container>
-
-        <!-- Acciones -->
-        <ng-container matColumnDef="acciones">
-          <th mat-header-cell *matHeaderCellDef>Acciones</th>
-          <td mat-cell *matCellDef="let a">
-            <button mat-icon-button color="primary"
-              *ngIf="a.qrImageBase64"
-              matTooltip="Ver QR"
-              (click)="verQr(a)">
-              <mat-icon>visibility</mat-icon>
-            </button>
-            <button mat-icon-button
-              *ngIf="a.qrImageBase64"
-              matTooltip="Descargar tarjeta PDF"
-              style="color: #c62828;"
-              (click)="descargarPdfIndividual(a)">
-              <mat-icon>picture_as_pdf</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" matTooltip="Eliminar asignación" (click)="deleteAsignacion(a)">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-        <!-- Empty state -->
-        <tr class="mat-row" *matNoDataRow>
-          <td class="mat-cell empty-row" [attr.colspan]="displayedColumns.length">
-            No hay asignaciones registradas
-          </td>
-        </tr>
-      </table>
-
+      <app-data-table
+        [columns]="columns"
+        [data]="asignaciones"
+        [isLoading]="loading"
+        [serverSide]="true"
+        [totalItems]="totalElements"
+        [pageSize]="pageSize"
+        [pageIndex]="currentPage"
+        [pageSizeOptions]="[10, 25, 50]"
+        (filterChange)="onFilterChange($event)"
+        (pageChange)="onPageChange($event)"
+        (actionClick)="onActionClick($event)"
+      />
     </mat-card-content>
   </mat-card>
 </div>
-

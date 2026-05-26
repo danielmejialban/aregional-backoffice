@@ -1,9 +1,16 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { VoluntarioDTO } from '../models/voluntario.model';
 import { CargaMasivaResultadoDTO } from '../models/carga-masiva-resultado.model';
+import { PageDTO } from '../models/page.model';
 import { environment } from '../../environments/environment';
+
+export interface VoluntarioFiltros {
+  busqueda?: string;
+  departamentoId?: number | null;
+  activo?: boolean | null;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +22,20 @@ export class VoluntarioService {
 
   getAll(): Observable<VoluntarioDTO[]> {
     return this.http.get<VoluntarioDTO[]>(this.API_URL);
+  }
+
+  getAllPaged(page: number, size: number, filtros?: VoluntarioFiltros): Observable<PageDTO<VoluntarioDTO>> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (filtros?.busqueda?.trim()) params = params.set('busqueda', filtros.busqueda.trim());
+    if (filtros?.activo != null) params = params.set('activo', filtros.activo);
+
+    if (filtros?.departamentoId != null) {
+      return this.http.get<PageDTO<VoluntarioDTO>>(
+        `${this.API_URL}/departamento/${filtros.departamentoId}`, { params }
+      );
+    }
+
+    return this.http.get<PageDTO<VoluntarioDTO>>(this.API_URL, { params });
   }
 
   getById(id: number): Observable<VoluntarioDTO> {
@@ -42,9 +63,12 @@ export class VoluntarioService {
   }
 
   uploadCsv(archivo: File): Observable<CargaMasivaResultadoDTO> {
+    return this.uploadMasivo(archivo);
+  }
+
+  uploadMasivo(archivo: File): Observable<CargaMasivaResultadoDTO> {
     const formData = new FormData();
     formData.append('archivo', archivo);
     return this.http.post<CargaMasivaResultadoDTO>(`${this.API_URL}/carga-masiva`, formData);
   }
 }
-

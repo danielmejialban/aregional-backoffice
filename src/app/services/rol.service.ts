@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { RolDTO } from '../models/rol.model';
+import { PageDTO } from '../models/page.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -14,6 +15,12 @@ export class RolService {
 
   getAll(): Observable<RolDTO[]> {
     return this.http.get<RolDTO[]>(this.API_URL);
+  }
+
+  getAllPaged(page: number, size: number, nombre?: string): Observable<PageDTO<RolDTO>> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (nombre?.trim()) params = params.set('nombre', nombre.trim());
+    return this.http.get<PageDTO<RolDTO>>(this.API_URL, { params });
   }
 
   getById(id: number): Observable<RolDTO> {
@@ -32,4 +39,3 @@ export class RolService {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
 }
-
