@@ -1,7 +1,6 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
@@ -18,6 +17,9 @@ import { EventoService } from '../../services/evento.service';
 import { EventoDTO } from '../../models/evento.model';
 import { VoluntarioService } from '../../services/voluntario.service';
 import { VoluntarioDTO } from '../../models/voluntario.model';
+import { DataTableComponent } from '../data-table/data-table/data-table.component';
+import { ColumnDef, TableActionEvent } from '@app/@core';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 export interface RegistrarFormacionData {
   eventoId: number;
@@ -78,22 +80,24 @@ export class RegistrarFormacionDialogComponent implements OnInit {
   selector: 'app-formaciones',
   standalone: true,
   imports: [
-    CommonModule,
-    MatTableModule, MatButtonModule, MatIconModule, MatCardModule,
+    CommonModule, ReactiveFormsModule,
+    MatButtonModule, MatIconModule, MatCardModule,
     MatProgressSpinnerModule, MatSnackBarModule, MatDialogModule,
     MatTooltipModule, MatFormFieldModule, MatSelectModule, MatSlideToggleModule,
-    ReactiveFormsModule
+    DataTableComponent,
   ],
   templateUrl: './formaciones.component.html',
   styleUrls: ['./formaciones.component.scss']
 })
 export class FormacionesComponent implements OnInit {
+  @ViewChild('aprobadaTpl', { static: false }) aprobadaTpl!: TemplateRef<{ $implicit: any }>;
+
   eventosFormacion: EventoDTO[] = [];
   eventoSeleccionado: EventoDTO | null = null;
-  registros: FormacionDTO[] = [];
+  registros: any[] = [];
   voluntarios: VoluntarioDTO[] = [];
+  columns: ColumnDef[] = [];
 
-  displayedColumns = ['voluntarioNombre', 'voluntarioDni', 'asistio', 'aprobada', 'acciones'];
   loading = false;
   loadingRegistros = false;
 
@@ -109,11 +113,33 @@ export class FormacionesComponent implements OnInit {
     this.loading = true;
     this.eventoService.getByTipo('FORMACION').subscribe({
       next: (data) => { this.eventosFormacion = data; this.loading = false; },
-      error: () => { this.loading = false; this.showError('Error al cargar eventos de formación'); }
+      error: () => { this.loading = false; this.showError('Error al cargar eventos de formación'); },
     });
     this.voluntarioService.getAll().subscribe({
-      next: (data) => this.voluntarios = data
+      next: (data) => this.voluntarios = data,
     });
+  }
+
+  ngAfterViewInit(): void {
+    this.columns = this.buildColumns();
+  }
+
+  private buildColumns(): ColumnDef[] {
+    return [
+      { key: 'voluntarioNombre', header: 'Voluntario', type: 'text', filterType: 'text', sortable: true },
+      { key: 'voluntarioDni', header: 'DNI/NIE', type: 'text', filterType: 'text' },
+      {
+        key: 'asistioLabel', header: 'Asistió', type: 'badge',
+        badgeMap: { 'Sí': 'dt-badge--success', 'No': 'dt-badge--neutral' },
+      },
+      { key: 'aprobada', header: 'Aprobada', type: 'custom', cellTemplate: this.aprobadaTpl },
+      {
+        key: 'acciones', header: 'Acciones', type: 'actions', sticky: 'end',
+        actions: [
+          { id: 'delete', icon: 'delete', label: 'Eliminar registro', color: 'warn' },
+        ],
+      },
+    ];
   }
 
   onEventoChange(evento: EventoDTO): void {
@@ -125,26 +151,21 @@ export class FormacionesComponent implements OnInit {
     if (!this.eventoSeleccionado?.id) return;
     this.loadingRegistros = true;
     this.formacionService.getByEvento(this.eventoSeleccionado.id).subscribe({
-      next: (data) => { this.registros = data; this.loadingRegistros = false; },
-      error: () => { this.loadingRegistros = false; this.showError('Error al cargar registros'); }
+      next: (data) => {
+        this.registros = data.map(r => ({
+          ...r,
+          asistioLabel: r.asistio ? 'Sí' : 'No',
+        }));
+        this.loadingRegistros = false;
+      },
+      error: () => { this.loadingRegistros = false; this.showError('Error al cargar registros'); },
     });
   }
 
-  abrirDialogoRegistrar(): void {
-    if (!this.eventoSeleccionado?.id) return;
-    const ref = this.dialog.open(RegistrarFormacionDialogComponent, {
-      width: '440px',
-      disableClose: true,
-      data: { eventoId: this.eventoSeleccionado.id, voluntarios: this.voluntarios } as RegistrarFormacionData
-    });
-    ref.afterClosed().subscribe(voluntarioId => {
-      if (voluntarioId) {
-        this.formacionService.registrar(this.eventoSeleccionado!.id!, voluntarioId).subscribe({
-          next: () => { this.showSuccess('Voluntario registrado'); this.cargarRegistros(); },
-          error: () => this.showError('Error al registrar voluntario')
-        });
-      }
-    });
+  onActionClick(event: TableActionEvent): void {
+    if (event.action === 'delete') {
+      this.confirmEliminar(event.row as FormacionDTO);
+    }
   }
 
   toggleAprobada(registro: FormacionDTO): void {
@@ -152,17 +173,31 @@ export class FormacionesComponent implements OnInit {
     this.formacionService.actualizarAprobada(registro.id!, nuevoValor).subscribe({
       next: () => {
         registro.aprobada = nuevoValor;
+        this.registros = this.registros.map(r => r.id === registro.id ? { ...r, aprobada: nuevoValor } : r);
         this.showSuccess(nuevoValor ? 'Marcado como aprobado' : 'Desmarcado como aprobado');
       },
-      error: () => this.showError('Error al actualizar aprobada')
+      error: () => this.showError('Error al actualizar aprobada'),
     });
   }
 
+  confirmEliminar(registro: FormacionDTO): void {
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Eliminar registro',
+        message: `¿Estás seguro de que quieres eliminar el registro de ${registro.voluntarioNombre}?`,
+        confirmText: 'Eliminar',
+        confirmColor: 'warn',
+        icon: 'delete',
+      },
+    });
+    ref.afterClosed().subscribe((ok: boolean) => { if (ok) this.eliminar(registro); });
+  }
+
   eliminar(registro: FormacionDTO): void {
-    if (!confirm(`¿Eliminar el registro de ${registro.voluntarioNombre}?`)) return;
     this.formacionService.delete(registro.id!).subscribe({
       next: () => { this.showSuccess('Registro eliminado'); this.cargarRegistros(); },
-      error: () => this.showError('Error al eliminar registro')
+      error: () => this.showError('Error al eliminar registro'),
     });
   }
 

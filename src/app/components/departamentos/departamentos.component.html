@@ -15,85 +15,13 @@
 
   <mat-card>
     <mat-card-content>
-      <div *ngIf="loading" class="loading-container">
-        <mat-spinner></mat-spinner>
-        <p>Cargando departamentos...</p>
-      </div>
-
-      <div *ngIf="!loading && departamentos.length === 0" class="empty-state">
-        <mat-icon>inbox</mat-icon>
-        <h3>No hay departamentos registrados</h3>
-        <p>Comienza creando tu primer departamento</p>
-        <button mat-raised-button color="primary" (click)="openCreateDialog()">
-          <mat-icon>add</mat-icon>
-          Crear Departamento
-        </button>
-      </div>
-
-      <table mat-table [dataSource]="departamentos" *ngIf="!loading && departamentos.length > 0" class="full-width-table">
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef>ID</th>
-          <td mat-cell *matCellDef="let element">
-            <span class="id-badge">{{element.id}}</span>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="nombre">
-          <th mat-header-cell *matHeaderCellDef>Nombre</th>
-          <td mat-cell *matCellDef="let element">
-            <div class="nombre-cell">
-              <mat-icon class="cell-icon">business</mat-icon>
-              <strong>{{element.nombre}}</strong>
-            </div>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="responsable">
-          <th mat-header-cell *matHeaderCellDef>Responsable</th>
-          <td mat-cell *matCellDef="let element">
-            <div class="responsable-cell" *ngIf="element.responsable">
-              <mat-icon class="cell-icon">person</mat-icon>
-              {{getResponsableDisplay(element.responsable)}}
-            </div>
-            <span class="no-data" *ngIf="!element.responsable">Sin asignar</span>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="auxiliares">
-          <th mat-header-cell *matHeaderCellDef>Auxiliares</th>
-          <td mat-cell *matCellDef="let element">
-            <div class="auxiliares-cell" *ngIf="element.auxiliares">
-              <mat-icon class="cell-icon">people</mat-icon>
-              <span class="auxiliares-text">{{getAuxiliaresDisplay(element.auxiliares)}}</span>
-            </div>
-            <span class="no-data" *ngIf="!element.auxiliares">Sin auxiliares</span>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="acciones">
-          <th mat-header-cell *matHeaderCellDef>Acciones</th>
-          <td mat-cell *matCellDef="let element">
-            <div class="action-buttons">
-              <button mat-icon-button
-                      color="primary"
-                      (click)="openEditDialog(element)"
-                      matTooltip="Editar departamento">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button
-                      color="warn"
-                      (click)="deleteDepartamento(element)"
-                      matTooltip="Eliminar departamento">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </div>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
-      </table>
+      <app-data-table
+        [columns]="columns"
+        [data]="tableData"
+        [isLoading]="loading"
+        [serverSide]="false"
+        (actionClick)="onActionClick($event)"
+      />
     </mat-card-content>
   </mat-card>
 </div>
-

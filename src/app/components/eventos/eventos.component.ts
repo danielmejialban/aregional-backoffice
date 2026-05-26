@@ -1,40 +1,64 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatChipsModule } from '@angular/material/chips';
 import { EventoService } from '../../services/evento.service';
 import { EventoDTO } from '../../models/evento.model';
 import { EventoDialogComponent } from './evento-dialog/evento-dialog.component';
+import { DataTableComponent } from '../data-table/data-table/data-table.component';
+import { ColumnDef, TableActionEvent } from '@app/@core';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-eventos',
   standalone: true,
   imports: [
     CommonModule,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatCardModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule,
-    MatDialogModule,
-    MatTooltipModule,
-    MatChipsModule
+    MatButtonModule, MatIconModule, MatCardModule,
+    MatSnackBarModule, MatDialogModule, MatTooltipModule,
+    DataTableComponent,
   ],
   templateUrl: './eventos.component.html',
   styleUrls: ['./eventos.component.scss']
 })
 export class EventosComponent implements OnInit {
   eventos: EventoDTO[] = [];
-  displayedColumns = ['id', 'nombre', 'tipo', 'fechas', 'direccion', 'acciones'];
   loading = false;
+
+  columns: ColumnDef[] = [
+    { key: 'id', header: 'ID', type: 'text', width: '60px' },
+    { key: 'nombre', header: 'Nombre', type: 'text', filterType: 'text', sortable: true },
+    {
+      key: 'tipoEvento', header: 'Tipo', type: 'badge',
+      filterType: 'select',
+      filterOptions: ['ASAMBLEA', 'FORMACION', 'ESPECIAL'],
+      badgeMap: {
+        'ASAMBLEA': 'dt-badge--primary',
+        'FORMACION': 'dt-badge--success',
+        'ESPECIAL':  'dt-badge--accent',
+      },
+    },
+    {
+      key: 'fechaInicioEvento', header: 'Inicio', type: 'date',
+      dateFormat: 'dd/MM/yyyy HH:mm',
+    },
+    {
+      key: 'fechaFinEvento', header: 'Fin', type: 'date',
+      dateFormat: 'dd/MM/yyyy HH:mm',
+    },
+    { key: 'direccion', header: 'Dirección', type: 'text', hidden: true },
+    {
+      key: 'acciones', header: 'Acciones', type: 'actions', sticky: 'end',
+      actions: [
+        { id: 'edit', icon: 'edit', label: 'Editar', color: 'primary' },
+        { id: 'delete', icon: 'delete', label: 'Eliminar', color: 'warn' },
+      ],
+    },
+  ];
 
   constructor(
     private eventoService: EventoService,
@@ -50,37 +74,52 @@ export class EventosComponent implements OnInit {
     this.loading = true;
     this.eventoService.getAll().subscribe({
       next: (data) => { this.eventos = data; this.loading = false; },
-      error: () => { this.loading = false; this.showError('Error al cargar eventos'); }
+      error: () => { this.loading = false; this.showError('Error al cargar eventos'); },
     });
+  }
+
+  onActionClick(event: TableActionEvent): void {
+    const e = event.row as EventoDTO;
+    if (event.action === 'edit') {
+      this.openEditDialog(e);
+    } else if (event.action === 'delete') {
+      this.confirmDelete(e);
+    }
   }
 
   openCreateDialog(): void {
     const ref = this.dialog.open(EventoDialogComponent, {
-      width: '620px',
-      disableClose: true,
-      data: {}
+      width: '620px', disableClose: true, data: {},
     });
-    ref.afterClosed().subscribe(result => {
-      if (result) this.createEvento(result);
-    });
+    ref.afterClosed().subscribe(result => { if (result) this.createEvento(result); });
   }
 
   openEditDialog(evento: EventoDTO): void {
     const ref = this.dialog.open(EventoDialogComponent, {
-      width: '620px',
-      disableClose: true,
-      data: { evento }
+      width: '620px', disableClose: true, data: { evento },
     });
-    ref.afterClosed().subscribe(result => {
-      if (result) this.updateEvento(result);
+    ref.afterClosed().subscribe(result => { if (result) this.updateEvento(result); });
+  }
+
+  confirmDelete(evento: EventoDTO): void {
+    const ref = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Eliminar evento',
+        message: `¿Estás seguro de que quieres eliminar el evento "${evento.nombre}"?`,
+        confirmText: 'Eliminar',
+        confirmColor: 'warn',
+        icon: 'delete',
+      },
     });
+    ref.afterClosed().subscribe((ok: boolean) => { if (ok) this.deleteEvento(evento); });
   }
 
   createEvento(evento: EventoDTO): void {
     this.loading = true;
     this.eventoService.create(evento).subscribe({
-      next: () => { this.showSuccess('Evento creado correctamente'); this.loadEventos(); },
-      error: () => { this.loading = false; this.showError('Error al crear el evento'); }
+      next: () => { this.showSuccess('Evento creado'); this.loadEventos(); },
+      error: () => { this.loading = false; this.showError('Error al crear el evento'); },
     });
   }
 
@@ -88,17 +127,16 @@ export class EventosComponent implements OnInit {
     if (!evento.id) return;
     this.loading = true;
     this.eventoService.update(evento.id, evento).subscribe({
-      next: () => { this.showSuccess('Evento actualizado correctamente'); this.loadEventos(); },
-      error: () => { this.loading = false; this.showError('Error al actualizar el evento'); }
+      next: () => { this.showSuccess('Evento actualizado'); this.loadEventos(); },
+      error: () => { this.loading = false; this.showError('Error al actualizar el evento'); },
     });
   }
 
   deleteEvento(evento: EventoDTO): void {
-    if (!confirm(`¿Eliminar el evento "${evento.nombre}"?`)) return;
     this.loading = true;
     this.eventoService.delete(evento.id!).subscribe({
       next: () => { this.showSuccess('Evento eliminado'); this.loadEventos(); },
-      error: () => { this.loading = false; this.showError('Error al eliminar el evento'); }
+      error: () => { this.loading = false; this.showError('Error al eliminar el evento'); },
     });
   }
 
@@ -110,4 +148,3 @@ export class EventosComponent implements OnInit {
     this.snackBar.open(msg, 'Cerrar', { duration: 4000, panelClass: ['error-snackbar'] });
   }
 }
-

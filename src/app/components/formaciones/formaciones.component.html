@@ -26,12 +26,6 @@
             </mat-option>
           </mat-select>
         </mat-form-field>
-
-<!--        <button mat-raised-button color="primary"-->
-<!--                [disabled]="!eventoSeleccionado"-->
-<!--                (click)="abrirDialogoRegistrar()">-->
-<!--          <mat-icon>person_add</mat-icon> Registrar voluntario-->
-<!--        </button>-->
       </div>
 
       <div *ngIf="!loading && eventosFormacion.length === 0" class="empty-state-inline">
@@ -40,6 +34,16 @@
       </div>
     </mat-card-content>
   </mat-card>
+
+  <!-- Template para la celda de aprobada -->
+  <ng-template #aprobadaTpl let-row>
+    <mat-slide-toggle
+      [checked]="!!row.aprobada"
+      (change)="toggleAprobada(row)"
+      color="primary"
+      [matTooltip]="row.aprobada ? 'Desmarcar' : 'Marcar como aprobado'">
+    </mat-slide-toggle>
+  </ng-template>
 
   <!-- Tabla de registros -->
   <mat-card *ngIf="eventoSeleccionado">
@@ -53,64 +57,14 @@
         </span>
       </div>
 
-      <div *ngIf="loadingRegistros" class="loading-inline">
-        <mat-spinner diameter="32"></mat-spinner>
-        <span>Cargando registros...</span>
-      </div>
-
-      <div *ngIf="!loadingRegistros && registros.length === 0" class="empty-state">
-        <mat-icon>how_to_reg</mat-icon>
-        <h3>Sin registros</h3>
-        <p>Registra voluntarios manualmente o escanea su QR en el evento.</p>
-      </div>
-
-      <table mat-table [dataSource]="registros"
-             *ngIf="!loadingRegistros && registros.length > 0"
-             class="full-width-table">
-
-        <ng-container matColumnDef="voluntarioNombre">
-          <th mat-header-cell *matHeaderCellDef>Voluntario</th>
-          <td mat-cell *matCellDef="let r">{{ r.voluntarioNombre }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="voluntarioDni">
-          <th mat-header-cell *matHeaderCellDef>DNI / NIE</th>
-          <td mat-cell *matCellDef="let r">{{ r.voluntarioDni }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="asistio">
-          <th mat-header-cell *matHeaderCellDef>Asistió</th>
-          <td mat-cell *matCellDef="let r">
-            <span class="badge" [class.badge-ok]="r.asistio" [class.badge-no]="!r.asistio">
-              {{ r.asistio ? 'Sí' : 'No' }}
-            </span>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="aprobada">
-          <th mat-header-cell *matHeaderCellDef>Aprobada</th>
-          <td mat-cell *matCellDef="let r">
-            <mat-slide-toggle
-              [checked]="!!r.aprobada"
-              (change)="toggleAprobada(r)"
-              color="primary"
-              matTooltip="{{ r.aprobada ? 'Desmarcar' : 'Marcar como aprobado' }}">
-            </mat-slide-toggle>
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="acciones">
-          <th mat-header-cell *matHeaderCellDef>Acciones</th>
-          <td mat-cell *matCellDef="let r">
-            <button mat-icon-button color="warn" (click)="eliminar(r)" matTooltip="Eliminar registro">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
-      </table>
+      <app-data-table
+        [columns]="columns"
+        [data]="registros"
+        [isLoading]="loadingRegistros"
+        [serverSide]="false"
+        emptyMessage="Sin registros para este evento"
+        (actionClick)="onActionClick($event)"
+      />
     </mat-card-content>
   </mat-card>
 </div>
