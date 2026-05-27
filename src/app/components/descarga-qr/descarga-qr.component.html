@@ -3,8 +3,8 @@
   <!-- Header -->
   <div class="page-header">
     <div class="header-text">
-      <h1><mat-icon class="header-icon">download_for_offline</mat-icon> Descarga Masiva de QR</h1>
-      <p class="subtitle">Filtra y descarga los códigos QR de acceso de los voluntarios</p>
+      <h1><mat-icon class="header-icon">download_for_offline</mat-icon> Descarga de Pases</h1>
+      <p class="subtitle">Filtra y descarga los pases de acceso de los voluntarios</p>
     </div>
   </div>
 
@@ -96,6 +96,13 @@
           </mat-checkbox>
 
           <div class="acciones-right">
+            <button mat-stroked-button color="primary"
+              [disabled]="seleccionadas.length === 0"
+              (click)="descargarPasesPdf()"
+              matTooltip="Descargar pases en PDF">
+              <mat-icon>picture_as_pdf</mat-icon>
+              Descargar {{ seleccionadas.length }} Pase{{ seleccionadas.length !== 1 ? 's' : '' }} PDF
+            </button>
             <button mat-raised-button color="primary"
               [disabled]="seleccionadas.length === 0 || descargando"
               (click)="descargarZip()">
@@ -124,11 +131,18 @@
               <p class="qr-card__depto">{{ getVoluntarioDepartamento(a.voluntarioId) }}</p>
             </div>
 
-            <button mat-icon-button class="qr-card__download"
-              matTooltip="Descargar este QR"
-              (click)="$event.stopPropagation(); descargarIndividual(a)">
-              <mat-icon>download</mat-icon>
-            </button>
+            <div class="qr-card__actions" (click)="$event.stopPropagation()">
+              <button mat-icon-button
+                matTooltip="Descargar QR"
+                (click)="descargarIndividual(a)">
+                <mat-icon>download</mat-icon>
+              </button>
+              <button mat-icon-button
+                matTooltip="Descargar pase PDF"
+                (click)="descargarPasePdf(a)">
+                <mat-icon>picture_as_pdf</mat-icon>
+              </button>
+            </div>
 
           </div>
         </div>

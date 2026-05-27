@@ -241,7 +241,7 @@ export class EventoVoluntariosComponent implements OnInit {
   descargarPdfIndividual(asignacion: EventoVoluntarioDTO): void {
     const vol = (asignacion.voluntarioNombre ?? 'voluntario').replace(/\s+/g, '_');
     const ev  = (asignacion.eventoNombre    ?? 'evento').replace(/\s+/g, '_');
-    this.qrPdfService.generarPdf([asignacion], `QR_${vol}_${ev}.pdf`);
+    this.qrPdfService.generarPdf([asignacion], this.voluntarios, `QR_${vol}_${ev}.pdf`);
   }
 
   descargarPdfGlobal(): void {
@@ -250,7 +250,7 @@ export class EventoVoluntariosComponent implements OnInit {
       this.showError('No hay ningún QR generado aún. Genera los QR primero.');
       return;
     }
-    this.qrPdfService.generarPdf(conQr, 'tarjetas_qr_todas.pdf');
+    this.qrPdfService.generarPdf(conQr, this.voluntarios, 'pases_todos.pdf');
   }
 
   private showSuccess(msg: string): void {

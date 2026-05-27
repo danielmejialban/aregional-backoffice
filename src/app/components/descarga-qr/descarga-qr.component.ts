@@ -17,6 +17,7 @@ import { EventoVoluntarioService } from '../../services/evento-voluntario.servic
 import { EventoService } from '../../services/evento.service';
 import { VoluntarioService } from '../../services/voluntario.service';
 import { DepartamentoService } from '../../services/departamento.service';
+import { QrPdfService } from '../../services/qr-pdf.service';
 import { EventoVoluntarioDTO } from '../../models/evento-voluntario.model';
 import { EventoDTO } from '../../models/evento.model';
 import { VoluntarioDTO } from '../../models/voluntario.model';
@@ -70,6 +71,7 @@ export class DescargaQrComponent implements OnInit {
     private eventoService: EventoService,
     private voluntarioService: VoluntarioService,
     private departamentoService: DepartamentoService,
+    private qrPdfService: QrPdfService,
     private snackBar: MatSnackBar
   ) {}
 
@@ -168,6 +170,26 @@ export class DescargaQrComponent implements OnInit {
     link.href = this.getQrSrc(a.qrImageBase64!);
     link.download = this.getNombreArchivo(a);
     link.click();
+  }
+
+  descargarPasePdf(a: AsignacionConQr): void {
+    const vol = this.voluntarios.find(v => v.id === a.voluntarioId);
+    const nombre = vol ? `${vol.nombre}_${vol.apellido1}` : (a.voluntarioNombre || 'pase');
+    this.qrPdfService.generarPdf(
+      [a],
+      this.voluntarios,
+      `Pase_${nombre.replace(/\s+/g, '_')}.pdf`
+    );
+  }
+
+  descargarPasesPdf(): void {
+    const lista = this.seleccionadas;
+    if (lista.length === 0) return;
+    this.qrPdfService.generarPdf(
+      lista,
+      this.voluntarios,
+      `Pases_${new Date().toISOString().slice(0, 10)}.pdf`
+    );
   }
 
   async descargarZip(): Promise<void> {
