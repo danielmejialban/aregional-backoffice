@@ -65,7 +65,11 @@ export const routes: Routes = [
       { path: 'descarga-pases',
         loadComponent: () => import('./components/descarga-qr/descarga-qr.component')
           .then(m => m.DescargaQrComponent),
-        canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] }
+        canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
+      { path: 'admin',
+        loadComponent: () => import('./components/admin-panel/admin-panel.component')
+          .then(m => m.AdminPanelComponent),
+        canActivate: [roleGuard(['ADMIN'])] }
     ]
   },
   { path: '**', redirectTo: '' }

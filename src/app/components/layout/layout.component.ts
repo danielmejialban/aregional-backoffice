@@ -39,7 +39,8 @@ export class LayoutComponent {
     { icon: 'download_for_offline', label: 'Descarga de Pases', route: '/descarga-pases', roles: ['ADMIN', 'COORDINADOR'] },
     { icon: 'qr_code_scanner', label: 'Check-In', route: '/check-in', roles: ['ADMIN', 'CHECK_IN'] },
     { icon: 'bar_chart', label: 'Estadísticas', route: '/estadisticas', roles: ['ADMIN', 'COORDINADOR'] },
-    { icon: 'confirmation_number', label: 'Mis Pases', route: '/mis-pases', roles: ['VOLUNTARIO', 'ADMIN', 'COORDINADOR'] }
+    { icon: 'confirmation_number', label: 'Mis Pases', route: '/mis-pases', roles: ['VOLUNTARIO', 'ADMIN', 'COORDINADOR'] },
+    { icon: 'manage_accounts', label: 'Administración', route: '/admin', roles: ['ADMIN'] }
   ];
 
   constructor(
