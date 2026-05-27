@@ -61,7 +61,7 @@ import { QrScannerDialogComponent } from './qr-scanner-dialog.component';
 export class CheckInComponent implements OnInit {
   checkIns: CheckInDTO[] = [];
   displayedColumns = ['id', 'voluntario', 'evento', 'fecha', 'observaciones'];
-  loading = false;
+  loading = true;
 
   constructor(
     private checkInService: CheckInService,

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { VoluntarioDTO } from '../models/voluntario.model';
 import { CargaMasivaResultadoDTO } from '../models/carga-masiva-resultado.model';
 import { PageDTO } from '../models/page.model';
@@ -21,7 +22,9 @@ export class VoluntarioService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<VoluntarioDTO[]> {
-    return this.http.get<VoluntarioDTO[]>(this.API_URL);
+    return this.http.get<VoluntarioDTO[] | PageDTO<VoluntarioDTO>>(this.API_URL).pipe(
+      map(r => Array.isArray(r) ? r : (r.content ?? []))
+    );
   }
 
   getAllPaged(page: number, size: number, filtros?: VoluntarioFiltros): Observable<PageDTO<VoluntarioDTO>> {

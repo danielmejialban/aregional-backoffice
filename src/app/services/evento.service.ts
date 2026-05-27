@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { EventoDTO } from '../models/evento.model';
+import { PageDTO } from '../models/page.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -13,7 +15,9 @@ export class EventoService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<EventoDTO[]> {
-    return this.http.get<EventoDTO[]>(this.API_URL);
+    return this.http.get<EventoDTO[] | PageDTO<EventoDTO>>(this.API_URL).pipe(
+      map(r => Array.isArray(r) ? r : (r.content ?? []))
+    );
   }
 
   getById(id: number): Observable<EventoDTO> {
