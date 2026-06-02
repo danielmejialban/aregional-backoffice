@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://api.aregional.org'
+  apiUrl: 'http://localhost:8080'
 };
 

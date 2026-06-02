@@ -41,16 +41,23 @@
     <div class="row-2">
       <mat-form-field appearance="outline">
         <mat-label>Inicio del evento *</mat-label>
-        <input matInput type="datetime-local" formControlName="fechaInicioEvento">
+        <input matInput [matDatepicker]="pickerInicioEvento" formControlName="fechaInicioEvento" placeholder="DD/MM/YYYY">
+        <mat-datepicker-toggle matSuffix [for]="pickerInicioEvento"></mat-datepicker-toggle>
+        <mat-datepicker #pickerInicioEvento></mat-datepicker>
         <mat-error *ngIf="form.get('fechaInicioEvento')?.hasError('required')">Obligatorio</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Fin del evento *</mat-label>
-        <input matInput type="datetime-local" formControlName="fechaFinEvento">
+        <input matInput [matDatepicker]="pickerFinEvento" formControlName="fechaFinEvento" placeholder="DD/MM/YYYY">
+        <mat-datepicker-toggle matSuffix [for]="pickerFinEvento"></mat-datepicker-toggle>
+        <mat-datepicker #pickerFinEvento></mat-datepicker>
         <mat-error *ngIf="form.get('fechaFinEvento')?.hasError('required')">Obligatorio</mat-error>
       </mat-form-field>
     </div>
+    <p class="date-range-error" *ngIf="form.hasError('finEventoAnterior') && form.get('fechaFinEvento')?.touched">
+      La fecha de fin no puede ser anterior a la fecha de inicio
+    </p>
 
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Días pre-evento</mat-label>
@@ -64,14 +71,21 @@
     <div class="row-2">
       <mat-form-field appearance="outline">
         <mat-label>Inicio convocatoria</mat-label>
-        <input matInput type="datetime-local" formControlName="fechaInicioConvocatoria">
+        <input matInput [matDatepicker]="pickerInicioConv" formControlName="fechaInicioConvocatoria" placeholder="DD/MM/YYYY">
+        <mat-datepicker-toggle matSuffix [for]="pickerInicioConv"></mat-datepicker-toggle>
+        <mat-datepicker #pickerInicioConv></mat-datepicker>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Fin convocatoria</mat-label>
-        <input matInput type="datetime-local" formControlName="fechaFinConvocatoria">
+        <input matInput [matDatepicker]="pickerFinConv" formControlName="fechaFinConvocatoria" placeholder="DD/MM/YYYY">
+        <mat-datepicker-toggle matSuffix [for]="pickerFinConv"></mat-datepicker-toggle>
+        <mat-datepicker #pickerFinConv></mat-datepicker>
       </mat-form-field>
     </div>
+    <p class="date-range-error" *ngIf="form.hasError('finConvAnterior') && form.get('fechaFinConvocatoria')?.touched">
+      La fecha de fin de convocatoria no puede ser anterior al inicio
+    </p>
 
   </form>
 </mat-dialog-content>
@@ -83,4 +97,3 @@
     {{ isEdit ? 'Guardar cambios' : 'Crear evento' }}
   </button>
 </mat-dialog-actions>
-
