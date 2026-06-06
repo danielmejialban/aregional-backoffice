@@ -37,7 +37,7 @@ export interface VoluntarioDialogData {
   selector: 'app-voluntario-dialog',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule,
+    ReactiveFormsModule,
     MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule,
     MatIconModule, MatSelectModule, MatSlideToggleModule,
     TranslateModule,
@@ -50,12 +50,16 @@ export interface VoluntarioDialogData {
           <mat-form-field appearance="outline">
             <mat-label>{{ 'Voluntarios.Dialog.NombreLabel' | translate }}</mat-label>
             <input matInput formControlName="nombre" required>
-            <mat-error *ngIf="form.get('nombre')?.hasError('required')">{{ 'Voluntarios.Dialog.Required' | translate }}</mat-error>
+            @if (form.get('nombre')?.hasError('required')) {
+              <mat-error>{{ 'Voluntarios.Dialog.Required' | translate }}</mat-error>
+            }
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>{{ 'Voluntarios.Dialog.Apellido1Label' | translate }}</mat-label>
             <input matInput formControlName="apellido1" required>
-            <mat-error *ngIf="form.get('apellido1')?.hasError('required')">{{ 'Voluntarios.Dialog.Required' | translate }}</mat-error>
+            @if (form.get('apellido1')?.hasError('required')) {
+              <mat-error>{{ 'Voluntarios.Dialog.Required' | translate }}</mat-error>
+            }
           </mat-form-field>
         </div>
         <div class="row-2">
@@ -66,8 +70,11 @@ export interface VoluntarioDialogData {
           <mat-form-field appearance="outline">
             <mat-label>{{ 'Voluntarios.Dialog.DniLabel' | translate }}</mat-label>
             <input matInput formControlName="dni" required [placeholder]="'Voluntarios.Dialog.DniPlaceholder' | translate">
-            <mat-error *ngIf="form.get('dni')?.hasError('required')">{{ 'Voluntarios.Dialog.Required' | translate }}</mat-error>
-            <mat-error *ngIf="form.get('dni')?.hasError('pattern')">{{ 'Voluntarios.Dialog.DniInvalid' | translate }}</mat-error>
+            @if (form.get('dni')?.hasError('required')) {
+              <mat-error>{{ 'Voluntarios.Dialog.Required' | translate }}</mat-error>
+            } @else if (form.get('dni')?.hasError('pattern')) {
+              <mat-error>{{ 'Voluntarios.Dialog.DniInvalid' | translate }}</mat-error>
+            }
           </mat-form-field>
         </div>
         <div class="row-2">
@@ -78,7 +85,9 @@ export interface VoluntarioDialogData {
           <mat-form-field appearance="outline">
             <mat-label>{{ 'Voluntarios.Dialog.EmailLabel' | translate }}</mat-label>
             <input matInput formControlName="email" type="email">
-            <mat-error *ngIf="form.get('email')?.hasError('email')">{{ 'Voluntarios.Dialog.EmailInvalid' | translate }}</mat-error>
+            @if (form.get('email')?.hasError('email')) {
+              <mat-error>{{ 'Voluntarios.Dialog.EmailInvalid' | translate }}</mat-error>
+            }
           </mat-form-field>
         </div>
         <div class="row-2">
@@ -98,9 +107,13 @@ export interface VoluntarioDialogData {
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>{{ 'Voluntarios.Dialog.DepartamentoLabel' | translate }}</mat-label>
           <mat-select formControlName="departamentoId" required>
-            <mat-option *ngFor="let d of data.departamentos" [value]="d.id">{{ d.nombre }}</mat-option>
+            @for (d of data.departamentos; track d.id) {
+              <mat-option [value]="d.id">{{ d.nombre }}</mat-option>
+            }
           </mat-select>
-          <mat-error *ngIf="form.get('departamentoId')?.hasError('required')">{{ 'Voluntarios.Dialog.Required' | translate }}</mat-error>
+          @if (form.get('departamentoId')?.hasError('required')) {
+            <mat-error>{{ 'Voluntarios.Dialog.Required' | translate }}</mat-error>
+          }
         </mat-form-field>
         <div class="toggles-row">
           <mat-slide-toggle formControlName="activo" color="primary">{{ 'Voluntarios.Dialog.ActivoLabel' | translate }}</mat-slide-toggle>
