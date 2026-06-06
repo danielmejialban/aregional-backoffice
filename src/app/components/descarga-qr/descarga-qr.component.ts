@@ -11,17 +11,18 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { forkJoin } from 'rxjs';
 import JSZip from 'jszip';
-import { EventoVoluntarioService } from '../../services/evento-voluntario.service';
-import { EventoService } from '../../services/evento.service';
-import { VoluntarioService } from '../../services/voluntario.service';
-import { DepartamentoService } from '../../services/departamento.service';
-import { QrPdfService } from '../../services/qr-pdf.service';
-import { EventoVoluntarioDTO } from '../../models/evento-voluntario.model';
-import { EventoDTO } from '../../models/evento.model';
-import { VoluntarioDTO } from '../../models/voluntario.model';
-import { DepartamentoDTO } from '../../models/departamento.model';
+import { EventoVoluntarioService } from '@app/services/evento-voluntario.service';
+import { EventoService } from '@app/services/evento.service';
+import { VoluntarioService } from '@app/services/voluntario.service';
+import { DepartamentoService } from '@app/services/departamento.service';
+import { QrPdfService } from '@app/services/qr-pdf.service';
+import { EventoVoluntarioDTO } from '@app/models/evento-voluntario.model';
+import { EventoDTO } from '@app/models/evento.model';
+import { VoluntarioDTO } from '@app/models/voluntario.model';
+import { DepartamentoDTO } from '@app/models/departamento.model';
 
 export interface AsignacionConQr extends EventoVoluntarioDTO {
   seleccionada: boolean;
@@ -43,7 +44,8 @@ export interface AsignacionConQr extends EventoVoluntarioDTO {
     MatProgressBarModule,
     MatCheckboxModule,
     MatTooltipModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    TranslateModule
   ],
   templateUrl: './descarga-qr.component.html',
   styleUrls: ['./descarga-qr.component.scss']
@@ -72,7 +74,8 @@ export class DescargaQrComponent implements OnInit {
     private voluntarioService: VoluntarioService,
     private departamentoService: DepartamentoService,
     private qrPdfService: QrPdfService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -101,7 +104,7 @@ export class DescargaQrComponent implements OnInit {
       },
       error: () => {
         this.loadingDatos = false;
-        this.snackBar.open('Error al cargar los datos', 'Cerrar', { duration: 4000 });
+        this.snackBar.open(this.translate.instant('DescargaQr.Snack.LoadError'), this.translate.instant('Common.Close'), { duration: 4000 });
       }
     });
   }
@@ -230,11 +233,11 @@ export class DescargaQrComponent implements OnInit {
       link.click();
       URL.revokeObjectURL(url);
 
-      this.snackBar.open(`${lista.length} QR descargados correctamente`, 'Cerrar', {
+      this.snackBar.open(this.translate.instant('DescargaQr.Snack.Downloaded', { count: lista.length }), this.translate.instant('Common.Close'), {
         duration: 3000, panelClass: ['success-snackbar']
       });
     } catch {
-      this.snackBar.open('Error al generar el ZIP', 'Cerrar', { duration: 4000 });
+      this.snackBar.open(this.translate.instant('DescargaQr.Snack.ZipError'), this.translate.instant('Common.Close'), { duration: 4000 });
     } finally {
       this.descargando = false;
       this.progresoDescarga = 0;

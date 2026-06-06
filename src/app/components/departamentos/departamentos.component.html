@@ -3,13 +3,13 @@
     <div class="header-content">
       <h1>
         <mat-icon>business</mat-icon>
-        Gestión de Departamentos
+        {{ 'Departamentos.PageTitle' | translate }}
       </h1>
-      <p class="subtitle">Administra los departamentos de la organización</p>
+      <p class="subtitle">{{ 'Departamentos.PageSubtitle' | translate }}</p>
     </div>
     <button mat-raised-button color="primary" (click)="openCreateDialog()" class="create-button">
       <mat-icon>add</mat-icon>
-      Nuevo Departamento
+      {{ 'Departamentos.NewButton' | translate }}
     </button>
   </div>
 

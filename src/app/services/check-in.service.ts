@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { CheckInDTO, ScanQrRequest } from '../models/check-in.model';
@@ -18,6 +18,11 @@ export class CheckInService {
     return this.http.get<CheckInDTO[] | PageDTO<CheckInDTO>>(this.API_URL).pipe(
       map(r => Array.isArray(r) ? r : (r.content ?? []))
     );
+  }
+
+  getAllPaged(page: number, size: number): Observable<PageDTO<CheckInDTO>> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http.get<PageDTO<CheckInDTO>>(this.API_URL, { params });
   }
 
   getById(id: number): Observable<CheckInDTO> {

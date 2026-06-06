@@ -12,12 +12,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { forkJoin } from 'rxjs';
-import { UsuarioService } from '../../services/usuario.service';
-import { RolService } from '../../services/rol.service';
-import { AdminService } from '../../services/admin.service';
-import { UsuarioDTO } from '../../models/usuario.model';
-import { RolDTO } from '../../models/rol.model';
+import { UsuarioService } from '@app/services/usuario.service';
+import { RolService } from '@app/services/rol.service';
+import { AdminService } from '@app/services/admin.service';
+import { UsuarioDTO } from '@app/models/usuario.model';
+import { RolDTO } from '@app/models/rol.model';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 interface UsuarioRow extends UsuarioDTO {
@@ -42,7 +43,7 @@ interface UsuarioRow extends UsuarioDTO {
     MatSnackBarModule,
     MatDialogModule,
     MatDividerModule,
-    ConfirmDialogComponent,
+    TranslateModule,
   ],
   templateUrl: './admin-panel.component.html',
   styleUrls: ['./admin-panel.component.scss']
@@ -60,7 +61,8 @@ export class AdminPanelComponent implements OnInit {
     private rolService: RolService,
     private adminService: AdminService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -84,7 +86,7 @@ export class AdminPanelComponent implements OnInit {
       },
       error: () => {
         this.loading = false;
-        this.snackBar.open('Error al cargar los datos', 'Cerrar', { duration: 4000 });
+        this.snackBar.open(this.translate.instant('Admin.Snack.LoadError'), this.translate.instant('Common.Close'), { duration: 4000 });
       }
     });
   }
@@ -98,13 +100,13 @@ export class AdminPanelComponent implements OnInit {
         row.rolNombre  = updated.rolNombre;
         row.rolIdEdit  = updated.rolId;
         row.guardando  = false;
-        this.snackBar.open('Rol actualizado correctamente', 'Cerrar', {
+        this.snackBar.open(this.translate.instant('Admin.Snack.RoleUpdated'), this.translate.instant('Common.Close'), {
           duration: 3000, panelClass: ['success-snackbar']
         });
       },
       error: () => {
         row.guardando = false;
-        this.snackBar.open('Error al actualizar el rol', 'Cerrar', { duration: 4000 });
+        this.snackBar.open(this.translate.instant('Admin.Snack.RoleUpdateError'), this.translate.instant('Common.Close'), { duration: 4000 });
       }
     });
   }
@@ -112,10 +114,10 @@ export class AdminPanelComponent implements OnInit {
   confirmarLimpiezaBd(): void {
     const ref = this.dialog.open(ConfirmDialogComponent, {
       data: {
-        title: 'Limpiar base de datos',
-        message: 'Se eliminarán TODOS los voluntarios, eventos, asignaciones, check-ins y departamentos. Solo se conservará el super-usuario admin. Esta acción es irreversible.',
-        confirmText: 'Sí, limpiar todo',
-        cancelText: 'Cancelar',
+        title: this.translate.instant('Admin.ConfirmLimpiar.Title'),
+        message: this.translate.instant('Admin.ConfirmLimpiar.Message'),
+        confirmText: this.translate.instant('Admin.ConfirmLimpiar.Confirm'),
+        cancelText: this.translate.instant('Common.Cancel'),
         confirmColor: 'warn',
         icon: 'warning',
       }
@@ -132,14 +134,14 @@ export class AdminPanelComponent implements OnInit {
     this.adminService.limpiarBaseDatos().subscribe({
       next: () => {
         this.limpiando = false;
-        this.snackBar.open('Base de datos limpiada correctamente', 'Cerrar', {
+        this.snackBar.open(this.translate.instant('Admin.Snack.DbCleaned'), this.translate.instant('Common.Close'), {
           duration: 5000, panelClass: ['success-snackbar']
         });
         this.cargarDatos();
       },
       error: () => {
         this.limpiando = false;
-        this.snackBar.open('Error al limpiar la base de datos', 'Cerrar', { duration: 4000 });
+        this.snackBar.open(this.translate.instant('Admin.Snack.DbCleanError'), this.translate.instant('Common.Close'), { duration: 4000 });
       }
     });
   }

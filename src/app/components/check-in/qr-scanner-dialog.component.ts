@@ -7,9 +7,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BrowserMultiFormatReader } from '@zxing/browser';
-import { CheckInService } from '../../services/check-in.service';
-import { CheckInDTO } from '../../models/check-in.model';
+import { CheckInService } from '@app/services/check-in.service';
+import { CheckInDTO } from '@app/models/check-in.model';
 
 export interface QrScannerDialogData {
   eventoId?: number;
@@ -26,12 +27,13 @@ export interface QrScannerDialogData {
     MatProgressSpinnerModule,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule
+    FormsModule,
+    TranslateModule
   ],
   template: `
     <h2 mat-dialog-title>
       <mat-icon style="vertical-align:middle;margin-right:8px">qr_code_scanner</mat-icon>
-      Escanear QR de Voluntario
+      {{ 'CheckIn.ScannerDialog.Title' | translate }}
     </h2>
 
     <mat-dialog-content>
@@ -39,55 +41,55 @@ export interface QrScannerDialogData {
       <div class="scanner-wrapper" *ngIf="!scanResult && !scanError">
         <div *ngIf="loadingCamera" class="camera-loading">
           <mat-spinner diameter="48"></mat-spinner>
-          <p>Iniciando cámara...</p>
+          <p>{{ 'CheckIn.ScannerDialog.InitializingCamera' | translate }}</p>
         </div>
         <video #videoElement class="camera-video" [class.hidden]="loadingCamera" autoplay muted playsinline></video>
         <div class="scan-overlay">
           <div class="scan-frame"></div>
-          <p class="scan-hint">Apunta la cámara al código QR del voluntario</p>
+          <p class="scan-hint">{{ 'CheckIn.ScannerDialog.CameraInstruction' | translate }}</p>
         </div>
       </div>
 
       <!-- Observaciones field -->
       <mat-form-field appearance="outline" class="full-width" *ngIf="!scanResult && !scanError">
-        <mat-label>Observaciones (opcional)</mat-label>
-        <input matInput [(ngModel)]="observaciones" placeholder="Notas adicionales...">
+        <mat-label>{{ 'CheckIn.ScannerDialog.ObservacionesLabel' | translate }}</mat-label>
+        <input matInput [(ngModel)]="observaciones" [placeholder]="'CheckIn.ScannerDialog.ObservacionesPlaceholder' | translate">
       </mat-form-field>
 
       <!-- Processing -->
       <div class="result-container" *ngIf="processing">
         <mat-spinner diameter="48"></mat-spinner>
-        <p>Registrando check-in...</p>
+        <p>{{ 'CheckIn.ScannerDialog.Registering' | translate }}</p>
       </div>
 
       <!-- Success -->
       <div class="result-container success" *ngIf="scanResult && !processing">
         <mat-icon class="result-icon success-icon">check_circle</mat-icon>
-        <h3>¡Check-In Registrado!</h3>
-        <p><strong>Voluntario:</strong> {{scanResult.voluntarioNombre}}</p>
-        <p><strong>Evento:</strong> {{scanResult.eventoNombre}}</p>
-        <p><strong>Fecha:</strong> {{scanResult.fechaHora | date:'dd/MM/yyyy HH:mm'}}</p>
+        <h3>{{ 'CheckIn.ScannerDialog.SuccessTitle' | translate }}</h3>
+        <p><strong>{{ 'CheckIn.ScannerDialog.VolunteerLabel' | translate }}</strong> {{scanResult.voluntarioNombre}}</p>
+        <p><strong>{{ 'CheckIn.ScannerDialog.EventLabel' | translate }}</strong> {{scanResult.eventoNombre}}</p>
+        <p><strong>{{ 'CheckIn.ScannerDialog.DateLabel' | translate }}</strong> {{scanResult.fechaHora | date:'dd/MM/yyyy HH:mm'}}</p>
       </div>
 
       <!-- Error -->
       <div class="result-container error" *ngIf="scanError && !processing">
         <mat-icon class="result-icon error-icon">error</mat-icon>
-        <h3>Error al registrar</h3>
+        <h3>{{ 'CheckIn.ScannerDialog.ErrorTitle' | translate }}</h3>
         <p>{{scanError}}</p>
       </div>
 
       <!-- Camera error -->
       <div class="result-container error" *ngIf="cameraError">
         <mat-icon class="result-icon error-icon">videocam_off</mat-icon>
-        <h3>Sin acceso a la cámara</h3>
+        <h3>{{ 'CheckIn.ScannerDialog.CameraErrorTitle' | translate }}</h3>
         <p>{{cameraError}}</p>
       </div>
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button (click)="close()">Cerrar</button>
+      <button mat-button (click)="close()">{{ 'Common.Close' | translate }}</button>
       <button mat-raised-button color="primary" *ngIf="scanResult || scanError" (click)="reset()">
-        <mat-icon>refresh</mat-icon> Escanear otro
+        <mat-icon>refresh</mat-icon> {{ 'CheckIn.ScannerDialog.ScanAnother' | translate }}
       </button>
     </mat-dialog-actions>
   `,
@@ -123,7 +125,8 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
   constructor(
     private dialogRef: MatDialogRef<QrScannerDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: QrScannerDialogData,
-    private checkInService: CheckInService
+    private checkInService: CheckInService,
+    private translate: TranslateService
   ) {}
 
   ngAfterViewInit(): void {
@@ -134,7 +137,7 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
     const video = this.videoElement?.nativeElement;
     if (!video) {
       this.loadingCamera = false;
-      this.cameraError = 'No se encontró el elemento de vídeo. Intenta reabrir el diálogo.';
+      this.cameraError = this.translate.instant('CheckIn.ScannerDialog.CameraErrorNoVideo');
       return;
     }
     this.loadingCamera = true;
@@ -168,8 +171,8 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
     this.loadingCamera = false;
     const isInsecure = location.protocol !== 'https:' && location.hostname !== 'localhost';
     this.cameraError = isInsecure
-      ? 'La cámara requiere HTTPS. Accede a la aplicación mediante una URL segura (https://).'
-      : 'No se pudo acceder a la cámara. Verifica que hayas concedido el permiso en el navegador.';
+      ? this.translate.instant('CheckIn.ScannerDialog.CameraErrorHttps')
+      : this.translate.instant('CheckIn.ScannerDialog.CameraErrorPermission');
   }
 
   private onQrDetected(token: string): void {
@@ -179,7 +182,7 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
         next: (result) => { this.processing = false; this.scanResult = result; this.stopCamera(); },
         error: (err) => {
           this.processing = false;
-          this.scanError = err?.error?.message || 'No se pudo registrar el check-in. Intenta de nuevo.';
+          this.scanError = err?.error?.message || this.translate.instant('CheckIn.ScannerDialog.CheckInError');
           this.stopCamera();
         }
       });

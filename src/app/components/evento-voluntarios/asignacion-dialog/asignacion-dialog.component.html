@@ -1,13 +1,13 @@
 <h2 mat-dialog-title>
   <mat-icon>person_add</mat-icon>
-  Nueva Asignación
+  {{ 'EventoVoluntarios.AsignacionDialog.Title' | translate }}
 </h2>
 
 <mat-dialog-content>
   <form [formGroup]="form" class="dialog-form">
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Voluntario *</mat-label>
+      <mat-label>{{ 'EventoVoluntarios.AsignacionDialog.VoluntarioLabel' | translate }}</mat-label>
       <mat-select formControlName="voluntarioId">
         <mat-option *ngFor="let v of voluntarios" [value]="v.id">
           {{ getVoluntarioNombre(v) }}
@@ -15,11 +15,11 @@
         </mat-option>
       </mat-select>
       <mat-icon matSuffix>person</mat-icon>
-      <mat-error *ngIf="form.get('voluntarioId')?.hasError('required')">Selecciona un voluntario</mat-error>
+      <mat-error *ngIf="form.get('voluntarioId')?.hasError('required')">{{ 'EventoVoluntarios.AsignacionDialog.VoluntarioRequired' | translate }}</mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Evento *</mat-label>
+      <mat-label>{{ 'EventoVoluntarios.AsignacionDialog.EventoLabel' | translate }}</mat-label>
       <mat-select formControlName="eventoId">
         <mat-option *ngFor="let e of eventos" [value]="e.id">
           {{ e.nombre }}
@@ -27,22 +27,21 @@
         </mat-option>
       </mat-select>
       <mat-icon matSuffix>event</mat-icon>
-      <mat-error *ngIf="form.get('eventoId')?.hasError('required')">Selecciona un evento</mat-error>
+      <mat-error *ngIf="form.get('eventoId')?.hasError('required')">{{ 'EventoVoluntarios.AsignacionDialog.EventoRequired' | translate }}</mat-error>
     </mat-form-field>
 
     <p class="info-note">
       <mat-icon>info</mat-icon>
-      Al crear la asignación, el sistema generará automáticamente el código QR de acceso para el voluntario.
+      {{ 'EventoVoluntarios.AsignacionDialog.Info' | translate }}
     </p>
 
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button mat-button (click)="onCancel()">{{ 'Common.Cancel' | translate }}</button>
   <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid">
     <mat-icon>assignment_turned_in</mat-icon>
-    Asignar
+    {{ 'EventoVoluntarios.AsignacionDialog.AssignButton' | translate }}
   </button>
 </mat-dialog-actions>
-

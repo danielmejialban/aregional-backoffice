@@ -1,54 +1,54 @@
-<h2 mat-dialog-title>{{ data.id ? 'Editar Departamento' : 'Nuevo Departamento' }}</h2>
+<h2 mat-dialog-title>{{ (data.id ? 'Departamentos.Dialog.TitleEdit' : 'Departamentos.Dialog.TitleNew') | translate }}</h2>
 
 <mat-dialog-content>
   <form [formGroup]="form">
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Nombre del Departamento</mat-label>
-      <input matInput formControlName="nombre" placeholder="Ej: Administración" required>
+      <mat-label>{{ 'Departamentos.Dialog.NombreLabel' | translate }}</mat-label>
+      <input matInput formControlName="nombre" [placeholder]="'Departamentos.Dialog.NombrePlaceholder' | translate" required>
       <mat-icon matPrefix>business</mat-icon>
       <mat-error *ngIf="form.get('nombre')?.hasError('required')">
-        El nombre es obligatorio
+        {{ 'Departamentos.Dialog.NombreRequired' | translate }}
       </mat-error>
       <mat-error *ngIf="form.get('nombre')?.hasError('minlength')">
-        El nombre debe tener al menos 3 caracteres
+        {{ 'Departamentos.Dialog.NombreMinLength' | translate }}
       </mat-error>
       <mat-error *ngIf="form.get('nombre')?.hasError('maxlength')">
-        El nombre no puede exceder 100 caracteres
+        {{ 'Departamentos.Dialog.NombreMaxLength' | translate }}
       </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Responsable</mat-label>
+      <mat-label>{{ 'Departamentos.Dialog.ResponsableLabel' | translate }}</mat-label>
       <mat-icon matPrefix>person</mat-icon>
       <mat-select formControlName="responsable">
-        <mat-option value="">Sin asignar</mat-option>
+        <mat-option value="">{{ 'Departamentos.Dialog.SinAsignar' | translate }}</mat-option>
         <mat-option *ngFor="let voluntario of voluntarios" [value]="voluntario.dni">
           {{ getVoluntarioNombre(voluntario) }}
         </mat-option>
       </mat-select>
-      <mat-hint>Selecciona el voluntario responsable (opcional)</mat-hint>
+      <mat-hint>{{ 'Departamentos.Dialog.ResponsableHint' | translate }}</mat-hint>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Auxiliares</mat-label>
+      <mat-label>{{ 'Departamentos.Dialog.AuxiliaresLabel' | translate }}</mat-label>
       <mat-icon matPrefix>people</mat-icon>
       <mat-select formControlName="auxiliares" multiple>
         <mat-option *ngFor="let voluntario of auxiliaresDisponibles" [value]="voluntario.dni">
           {{ getVoluntarioNombre(voluntario) }}
         </mat-option>
       </mat-select>
-      <mat-hint>Selecciona uno o varios voluntarios auxiliares (opcional)</mat-hint>
+      <mat-hint>{{ 'Departamentos.Dialog.AuxiliaresHint' | translate }}</mat-hint>
     </mat-form-field>
 
     <div class="info-box">
       <mat-icon>info</mat-icon>
       <div class="info-content">
-        <strong>Importante:</strong>
+        <strong>{{ 'Departamentos.Dialog.InfoImportante' | translate }}</strong>
         <ul>
-          <li>Los dropdowns consultan los voluntarios existentes</li>
-          <li>Solo se muestran nombres en la selección</li>
-          <li>El responsable es opcional</li>
-          <li>Puedes seleccionar varios auxiliares</li>
+          <li>{{ 'Departamentos.Dialog.InfoLine1' | translate }}</li>
+          <li>{{ 'Departamentos.Dialog.InfoLine2' | translate }}</li>
+          <li>{{ 'Departamentos.Dialog.InfoLine3' | translate }}</li>
+          <li>{{ 'Departamentos.Dialog.InfoLine4' | translate }}</li>
         </ul>
       </div>
     </div>
@@ -58,11 +58,10 @@
 <mat-dialog-actions align="end">
   <button mat-button (click)="onCancel()">
     <mat-icon>close</mat-icon>
-    Cancelar
+    {{ 'Common.Cancel' | translate }}
   </button>
   <button mat-raised-button color="primary" (click)="onSave()" [disabled]="!form.valid">
     <mat-icon>save</mat-icon>
-    {{ data.id ? 'Guardar' : 'Crear' }}
+    {{ (data.id ? 'Departamentos.Dialog.SaveButton' : 'Departamentos.Dialog.CreateButton') | translate }}
   </button>
 </mat-dialog-actions>
-

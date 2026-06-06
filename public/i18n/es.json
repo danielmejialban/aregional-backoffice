@@ -1,0 +1,544 @@
+{
+  "Common": {
+    "Close": "Cerrar",
+    "Cancel": "Cancelar",
+    "Save": "Guardar",
+    "Create": "Crear",
+    "Delete": "Eliminar",
+    "Edit": "Editar",
+    "Confirm": "Confirmar",
+    "Yes": "Sí",
+    "No": "No",
+    "Loading": "Cargando..."
+  },
+  "Errors": {
+    "Default": "Ha ocurrido un error",
+    "Network": "No se pudo conectar con el servidor. Verifica tu conexión.",
+    "Unauthorized": "Tu sesión ha expirado. Por favor, inicia sesión de nuevo.",
+    "Forbidden": "No tienes permisos para realizar esta acción.",
+    "NotFound": "No se encontró la información solicitada.",
+    "Conflict": "Ya existe un registro con esos datos.",
+    "Unprocessable": "Los datos enviados no son válidos.",
+    "ServerUnavailable": "El servidor no está disponible. Intenta de nuevo en unos momentos.",
+    "Unknown": "Algo salió mal. Por favor, intenta de nuevo."
+  },
+  "Login": {
+    "Title": "Asamblea Regional",
+    "Subtitle": "Sistema de Gestión de Voluntarios",
+    "DniLabel": "DNI",
+    "DniPlaceholder": "12345678A",
+    "PasswordLabel": "Contraseña",
+    "DniRequired": "El DNI es obligatorio",
+    "PasswordRequired": "La contraseña es obligatoria",
+    "Submit": "Iniciar Sesión",
+    "Welcome": "¡Bienvenido!"
+  },
+  "Dashboard": {
+    "Title": "Dashboard",
+    "WelcomeTitle": "Bienvenido, {{name}}",
+    "WelcomeSubtitle": "Rol: {{role}}",
+    "SystemDescription": "Sistema de Gestión de Voluntarios - Asamblea Regional",
+    "Volunteer": "Voluntario",
+    "Departamentos": "Departamentos",
+    "Voluntarios": "Voluntarios",
+    "Eventos": "Eventos",
+    "CheckIns": "Check-Ins",
+    "ViewStats": "Ver Estadísticas"
+  },
+  "Layout": {
+    "AppName": "Asamblea Regional",
+    "ToggleMenu": "Alternar menú",
+    "LightMode": "Modo claro",
+    "DarkMode": "Modo oscuro",
+    "Logout": "Cerrar Sesión",
+    "Nav": {
+      "Dashboard": "Dashboard",
+      "Departamentos": "Departamentos",
+      "Roles": "Roles",
+      "Voluntarios": "Voluntarios",
+      "Formaciones": "Formaciones",
+      "Eventos": "Eventos",
+      "Asignaciones": "Asignaciones",
+      "DescargaPases": "Descarga de Pases",
+      "CheckIn": "Check-In",
+      "Estadisticas": "Estadísticas",
+      "MisPases": "Mis Pases",
+      "Admin": "Administración"
+    }
+  },
+  "Departamentos": {
+    "PageTitle": "Gestión de Departamentos",
+    "PageSubtitle": "Administra los departamentos de la organización",
+    "NewButton": "Nuevo Departamento",
+    "Columns": {
+      "Id": "ID",
+      "Nombre": "Nombre",
+      "Responsable": "Responsable",
+      "Auxiliares": "Auxiliares",
+      "Actions": "Acciones"
+    },
+    "Actions": {
+      "Edit": "Editar departamento",
+      "Delete": "Eliminar departamento"
+    },
+    "ConfirmDelete": {
+      "Title": "Eliminar departamento",
+      "Message": "¿Estás seguro de que quieres eliminar el departamento \"{{name}}\"? Esta acción no se puede deshacer.",
+      "Confirm": "Eliminar"
+    },
+    "Snack": {
+      "LoadError": "Error al cargar departamentos",
+      "Created": "Departamento creado",
+      "CreateError": "Error al crear departamento",
+      "Updated": "Departamento actualizado",
+      "UpdateError": "Error al actualizar departamento",
+      "Deleted": "Departamento eliminado",
+      "DeleteError": "Error al eliminar departamento"
+    },
+    "Dialog": {
+      "TitleEdit": "Editar Departamento",
+      "TitleNew": "Nuevo Departamento",
+      "NombreLabel": "Nombre del Departamento",
+      "NombrePlaceholder": "Ej: Administración",
+      "ResponsableLabel": "Responsable",
+      "AuxiliaresLabel": "Auxiliares",
+      "ResponsableHint": "Selecciona el voluntario responsable (opcional)",
+      "AuxiliaresHint": "Selecciona uno o varios voluntarios auxiliares (opcional)",
+      "SinAsignar": "Sin asignar",
+      "NombreRequired": "El nombre es obligatorio",
+      "NombreMinLength": "El nombre debe tener al menos 3 caracteres",
+      "NombreMaxLength": "El nombre no puede exceder 100 caracteres",
+      "InfoImportante": "Importante:",
+      "InfoLine1": "Los dropdowns consultan los voluntarios existentes",
+      "InfoLine2": "Solo se muestran nombres en la selección",
+      "InfoLine3": "El responsable es opcional",
+      "InfoLine4": "Puedes seleccionar varios auxiliares",
+      "SaveButton": "Guardar",
+      "CreateButton": "Crear"
+    }
+  },
+  "Voluntarios": {
+    "PageTitle": "Voluntarios",
+    "NewButton": "Nuevo Voluntario",
+    "Columns": {
+      "Id": "ID",
+      "Nombre": "Nombre",
+      "Dni": "DNI/NIE",
+      "Departamento": "Departamento",
+      "Congregacion": "Congregación",
+      "Circuito": "Circuito",
+      "CorreoJw": "Correo JW",
+      "PreAsamblea": "Pre-asamblea",
+      "Estado": "Estado",
+      "Formacion": "Formación",
+      "Actions": "Acciones"
+    },
+    "Badges": {
+      "Si": "Sí",
+      "No": "No",
+      "Activo": "Activo",
+      "Inactivo": "Inactivo",
+      "Completada": "Completada",
+      "Pendiente": "Pendiente"
+    },
+    "Actions": {
+      "Edit": "Editar",
+      "ToggleActive": "Activar/Desactivar",
+      "Delete": "Eliminar"
+    },
+    "Buttons": {
+      "PlantillaMaestra": "Plantilla Maestra .xlsx",
+      "PlantillaCsv": "Plantilla CSV",
+      "CargaMasiva": "Carga masiva CSV/Excel",
+      "Uploading": "Subiendo..."
+    },
+    "Tooltips": {
+      "PlantillaMaestra": "Descarga la plantilla Excel maestra",
+      "PlantillaCsv": "Plantilla CSV sencilla",
+      "CargaMasiva": "Sube un CSV o Excel con la plantilla descargada"
+    },
+    "ConfirmDelete": {
+      "Title": "Eliminar voluntario",
+      "Message": "¿Estás seguro de que quieres eliminar a {{name}}? Esta acción no se puede deshacer.",
+      "Confirm": "Eliminar"
+    },
+    "ConfirmDeactivate": {
+      "Title": "Desactivar voluntario",
+      "Message": "¿Deseas desactivar a {{name}}?",
+      "Confirm": "Desactivar"
+    },
+    "ConfirmActivate": {
+      "Title": "Activar voluntario",
+      "Message": "¿Deseas activar a {{name}}?",
+      "Confirm": "Activar"
+    },
+    "Snack": {
+      "LoadError": "Error al cargar voluntarios",
+      "Created": "Voluntario creado",
+      "Updated": "Voluntario actualizado",
+      "Deleted": "Voluntario eliminado",
+      "StatusUpdated": "Estado actualizado",
+      "StatusError": "Error al cambiar estado",
+      "InvalidFile": "El archivo debe ser CSV (.csv) o Excel (.xlsx, .xls)",
+      "FileError": "Error al procesar el archivo",
+      "CreateError": "Error al crear voluntario",
+      "UpdateError": "Error al actualizar voluntario",
+      "DeleteError": "Error al eliminar voluntario"
+    },
+    "Dialog": {
+      "TitleEdit": "Editar Voluntario",
+      "TitleNew": "Nuevo Voluntario",
+      "NombreLabel": "Nombre",
+      "Apellido1Label": "Primer apellido",
+      "Apellido2Label": "Segundo apellido",
+      "DniLabel": "DNI / NIE",
+      "DniPlaceholder": "12345678A",
+      "TelefonoLabel": "Teléfono",
+      "EmailLabel": "Email",
+      "CongregacionLabel": "Congregación",
+      "CircuitoLabel": "Circuito",
+      "CorreoJwLabel": "Correo JW",
+      "DepartamentoLabel": "Departamento",
+      "ActivoLabel": "Activo",
+      "PreAsambleaLabel": "Pre-asamblea",
+      "Required": "Obligatorio",
+      "DniInvalid": "Formato inválido",
+      "EmailInvalid": "Email inválido"
+    },
+    "CargaMasivaDialog": {
+      "Title": "Resultado de la carga masiva",
+      "Total": "Total: {{count}}",
+      "Created": "Creados: {{count}}",
+      "Skipped": "Omitidos: {{count}}",
+      "Errors": "Errores: {{count}}",
+      "TabErrors": "Errores ({{count}})",
+      "TabSkipped": "Omitidos ({{count}})",
+      "TabCreated": "Creados ({{count}})",
+      "ColFila": "Fila",
+      "ColEstado": "Estado",
+      "ColDni": "DNI / NIE",
+      "ColMensaje": "Mensaje",
+      "Empty": "Sin registros en esta categoría."
+    }
+  },
+  "Roles": {
+    "PageTitle": "Roles",
+    "NewButton": "Nuevo Rol",
+    "Columns": {
+      "Id": "ID",
+      "Nombre": "Nombre",
+      "Descripcion": "Descripción",
+      "Actions": "Acciones"
+    },
+    "Actions": {
+      "Edit": "Editar",
+      "Delete": "Eliminar"
+    },
+    "ConfirmDelete": {
+      "Title": "Eliminar rol",
+      "Message": "¿Estás seguro de que quieres eliminar el rol \"{{name}}\"?",
+      "Confirm": "Eliminar"
+    },
+    "Snack": {
+      "DeletePending": "Funcionalidad de eliminar rol pendiente de implementar"
+    }
+  },
+  "Eventos": {
+    "PageTitle": "Eventos",
+    "NewButton": "Nuevo Evento",
+    "Columns": {
+      "Id": "ID",
+      "Nombre": "Nombre",
+      "Tipo": "Tipo",
+      "Inicio": "Inicio",
+      "Fin": "Fin",
+      "Direccion": "Dirección",
+      "Actions": "Acciones"
+    },
+    "Actions": {
+      "Edit": "Editar",
+      "Delete": "Eliminar"
+    },
+    "ConfirmDelete": {
+      "Title": "Eliminar evento",
+      "Message": "¿Estás seguro de que quieres eliminar el evento \"{{name}}\"?",
+      "Confirm": "Eliminar"
+    },
+    "Snack": {
+      "LoadError": "Error al cargar eventos",
+      "Created": "Evento creado",
+      "CreateError": "Error al crear el evento",
+      "Updated": "Evento actualizado",
+      "UpdateError": "Error al actualizar el evento",
+      "Deleted": "Evento eliminado",
+      "DeleteError": "Error al eliminar el evento"
+    },
+    "Dialog": {
+      "TitleEdit": "Editar Evento",
+      "TitleNew": "Nuevo Evento",
+      "NombreLabel": "Nombre del evento *",
+      "NombrePlaceholder": "Asamblea Regional 2026",
+      "TipoLabel": "Tipo de evento",
+      "SinTipo": "— Sin tipo —",
+      "SesionLabel": "Sesión",
+      "SinSesion": "— Sin sesión —",
+      "DireccionLabel": "Dirección",
+      "DireccionPlaceholder": "Av. Principal 123, Madrid",
+      "FechasTitle": "Fechas del evento",
+      "InicioLabel": "Inicio del evento *",
+      "FinLabel": "Fin del evento *",
+      "DatePlaceholder": "DD/MM/YYYY",
+      "DiasPreEventoLabel": "Días pre-evento",
+      "DiasPreEventoHint": "Días previos al inicio con acceso para voluntarios de pre-asamblea (0 = sin pre-evento)",
+      "ConvocatoriaTitle": "Convocatoria (opcional)",
+      "InicioConvLabel": "Inicio convocatoria",
+      "FinConvLabel": "Fin convocatoria",
+      "NombreRequired": "El nombre es obligatorio",
+      "NombreMinLength": "Mínimo 3 caracteres",
+      "DateRequired": "Obligatorio",
+      "DiasMin": "Mínimo 0",
+      "DiasMax": "Máximo 30",
+      "FinAnteriorError": "La fecha de fin no puede ser anterior a la fecha de inicio",
+      "FinConvAnteriorError": "La fecha de fin de convocatoria no puede ser anterior al inicio",
+      "Tipos": {
+        "Asamblea": "Asamblea",
+        "Formacion": "Formación",
+        "Servicio": "Servicio",
+        "Reunion": "Reunión",
+        "Otro": "Otro"
+      },
+      "Sesiones": {
+        "Manana": "Mañana",
+        "Tarde": "Tarde",
+        "TodoElDia": "Todo el día"
+      }
+    }
+  },
+  "EventoVoluntarios": {
+    "PageTitle": "Asignaciones",
+    "Columns": {
+      "Id": "ID",
+      "Voluntario": "Voluntario",
+      "Evento": "Evento",
+      "Qr": "QR",
+      "Actions": "Acciones"
+    },
+    "Buttons": {
+      "AsignacionMasiva": "Asignación Masiva",
+      "DescargarPdf": "Descargar PDF",
+      "NuevaAsignacion": "Nueva Asignación",
+      "GenerarQr": "Generar QR",
+      "Generando": "Generando..."
+    },
+    "Tooltips": {
+      "DescargarPdf": "Descargar PDF con todas las tarjetas QR generadas de esta página",
+      "GenerarQr": "Generar código QR"
+    },
+    "Actions": {
+      "VerQr": "Ver QR",
+      "DescargarPdf": "Descargar PDF",
+      "Delete": "Eliminar"
+    },
+    "Badges": {
+      "Generado": "Generado"
+    },
+    "ConfirmDelete": {
+      "Title": "Eliminar asignación",
+      "Message": "¿Estás seguro de que quieres eliminar la asignación \"{{name}}\"?",
+      "Confirm": "Eliminar"
+    },
+    "Snack": {
+      "LoadSupportError": "Error al cargar datos de apoyo",
+      "LoadError": "Error al cargar asignaciones",
+      "Created": "Asignación creada",
+      "CreateError": "Error al crear la asignación",
+      "QrGenerated": "QR generado correctamente",
+      "QrError": "Error al obtener el QR del servidor",
+      "Deleted": "Asignación eliminada",
+      "DeleteError": "Error al eliminar la asignación",
+      "NoQr": "No hay ningún QR generado aún. Genera los QR primero."
+    },
+    "AsignacionDialog": {
+      "Title": "Nueva Asignación",
+      "VoluntarioLabel": "Voluntario *",
+      "EventoLabel": "Evento *",
+      "VoluntarioRequired": "Selecciona un voluntario",
+      "EventoRequired": "Selecciona un evento",
+      "Info": "Al crear la asignación, el sistema generará automáticamente el código QR de acceso para el voluntario.",
+      "AssignButton": "Asignar"
+    },
+    "AsignacionMasivaDialog": {
+      "Title": "Asignación Masiva por Departamento",
+      "EventoLabel": "Evento",
+      "DepartamentoLabel": "Departamento",
+      "EventoRequired": "Selecciona un evento",
+      "DepartamentoRequired": "Selecciona un departamento",
+      "GenerarQrLabel": "Generar códigos QR automáticamente",
+      "Processing": "Procesando asignaciones...",
+      "ColVoluntario": "Voluntario",
+      "ColDni": "DNI",
+      "ColEstado": "Estado",
+      "ColMensaje": "Mensaje",
+      "Total": "Total: {{count}}",
+      "Created": "Creadas: {{count}}",
+      "Skipped": "Omitidas: {{count}}",
+      "Errors": "Errores: {{count}}",
+      "AssignButton": "Asignar departamento completo",
+      "ReloadButton": "Recargar asignaciones"
+    }
+  },
+  "CheckIn": {
+    "PageTitle": "Check-Ins",
+    "ScanButton": "Escanear QR",
+    "Columns": {
+      "Id": "ID",
+      "Voluntario": "Voluntario",
+      "Evento": "Evento",
+      "FechaHora": "Fecha/Hora",
+      "Observaciones": "Observaciones"
+    },
+    "Snack": {
+      "Success": "Check-in registrado: {{volunteer}} — {{event}}"
+    },
+    "ScannerDialog": {
+      "Title": "Escanear QR de Voluntario",
+      "InitializingCamera": "Iniciando cámara...",
+      "CameraInstruction": "Apunta la cámara al código QR del voluntario",
+      "ObservacionesLabel": "Observaciones (opcional)",
+      "ObservacionesPlaceholder": "Notas adicionales...",
+      "Registering": "Registrando check-in...",
+      "SuccessTitle": "¡Check-In Registrado!",
+      "VolunteerLabel": "Voluntario:",
+      "EventLabel": "Evento:",
+      "DateLabel": "Fecha:",
+      "ErrorTitle": "Error al registrar",
+      "CameraErrorTitle": "Sin acceso a la cámara",
+      "CameraErrorNoVideo": "No se encontró el elemento de vídeo. Intenta reabrir el diálogo.",
+      "CameraErrorHttps": "La cámara requiere HTTPS. Accede a la aplicación mediante una URL segura (https://).",
+      "CameraErrorPermission": "No se pudo acceder a la cámara. Verifica que hayas concedido el permiso en el navegador.",
+      "CheckInError": "No se pudo registrar el check-in. Intenta de nuevo.",
+      "ScanAnother": "Escanear otro"
+    }
+  },
+  "Formaciones": {
+    "PageTitle": "Formaciones",
+    "PageSubtitle": "Asistencia y aprobación por evento de formación",
+    "LoadingEvents": "Cargando eventos...",
+    "SelectEventLabel": "Selecciona un evento de formación",
+    "NoEvents": "No hay eventos de tipo FORMACION. Crea uno en la sección Eventos.",
+    "TableSummary": "Total: {{total}} | Asistieron: {{asistio}} | Aprobados: {{aprobados}}",
+    "EmptyMessage": "Sin registros para este evento",
+    "TooltipDeselect": "Desmarcar",
+    "TooltipSelect": "Marcar como aprobado",
+    "Columns": {
+      "Voluntario": "Voluntario",
+      "Dni": "DNI/NIE",
+      "Asistio": "Asistió",
+      "Aprobada": "Aprobada",
+      "Actions": "Acciones"
+    },
+    "Badges": {
+      "Si": "Sí",
+      "No": "No"
+    },
+    "Actions": {
+      "Delete": "Eliminar registro"
+    },
+    "ConfirmDelete": {
+      "Title": "Eliminar registro",
+      "Message": "¿Estás seguro de que quieres eliminar el registro de {{name}}?",
+      "Confirm": "Eliminar"
+    },
+    "Snack": {
+      "LoadEventsError": "Error al cargar eventos de formación",
+      "LoadError": "Error al cargar registros",
+      "Approved": "Marcado como aprobado",
+      "Unapproved": "Desmarcado como aprobado",
+      "UpdateError": "Error al actualizar aprobada",
+      "Deleted": "Registro eliminado",
+      "DeleteError": "Error al eliminar registro"
+    },
+    "RegistrarDialog": {
+      "Title": "Registrar voluntario en formación",
+      "VoluntarioLabel": "Voluntario",
+      "VoluntarioRequired": "Selecciona un voluntario",
+      "RegisterButton": "Registrar"
+    }
+  },
+  "Admin": {
+    "PageTitle": "Panel de Administración",
+    "PageSubtitle": "Gestión de usuarios y mantenimiento del sistema",
+    "Loading": "Cargando datos...",
+    "RolesTitle": "Asignación de Roles",
+    "RolesSubtitle": "Cambia el rol de cada usuario y pulsa Guardar para aplicar.",
+    "NoUsers": "No hay usuarios registrados",
+    "Columns": {
+      "Nombre": "Usuario (DNI)",
+      "Voluntario": "Voluntario",
+      "Rol": "Rol"
+    },
+    "EmptyVoluntario": "—",
+    "SaveButton": "Guardar",
+    "DangerZoneTitle": "Zona de Peligro",
+    "DangerZoneSubtitle": "Acciones irreversibles. Úsalas con precaución.",
+    "LimpiarTitle": "Limpiar base de datos",
+    "LimpiarDescription": "Elimina todos los voluntarios, departamentos, eventos, asignaciones y check-ins. El super-usuario admin y los roles del sistema se conservan.",
+    "LimpiarButton": "Limpiar base de datos",
+    "LimpiarButtonLoading": "Limpiando...",
+    "ConfirmLimpiar": {
+      "Title": "Limpiar base de datos",
+      "Message": "Se eliminarán TODOS los voluntarios, eventos, asignaciones, check-ins y departamentos. Solo se conservará el super-usuario admin. Esta acción es irreversible.",
+      "Confirm": "Sí, limpiar todo"
+    },
+    "Snack": {
+      "LoadError": "Error al cargar los datos",
+      "RoleUpdated": "Rol actualizado correctamente",
+      "RoleUpdateError": "Error al actualizar el rol",
+      "DbCleaned": "Base de datos limpiada correctamente",
+      "DbCleanError": "Error al limpiar la base de datos"
+    }
+  },
+  "DescargaQr": {
+    "Snack": {
+      "LoadError": "Error al cargar los datos",
+      "Downloaded": "{{count}} QR descargados correctamente",
+      "ZipError": "Error al generar el ZIP"
+    }
+  },
+  "MisPases": {
+    "LoadError": "No se pudieron cargar los pases."
+  },
+  "Estadisticas": {
+    "PageTitle": "Estadísticas",
+    "Voluntarios": "Voluntarios",
+    "Eventos": "Eventos",
+    "CheckIns": "Check-Ins",
+    "Departamentos": "Departamentos"
+  },
+  "DataTable": {
+    "Results": "Resultados",
+    "ResultsShown": "mostrando {{shown}} de {{total}}",
+    "FiltersActive": "Filtros activos",
+    "ManualMode": "Modo manual",
+    "PendingChanges": "Cambios pendientes",
+    "FiltersApplied": "Filtros aplicados",
+    "ToggleColumns": "Mostrar/ocultar columnas",
+    "ExportCsv": "Exportar CSV",
+    "Search": "Buscar",
+    "ClearFilters": "Limpiar filtros",
+    "ActiveFilters": "Filtros activos",
+    "ClearFilter": "Quitar filtro",
+    "Loading": "Cargando...",
+    "SelectAll": "Seleccionar todo",
+    "FilterValue": "Valor del filtro",
+    "SelectValue": "Seleccionar valor",
+    "From": "Desde",
+    "To": "Hasta",
+    "NotFilterable": "No filtrable",
+    "NoData": "Sin datos"
+  },
+  "Dialogs": {
+    "Cancel": "Cancelar",
+    "Confirm": "Confirmar"
+  }
+}

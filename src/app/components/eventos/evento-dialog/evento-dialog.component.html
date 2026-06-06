@@ -1,99 +1,99 @@
 <h2 mat-dialog-title>
   <mat-icon>{{ isEdit ? 'edit' : 'add_circle' }}</mat-icon>
-  {{ isEdit ? 'Editar Evento' : 'Nuevo Evento' }}
+  {{ (isEdit ? 'Eventos.Dialog.TitleEdit' : 'Eventos.Dialog.TitleNew') | translate }}
 </h2>
 
 <mat-dialog-content>
   <form [formGroup]="form" class="dialog-form">
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Nombre del evento *</mat-label>
-      <input matInput formControlName="nombre" placeholder="Asamblea Regional 2026">
-      <mat-error *ngIf="form.get('nombre')?.hasError('required')">El nombre es obligatorio</mat-error>
-      <mat-error *ngIf="form.get('nombre')?.hasError('minlength')">Mínimo 3 caracteres</mat-error>
+      <mat-label>{{ 'Eventos.Dialog.NombreLabel' | translate }}</mat-label>
+      <input matInput formControlName="nombre" [placeholder]="'Eventos.Dialog.NombrePlaceholder' | translate">
+      <mat-error *ngIf="form.get('nombre')?.hasError('required')">{{ 'Eventos.Dialog.NombreRequired' | translate }}</mat-error>
+      <mat-error *ngIf="form.get('nombre')?.hasError('minlength')">{{ 'Eventos.Dialog.NombreMinLength' | translate }}</mat-error>
     </mat-form-field>
 
     <div class="row-2">
       <mat-form-field appearance="outline">
-        <mat-label>Tipo de evento</mat-label>
+        <mat-label>{{ 'Eventos.Dialog.TipoLabel' | translate }}</mat-label>
         <mat-select formControlName="tipoEvento">
-          <mat-option value="">— Sin tipo —</mat-option>
+          <mat-option value="">{{ 'Eventos.Dialog.SinTipo' | translate }}</mat-option>
           <mat-option *ngFor="let t of tiposEvento" [value]="t.value">{{ t.label }}</mat-option>
         </mat-select>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>Sesión</mat-label>
+        <mat-label>{{ 'Eventos.Dialog.SesionLabel' | translate }}</mat-label>
         <mat-select formControlName="sesion">
-          <mat-option value="">— Sin sesión —</mat-option>
-          <mat-option *ngFor="let s of sesiones" [value]="s">{{ s }}</mat-option>
+          <mat-option value="">{{ 'Eventos.Dialog.SinSesion' | translate }}</mat-option>
+          <mat-option *ngFor="let s of sesiones" [value]="s.value">{{ s.label }}</mat-option>
         </mat-select>
       </mat-form-field>
     </div>
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Dirección</mat-label>
-      <input matInput formControlName="direccion" placeholder="Av. Principal 123, Madrid">
+      <mat-label>{{ 'Eventos.Dialog.DireccionLabel' | translate }}</mat-label>
+      <input matInput formControlName="direccion" [placeholder]="'Eventos.Dialog.DireccionPlaceholder' | translate">
       <mat-icon matSuffix>place</mat-icon>
     </mat-form-field>
 
-    <p class="section-label">Fechas del evento</p>
+    <p class="section-label">{{ 'Eventos.Dialog.FechasTitle' | translate }}</p>
     <div class="row-2">
       <mat-form-field appearance="outline">
-        <mat-label>Inicio del evento *</mat-label>
-        <input matInput [matDatepicker]="pickerInicioEvento" formControlName="fechaInicioEvento" placeholder="DD/MM/YYYY">
+        <mat-label>{{ 'Eventos.Dialog.InicioLabel' | translate }}</mat-label>
+        <input matInput [matDatepicker]="pickerInicioEvento" formControlName="fechaInicioEvento" [placeholder]="'Eventos.Dialog.DatePlaceholder' | translate">
         <mat-datepicker-toggle matSuffix [for]="pickerInicioEvento"></mat-datepicker-toggle>
         <mat-datepicker #pickerInicioEvento></mat-datepicker>
-        <mat-error *ngIf="form.get('fechaInicioEvento')?.hasError('required')">Obligatorio</mat-error>
+        <mat-error *ngIf="form.get('fechaInicioEvento')?.hasError('required')">{{ 'Eventos.Dialog.DateRequired' | translate }}</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>Fin del evento *</mat-label>
-        <input matInput [matDatepicker]="pickerFinEvento" formControlName="fechaFinEvento" placeholder="DD/MM/YYYY">
+        <mat-label>{{ 'Eventos.Dialog.FinLabel' | translate }}</mat-label>
+        <input matInput [matDatepicker]="pickerFinEvento" formControlName="fechaFinEvento" [placeholder]="'Eventos.Dialog.DatePlaceholder' | translate">
         <mat-datepicker-toggle matSuffix [for]="pickerFinEvento"></mat-datepicker-toggle>
         <mat-datepicker #pickerFinEvento></mat-datepicker>
-        <mat-error *ngIf="form.get('fechaFinEvento')?.hasError('required')">Obligatorio</mat-error>
+        <mat-error *ngIf="form.get('fechaFinEvento')?.hasError('required')">{{ 'Eventos.Dialog.DateRequired' | translate }}</mat-error>
       </mat-form-field>
     </div>
     <p class="date-range-error" *ngIf="form.hasError('finEventoAnterior') && form.get('fechaFinEvento')?.touched">
-      La fecha de fin no puede ser anterior a la fecha de inicio
+      {{ 'Eventos.Dialog.FinAnteriorError' | translate }}
     </p>
 
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Días pre-evento</mat-label>
+      <mat-label>{{ 'Eventos.Dialog.DiasPreEventoLabel' | translate }}</mat-label>
       <input matInput type="number" min="0" max="30" formControlName="diasPreEvento">
-      <mat-hint>Días previos al inicio con acceso para voluntarios de pre-asamblea (0 = sin pre-evento)</mat-hint>
-      <mat-error *ngIf="form.get('diasPreEvento')?.hasError('min')">Mínimo 0</mat-error>
-      <mat-error *ngIf="form.get('diasPreEvento')?.hasError('max')">Máximo 30</mat-error>
+      <mat-hint>{{ 'Eventos.Dialog.DiasPreEventoHint' | translate }}</mat-hint>
+      <mat-error *ngIf="form.get('diasPreEvento')?.hasError('min')">{{ 'Eventos.Dialog.DiasMin' | translate }}</mat-error>
+      <mat-error *ngIf="form.get('diasPreEvento')?.hasError('max')">{{ 'Eventos.Dialog.DiasMax' | translate }}</mat-error>
     </mat-form-field>
 
-    <p class="section-label">Convocatoria (opcional)</p>
+    <p class="section-label">{{ 'Eventos.Dialog.ConvocatoriaTitle' | translate }}</p>
     <div class="row-2">
       <mat-form-field appearance="outline">
-        <mat-label>Inicio convocatoria</mat-label>
-        <input matInput [matDatepicker]="pickerInicioConv" formControlName="fechaInicioConvocatoria" placeholder="DD/MM/YYYY">
+        <mat-label>{{ 'Eventos.Dialog.InicioConvLabel' | translate }}</mat-label>
+        <input matInput [matDatepicker]="pickerInicioConv" formControlName="fechaInicioConvocatoria" [placeholder]="'Eventos.Dialog.DatePlaceholder' | translate">
         <mat-datepicker-toggle matSuffix [for]="pickerInicioConv"></mat-datepicker-toggle>
         <mat-datepicker #pickerInicioConv></mat-datepicker>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>Fin convocatoria</mat-label>
-        <input matInput [matDatepicker]="pickerFinConv" formControlName="fechaFinConvocatoria" placeholder="DD/MM/YYYY">
+        <mat-label>{{ 'Eventos.Dialog.FinConvLabel' | translate }}</mat-label>
+        <input matInput [matDatepicker]="pickerFinConv" formControlName="fechaFinConvocatoria" [placeholder]="'Eventos.Dialog.DatePlaceholder' | translate">
         <mat-datepicker-toggle matSuffix [for]="pickerFinConv"></mat-datepicker-toggle>
         <mat-datepicker #pickerFinConv></mat-datepicker>
       </mat-form-field>
     </div>
     <p class="date-range-error" *ngIf="form.hasError('finConvAnterior') && form.get('fechaFinConvocatoria')?.touched">
-      La fecha de fin de convocatoria no puede ser anterior al inicio
+      {{ 'Eventos.Dialog.FinConvAnteriorError' | translate }}
     </p>
 
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()">Cancelar</button>
+  <button mat-button (click)="onCancel()">{{ 'Common.Cancel' | translate }}</button>
   <button mat-raised-button color="primary" (click)="onSave()" [disabled]="form.invalid">
     <mat-icon>save</mat-icon>
-    {{ isEdit ? 'Guardar cambios' : 'Crear evento' }}
+    {{ (isEdit ? 'Common.Save' : 'Common.Create') | translate }}
   </button>
 </mat-dialog-actions>

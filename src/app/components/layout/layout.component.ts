@@ -11,8 +11,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AuthService } from '../../services/auth.service';
-import { ThemeService } from '../../services/theme.service';
+import { TranslateModule } from '@ngx-translate/core';
+import { AuthService } from '@app/services/auth.service';
+import { ThemeService } from '@app/services/theme.service';
 
 @Component({
   selector: 'app-layout',
@@ -27,6 +28,7 @@ import { ThemeService } from '../../services/theme.service';
     MatButtonModule,
     MatMenuModule,
     MatTooltipModule,
+    TranslateModule,
   ],
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.scss']
@@ -42,18 +44,18 @@ export class LayoutComponent implements OnInit, OnDestroy {
   currentUser$;
 
   menuItems = [
-    { icon: 'dashboard', label: 'Dashboard', route: '/dashboard', roles: ['ADMIN', 'COORDINADOR', 'VOLUNTARIO', 'CHECK_IN'] },
-    { icon: 'business', label: 'Departamentos', route: '/departamentos', roles: ['ADMIN'] },
-    { icon: 'admin_panel_settings', label: 'Roles', route: '/roles', roles: ['ADMIN'] },
-    { icon: 'people', label: 'Voluntarios', route: '/voluntarios', roles: ['ADMIN', 'COORDINADOR'] },
-    { icon: 'school', label: 'Formaciones', route: '/formaciones', roles: ['ADMIN', 'COORDINADOR'] },
-    { icon: 'event', label: 'Eventos', route: '/eventos', roles: ['ADMIN', 'COORDINADOR'] },
-    { icon: 'assignment', label: 'Asignaciones', route: '/evento-voluntarios', roles: ['ADMIN', 'COORDINADOR'] },
-    { icon: 'download_for_offline', label: 'Descarga de Pases', route: '/descarga-pases', roles: ['ADMIN', 'COORDINADOR'] },
-    { icon: 'qr_code_scanner', label: 'Check-In', route: '/check-in', roles: ['ADMIN', 'CHECK_IN'] },
-    { icon: 'bar_chart', label: 'Estadísticas', route: '/estadisticas', roles: ['ADMIN', 'COORDINADOR'] },
-    { icon: 'confirmation_number', label: 'Mis Pases', route: '/mis-pases', roles: ['VOLUNTARIO', 'ADMIN', 'COORDINADOR'] },
-    { icon: 'manage_accounts', label: 'Administración', route: '/admin', roles: ['ADMIN'] },
+    { icon: 'dashboard', label: 'Layout.Nav.Dashboard', route: '/dashboard', roles: ['ADMIN', 'COORDINADOR', 'VOLUNTARIO', 'CHECK_IN'] },
+    { icon: 'business', label: 'Layout.Nav.Departamentos', route: '/departamentos', roles: ['ADMIN'] },
+    { icon: 'admin_panel_settings', label: 'Layout.Nav.Roles', route: '/roles', roles: ['ADMIN'] },
+    { icon: 'people', label: 'Layout.Nav.Voluntarios', route: '/voluntarios', roles: ['ADMIN', 'COORDINADOR'] },
+    { icon: 'school', label: 'Layout.Nav.Formaciones', route: '/formaciones', roles: ['ADMIN', 'COORDINADOR'] },
+    { icon: 'event', label: 'Layout.Nav.Eventos', route: '/eventos', roles: ['ADMIN', 'COORDINADOR'] },
+    { icon: 'assignment', label: 'Layout.Nav.Asignaciones', route: '/evento-voluntarios', roles: ['ADMIN', 'COORDINADOR'] },
+    { icon: 'download_for_offline', label: 'Layout.Nav.DescargaPases', route: '/descarga-pases', roles: ['ADMIN', 'COORDINADOR'] },
+    { icon: 'qr_code_scanner', label: 'Layout.Nav.CheckIn', route: '/check-in', roles: ['ADMIN', 'CHECK_IN'] },
+    { icon: 'bar_chart', label: 'Layout.Nav.Estadisticas', route: '/estadisticas', roles: ['ADMIN', 'COORDINADOR'] },
+    { icon: 'confirmation_number', label: 'Layout.Nav.MisPases', route: '/mis-pases', roles: ['VOLUNTARIO', 'ADMIN', 'COORDINADOR'] },
+    { icon: 'manage_accounts', label: 'Layout.Nav.Admin', route: '/admin', roles: ['ADMIN'] },
   ];
 
   constructor(private authService: AuthService, private router: Router) {

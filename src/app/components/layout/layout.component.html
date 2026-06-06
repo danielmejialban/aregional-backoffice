@@ -6,7 +6,7 @@
     [(opened)]="sidenavOpen">
 
     <div class="sidenav-header">
-      <span class="sidenav-title" *ngIf="!sidenavCollapsed || isMobile">Asamblea Regional</span>
+      <span class="sidenav-title" *ngIf="!sidenavCollapsed || isMobile">{{ 'Layout.AppName' | translate }}</span>
       <mat-icon class="sidenav-logo-icon" *ngIf="sidenavCollapsed && !isMobile">stars</mat-icon>
     </div>
 
@@ -17,28 +17,28 @@
          routerLinkActive="active"
          [hidden]="!hasAccess(item.roles)"
          (click)="onNavItemClick()"
-         [matTooltip]="item.label"
+         [matTooltip]="item.label | translate"
          [matTooltipDisabled]="!sidenavCollapsed || isMobile"
          matTooltipPosition="right">
         <mat-icon matListItemIcon>{{item.icon}}</mat-icon>
-        <span matListItemTitle *ngIf="!sidenavCollapsed || isMobile">{{item.label}}</span>
+        <span matListItemTitle *ngIf="!sidenavCollapsed || isMobile">{{ item.label | translate }}</span>
       </a>
     </mat-nav-list>
   </mat-sidenav>
 
   <mat-sidenav-content>
     <mat-toolbar color="primary" class="toolbar">
-      <button mat-icon-button (click)="toggleSidenav()" aria-label="Toggle menu">
+      <button mat-icon-button (click)="toggleSidenav()" [attr.aria-label]="'Layout.ToggleMenu' | translate">
         <mat-icon>{{ sidenavCollapsed && !isMobile ? 'menu_open' : 'menu' }}</mat-icon>
       </button>
 
-      <span class="toolbar-title" *ngIf="isMobile">Asamblea Regional</span>
+      <span class="toolbar-title" *ngIf="isMobile">{{ 'Layout.AppName' | translate }}</span>
 
       <span class="toolbar-spacer"></span>
 
       <button mat-icon-button
               (click)="themeService.toggleDarkMode()"
-              [matTooltip]="themeService.isDark() ? 'Modo claro' : 'Modo oscuro'">
+              [matTooltip]="(themeService.isDark() ? 'Layout.LightMode' : 'Layout.DarkMode') | translate">
         <mat-icon>{{ themeService.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
       </button>
 
@@ -50,7 +50,7 @@
       <mat-menu #userMenu="matMenu">
         <button mat-menu-item (click)="logout()">
           <mat-icon>exit_to_app</mat-icon>
-          <span>Cerrar Sesión</span>
+          <span>{{ 'Layout.Logout' | translate }}</span>
         </button>
       </mat-menu>
     </mat-toolbar>

@@ -2,14 +2,14 @@
 
   <!-- Header -->
   <div class="page-header">
-    <h1><mat-icon class="header-icon">manage_accounts</mat-icon> Panel de Administración</h1>
-    <p class="subtitle">Gestión de usuarios y mantenimiento del sistema</p>
+    <h1><mat-icon class="header-icon">manage_accounts</mat-icon> {{ 'Admin.PageTitle' | translate }}</h1>
+    <p class="subtitle">{{ 'Admin.PageSubtitle' | translate }}</p>
   </div>
 
   <!-- Loading -->
   <div class="loading-container" *ngIf="loading">
     <mat-spinner diameter="52"></mat-spinner>
-    <p>Cargando datos...</p>
+    <p>{{ 'Admin.Loading' | translate }}</p>
   </div>
 
   <ng-container *ngIf="!loading">
@@ -18,23 +18,23 @@
     <mat-card class="section-card">
       <mat-card-header>
         <mat-card-title>
-          <mat-icon>people</mat-icon> Asignación de Roles
+          <mat-icon>people</mat-icon> {{ 'Admin.RolesTitle' | translate }}
         </mat-card-title>
-        <mat-card-subtitle>Cambia el rol de cada usuario y pulsa Guardar para aplicar.</mat-card-subtitle>
+        <mat-card-subtitle>{{ 'Admin.RolesSubtitle' | translate }}</mat-card-subtitle>
       </mat-card-header>
 
       <mat-card-content>
 
         <div class="empty-state" *ngIf="usuarios.length === 0">
           <mat-icon>person_off</mat-icon>
-          <p>No hay usuarios registrados</p>
+          <p>{{ 'Admin.NoUsers' | translate }}</p>
         </div>
 
         <table mat-table [dataSource]="usuarios" class="users-table" *ngIf="usuarios.length > 0">
 
           <!-- DNI / Username -->
           <ng-container matColumnDef="nombre">
-            <th mat-header-cell *matHeaderCellDef>Usuario (DNI)</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'Admin.Columns.Nombre' | translate }}</th>
             <td mat-cell *matCellDef="let row">
               <span class="user-name">{{ row.nombre }}</span>
             </td>
@@ -42,13 +42,13 @@
 
           <!-- Voluntario -->
           <ng-container matColumnDef="voluntario">
-            <th mat-header-cell *matHeaderCellDef>Voluntario</th>
-            <td mat-cell *matCellDef="let row">{{ row.voluntarioNombre || '—' }}</td>
+            <th mat-header-cell *matHeaderCellDef>{{ 'Admin.Columns.Voluntario' | translate }}</th>
+            <td mat-cell *matCellDef="let row">{{ row.voluntarioNombre || ('Admin.EmptyVoluntario' | translate) }}</td>
           </ng-container>
 
           <!-- Rol -->
           <ng-container matColumnDef="rol">
-            <th mat-header-cell *matHeaderCellDef>Rol</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'Admin.Columns.Rol' | translate }}</th>
             <td mat-cell *matCellDef="let row">
               <mat-form-field appearance="outline" class="rol-field">
                 <mat-select [(ngModel)]="row.rolIdEdit">
@@ -68,7 +68,7 @@
                 class="save-btn">
                 <mat-spinner diameter="16" *ngIf="row.guardando"></mat-spinner>
                 <mat-icon *ngIf="!row.guardando">save</mat-icon>
-                Guardar
+                {{ 'Admin.SaveButton' | translate }}
               </button>
             </td>
           </ng-container>
@@ -84,18 +84,17 @@
     <mat-card class="section-card danger-card">
       <mat-card-header>
         <mat-card-title>
-          <mat-icon class="danger-icon">warning</mat-icon> Zona de Peligro
+          <mat-icon class="danger-icon">warning</mat-icon> {{ 'Admin.DangerZoneTitle' | translate }}
         </mat-card-title>
-        <mat-card-subtitle>Acciones irreversibles. Úsalas con precaución.</mat-card-subtitle>
+        <mat-card-subtitle>{{ 'Admin.DangerZoneSubtitle' | translate }}</mat-card-subtitle>
       </mat-card-header>
 
       <mat-card-content>
         <div class="danger-action">
           <div class="danger-action__info">
-            <p class="danger-action__title">Limpiar base de datos</p>
+            <p class="danger-action__title">{{ 'Admin.LimpiarTitle' | translate }}</p>
             <p class="danger-action__desc">
-              Elimina todos los voluntarios, departamentos, eventos, asignaciones y check-ins.
-              El super-usuario <strong>admin</strong> y los roles del sistema se conservan.
+              {{ 'Admin.LimpiarDescription' | translate }}
             </p>
           </div>
           <button mat-raised-button color="warn"
@@ -103,7 +102,7 @@
             (click)="confirmarLimpiezaBd()">
             <mat-spinner diameter="18" *ngIf="limpiando"></mat-spinner>
             <mat-icon *ngIf="!limpiando">delete_forever</mat-icon>
-            {{ limpiando ? 'Limpiando...' : 'Limpiar base de datos' }}
+            {{ (limpiando ? 'Admin.LimpiarButtonLoading' : 'Admin.LimpiarButton') | translate }}
           </button>
         </div>
       </mat-card-content>

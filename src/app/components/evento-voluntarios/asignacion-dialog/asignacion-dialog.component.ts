@@ -8,8 +8,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { VoluntarioDTO } from '../../../models/voluntario.model';
-import { EventoDTO } from '../../../models/evento.model';
+import { TranslateModule } from '@ngx-translate/core';
+import { VoluntarioDTO } from '@app/models/voluntario.model';
+import { EventoDTO } from '@app/models/evento.model';
 
 export interface AsignacionDialogData {
   voluntarios: VoluntarioDTO[];
@@ -28,7 +29,8 @@ export interface AsignacionDialogData {
     MatButtonModule,
     MatIconModule,
     MatSelectModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    TranslateModule,
   ],
   templateUrl: './asignacion-dialog.component.html',
   styleUrls: ['./asignacion-dialog.component.scss']

@@ -7,10 +7,11 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { forkJoin } from 'rxjs';
-import { DepartamentoService } from '../../services/departamento.service';
-import { DepartamentoDTO } from '../../models/departamento.model';
-import { VoluntarioDTO } from '../../models/voluntario.model';
-import { VoluntarioService } from '../../services/voluntario.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { DepartamentoService } from '@app/services/departamento.service';
+import { DepartamentoDTO } from '@app/models/departamento.model';
+import { VoluntarioDTO } from '@app/models/voluntario.model';
+import { VoluntarioService } from '@app/services/voluntario.service';
 import { DepartamentoDialogComponent } from './departamento-dialog/departamento-dialog.component';
 import { DataTableComponent } from '../data-table/data-table/data-table.component';
 import { ColumnDef, TableActionEvent } from '@app/@core';
@@ -24,6 +25,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
     MatButtonModule, MatIconModule, MatCardModule,
     MatSnackBarModule, MatDialogModule, MatTooltipModule,
     DataTableComponent,
+    TranslateModule,
   ],
   templateUrl: './departamentos.component.html',
   styleUrls: ['./departamentos.component.scss']
@@ -33,28 +35,34 @@ export class DepartamentosComponent implements OnInit {
   voluntarios: VoluntarioDTO[] = [];
   loading = false;
 
-  columns: ColumnDef[] = [
-    { key: 'id', header: 'ID', type: 'text', width: '60px' },
-    { key: 'nombre', header: 'Nombre', type: 'text', filterType: 'text', sortable: true },
-    { key: 'responsableDisplay', header: 'Responsable', type: 'text' },
-    { key: 'auxiliaresDisplay', header: 'Auxiliares', type: 'text' },
-    {
-      key: 'acciones', header: 'Acciones', type: 'actions', sticky: 'end',
-      actions: [
-        { id: 'edit', icon: 'edit', label: 'Editar departamento', color: 'primary' },
-        { id: 'delete', icon: 'delete', label: 'Eliminar departamento', color: 'warn' },
-      ],
-    },
-  ];
+  columns: ColumnDef[] = [];
 
   constructor(
     private departamentoService: DepartamentoService,
     private voluntarioService: VoluntarioService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private translate: TranslateService
   ) {}
 
+  private buildColumns(): ColumnDef[] {
+    return [
+      { key: 'id', header: this.translate.instant('Departamentos.Columns.Id'), type: 'text', width: '60px' },
+      { key: 'nombre', header: this.translate.instant('Departamentos.Columns.Nombre'), type: 'text', filterType: 'text', sortable: true },
+      { key: 'responsableDisplay', header: this.translate.instant('Departamentos.Columns.Responsable'), type: 'text' },
+      { key: 'auxiliaresDisplay', header: this.translate.instant('Departamentos.Columns.Auxiliares'), type: 'text' },
+      {
+        key: 'acciones', header: this.translate.instant('Departamentos.Columns.Actions'), type: 'actions', sticky: 'end',
+        actions: [
+          { id: 'edit', icon: 'edit', label: this.translate.instant('Departamentos.Actions.Edit'), color: 'primary' },
+          { id: 'delete', icon: 'delete', label: this.translate.instant('Departamentos.Actions.Delete'), color: 'warn' },
+        ],
+      },
+    ];
+  }
+
   ngOnInit(): void {
+    this.columns = this.buildColumns();
     this.loading = true;
     forkJoin({
       departamentos: this.departamentoService.getAll(),
@@ -69,7 +77,7 @@ export class DepartamentosComponent implements OnInit {
         }));
         this.loading = false;
       },
-      error: () => { this.loading = false; this.showError('Error al cargar departamentos'); },
+      error: () => { this.loading = false; this.showError(this.translate.instant('Departamentos.Snack.LoadError')); },
     });
   }
 
@@ -102,9 +110,9 @@ export class DepartamentosComponent implements OnInit {
     const ref = this.dialog.open(ConfirmDialogComponent, {
       width: '420px',
       data: {
-        title: 'Eliminar departamento',
-        message: `¿Estás seguro de que quieres eliminar el departamento "${departamento.nombre}"? Esta acción no se puede deshacer.`,
-        confirmText: 'Eliminar',
+        title: this.translate.instant('Departamentos.ConfirmDelete.Title'),
+        message: this.translate.instant('Departamentos.ConfirmDelete.Message', { name: departamento.nombre }),
+        confirmText: this.translate.instant('Departamentos.ConfirmDelete.Confirm'),
         confirmColor: 'warn',
         icon: 'delete',
       },
@@ -115,8 +123,8 @@ export class DepartamentosComponent implements OnInit {
   createDepartamento(departamento: DepartamentoDTO): void {
     this.loading = true;
     this.departamentoService.create(departamento).subscribe({
-      next: () => { this.showSuccess('Departamento creado'); this.reloadAll(); },
-      error: () => { this.loading = false; this.showError('Error al crear departamento'); },
+      next: () => { this.showSuccess(this.translate.instant('Departamentos.Snack.Created')); this.reloadAll(); },
+      error: () => { this.loading = false; this.showError(this.translate.instant('Departamentos.Snack.CreateError')); },
     });
   }
 
@@ -124,8 +132,8 @@ export class DepartamentosComponent implements OnInit {
     if (!departamento.id) return;
     this.loading = true;
     this.departamentoService.update(departamento.id, departamento).subscribe({
-      next: () => { this.showSuccess('Departamento actualizado'); this.reloadAll(); },
-      error: () => { this.loading = false; this.showError('Error al actualizar departamento'); },
+      next: () => { this.showSuccess(this.translate.instant('Departamentos.Snack.Updated')); this.reloadAll(); },
+      error: () => { this.loading = false; this.showError(this.translate.instant('Departamentos.Snack.UpdateError')); },
     });
   }
 
@@ -133,8 +141,8 @@ export class DepartamentosComponent implements OnInit {
     if (!departamento.id) return;
     this.loading = true;
     this.departamentoService.delete(departamento.id).subscribe({
-      next: () => { this.showSuccess('Departamento eliminado'); this.reloadAll(); },
-      error: () => { this.loading = false; this.showError('Error al eliminar departamento'); },
+      next: () => { this.showSuccess(this.translate.instant('Departamentos.Snack.Deleted')); this.reloadAll(); },
+      error: () => { this.loading = false; this.showError(this.translate.instant('Departamentos.Snack.DeleteError')); },
     });
   }
 
@@ -190,10 +198,10 @@ export class DepartamentosComponent implements OnInit {
   }
 
   private showSuccess(msg: string): void {
-    this.snackBar.open(msg, 'Cerrar', { duration: 3000, panelClass: ['success-snackbar'] });
+    this.snackBar.open(msg, this.translate.instant('Common.Close'), { duration: 3000, panelClass: ['success-snackbar'] });
   }
 
   private showError(msg: string): void {
-    this.snackBar.open(msg, 'Cerrar', { duration: 4000, panelClass: ['error-snackbar'] });
+    this.snackBar.open(msg, this.translate.instant('Common.Close'), { duration: 4000, panelClass: ['error-snackbar'] });
   }
 }

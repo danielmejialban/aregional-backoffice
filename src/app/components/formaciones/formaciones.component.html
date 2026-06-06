@@ -1,8 +1,8 @@
 <div class="page-container">
   <div class="page-header">
     <div class="header-content">
-      <h1><mat-icon>school</mat-icon> Formaciones</h1>
-      <p class="subtitle">Asistencia y aprobación por evento de formación</p>
+      <h1><mat-icon>school</mat-icon> {{ 'Formaciones.PageTitle' | translate }}</h1>
+      <p class="subtitle">{{ 'Formaciones.PageSubtitle' | translate }}</p>
     </div>
   </div>
 
@@ -11,12 +11,12 @@
     <mat-card-content>
       <div *ngIf="loading" class="loading-inline">
         <mat-spinner diameter="24"></mat-spinner>
-        <span>Cargando eventos...</span>
+        <span>{{ 'Formaciones.LoadingEvents' | translate }}</span>
       </div>
 
       <div *ngIf="!loading" class="selector-row">
         <mat-form-field appearance="outline" class="evento-select">
-          <mat-label>Selecciona un evento de formación</mat-label>
+          <mat-label>{{ 'Formaciones.SelectEventLabel' | translate }}</mat-label>
           <mat-select (selectionChange)="onEventoChange($event.value)" [value]="eventoSeleccionado">
             <mat-option *ngFor="let e of eventosFormacion" [value]="e">
               {{ e.nombre }}
@@ -30,7 +30,7 @@
 
       <div *ngIf="!loading && eventosFormacion.length === 0" class="empty-state-inline">
         <mat-icon>info</mat-icon>
-        No hay eventos de tipo FORMACION. Crea uno en la sección Eventos.
+        {{ 'Formaciones.NoEvents' | translate }}
       </div>
     </mat-card-content>
   </mat-card>
@@ -41,7 +41,7 @@
       [checked]="!!row.aprobada"
       (change)="toggleAprobada(row)"
       color="primary"
-      [matTooltip]="row.aprobada ? 'Desmarcar' : 'Marcar como aprobado'">
+      [matTooltip]="(row.aprobada ? 'Formaciones.TooltipDeselect' : 'Formaciones.TooltipSelect') | translate">
     </mat-slide-toggle>
   </ng-template>
 
@@ -51,9 +51,7 @@
       <div class="table-header">
         <h3>{{ eventoSeleccionado.nombre }}</h3>
         <span class="contadores">
-          Total: {{ registros.length }} |
-          Asistieron: {{ countAsistio() }} |
-          Aprobados: {{ countAprobados() }}
+          {{ 'Formaciones.TableSummary' | translate: { total: registros.length, asistio: countAsistio(), aprobados: countAprobados() } }}
         </span>
       </div>
 
@@ -62,7 +60,7 @@
         [data]="registros"
         [isLoading]="loadingRegistros"
         [serverSide]="false"
-        emptyMessage="Sin registros para este evento"
+        [emptyMessage]="'Formaciones.EmptyMessage' | translate"
         (actionClick)="onActionClick($event)"
       />
     </mat-card-content>

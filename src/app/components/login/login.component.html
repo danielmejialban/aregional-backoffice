@@ -1,23 +1,23 @@
 <div class="login-container">
   <mat-card class="login-card">
     <mat-card-header>
-      <mat-card-title>Asamblea Regional</mat-card-title>
-      <mat-card-subtitle>Sistema de Gestión de Voluntarios</mat-card-subtitle>
+      <mat-card-title>{{ 'Login.Title' | translate }}</mat-card-title>
+      <mat-card-subtitle>{{ 'Login.Subtitle' | translate }}</mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>DNI</mat-label>
-          <input matInput formControlName="dni" placeholder="12345678A" autocomplete="username">
+          <mat-label>{{ 'Login.DniLabel' | translate }}</mat-label>
+          <input matInput formControlName="dni" [placeholder]="'Login.DniPlaceholder' | translate" autocomplete="username">
           <mat-icon matPrefix>person</mat-icon>
           <mat-error *ngIf="loginForm.get('dni')?.hasError('required')">
-            El DNI es obligatorio
+            {{ 'Login.DniRequired' | translate }}
           </mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Contraseña</mat-label>
+          <mat-label>{{ 'Login.PasswordLabel' | translate }}</mat-label>
           <input matInput
                  [type]="hidePassword ? 'password' : 'text'"
                  formControlName="contrasena"
@@ -27,7 +27,7 @@
             <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
           </button>
           <mat-error *ngIf="loginForm.get('contrasena')?.hasError('required')">
-            La contraseña es obligatoria
+            {{ 'Login.PasswordRequired' | translate }}
           </mat-error>
         </mat-form-field>
 
@@ -36,11 +36,10 @@
                 type="submit"
                 class="full-width login-button"
                 [disabled]="loading || loginForm.invalid">
-          <span *ngIf="!loading">Iniciar Sesión</span>
+          <span *ngIf="!loading">{{ 'Login.Submit' | translate }}</span>
           <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
         </button>
       </form>
     </mat-card-content>
   </mat-card>
 </div>
-

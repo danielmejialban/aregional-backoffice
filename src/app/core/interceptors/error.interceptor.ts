@@ -3,45 +3,53 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { TranslateService } from '@ngx-translate/core';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const snackBar = inject(MatSnackBar);
+  const translate = inject(TranslateService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      let errorMessage = 'Ha ocurrido un error';
+      let errorMessage = translate.instant('Errors.Default');
 
-      if (error.error instanceof ErrorEvent) {
-        // Error del lado del cliente
-        errorMessage = `Error: ${error.error.message}`;
+      if (error.error instanceof ErrorEvent || error.status === 0) {
+        errorMessage = translate.instant('Errors.Network');
       } else {
-        // Error del lado del servidor
         switch (error.status) {
           case 401:
-            errorMessage = 'No autorizado. Por favor, inicie sesión.';
+            errorMessage = translate.instant('Errors.Unauthorized');
             localStorage.removeItem('auth_token');
             localStorage.removeItem('current_user');
             router.navigate(['/login']);
             break;
           case 403:
-            errorMessage = 'No tiene permisos para realizar esta acción.';
+            errorMessage = translate.instant('Errors.Forbidden');
             break;
           case 404:
-            errorMessage = 'Recurso no encontrado.';
+            errorMessage = translate.instant('Errors.NotFound');
+            break;
+          case 409:
+            errorMessage = error.error?.message || translate.instant('Errors.Conflict');
+            break;
+          case 422:
+            errorMessage = error.error?.message || translate.instant('Errors.Unprocessable');
             break;
           case 500:
-            errorMessage = 'Error interno del servidor.';
+          case 502:
+          case 503:
+            errorMessage = translate.instant('Errors.ServerUnavailable');
             break;
           default:
-            errorMessage = error.error?.message || `Error: ${error.status}`;
+            errorMessage = translate.instant('Errors.Unknown');
         }
       }
 
-      snackBar.open(errorMessage, 'Cerrar', {
+      snackBar.open(errorMessage, translate.instant('Common.Close'), {
         duration: 5000,
-        horizontalPosition: 'end',
-        verticalPosition: 'top',
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom',
         panelClass: ['error-snackbar']
       });
 
@@ -49,4 +57,3 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     })
   );
 };
-

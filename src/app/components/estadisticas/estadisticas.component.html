@@ -1,6 +1,6 @@
 <div class="page-container">
   <div class="page-header">
-    <h1><mat-icon>bar_chart</mat-icon> Estadísticas</h1>
+    <h1><mat-icon>bar_chart</mat-icon> {{ 'Estadisticas.PageTitle' | translate }}</h1>
   </div>
 
   <div *ngIf="loading" class="loading-container">
@@ -15,7 +15,7 @@
           <mat-icon class="stat-icon volunteers">people</mat-icon>
           <div class="stat-info">
             <span class="stat-value">{{ totalVoluntarios }}</span>
-            <span class="stat-label">Voluntarios</span>
+            <span class="stat-label">{{ 'Estadisticas.Voluntarios' | translate }}</span>
           </div>
         </mat-card-content>
       </mat-card>
@@ -25,7 +25,7 @@
           <mat-icon class="stat-icon events">event</mat-icon>
           <div class="stat-info">
             <span class="stat-value">{{ totalEventos }}</span>
-            <span class="stat-label">Eventos</span>
+            <span class="stat-label">{{ 'Estadisticas.Eventos' | translate }}</span>
           </div>
         </mat-card-content>
       </mat-card>
@@ -35,7 +35,7 @@
           <mat-icon class="stat-icon checkins">qr_code_scanner</mat-icon>
           <div class="stat-info">
             <span class="stat-value">{{ totalCheckIns }}</span>
-            <span class="stat-label">Check-Ins</span>
+            <span class="stat-label">{{ 'Estadisticas.CheckIns' | translate }}</span>
           </div>
         </mat-card-content>
       </mat-card>
@@ -45,7 +45,7 @@
           <mat-icon class="stat-icon departments">business</mat-icon>
           <div class="stat-info">
             <span class="stat-value">{{ totalDepartamentos }}</span>
-            <span class="stat-label">Departamentos</span>
+            <span class="stat-label">{{ 'Estadisticas.Departamentos' | translate }}</span>
           </div>
         </mat-card-content>
       </mat-card>

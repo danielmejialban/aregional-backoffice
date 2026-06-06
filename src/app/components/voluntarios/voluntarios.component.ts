@@ -16,13 +16,13 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { PageEvent } from '@angular/material/paginator';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { forkJoin } from 'rxjs';
-import { VoluntarioService, VoluntarioFiltros } from '../../services/voluntario.service';
-import { VoluntarioDTO } from '../../models/voluntario.model';
-import { DepartamentoService } from '../../services/departamento.service';
-import { DepartamentoDTO } from '../../models/departamento.model';
-import { CargaMasivaResultadoDTO, FilaResultadoDTO } from '../../models/carga-masiva-resultado.model';
-import { PlantillaExcelService } from '../../services/plantilla-excel.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { VoluntarioService, VoluntarioFiltros } from '@app/services/voluntario.service';
+import { VoluntarioDTO } from '@app/models/voluntario.model';
+import { DepartamentoService } from '@app/services/departamento.service';
+import { DepartamentoDTO } from '@app/models/departamento.model';
+import { CargaMasivaResultadoDTO, FilaResultadoDTO } from '@app/models/carga-masiva-resultado.model';
+import { PlantillaExcelService } from '@app/services/plantilla-excel.service';
 import { DataTableComponent } from '../data-table/data-table/data-table.component';
 import { ColumnDef, TableActionEvent, ActiveFilters } from '@app/@core';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
@@ -39,78 +39,79 @@ export interface VoluntarioDialogData {
   imports: [
     CommonModule, ReactiveFormsModule,
     MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule,
-    MatIconModule, MatSelectModule, MatSlideToggleModule
+    MatIconModule, MatSelectModule, MatSlideToggleModule,
+    TranslateModule,
   ],
   template: `
-    <h2 mat-dialog-title>{{ data.voluntario?.id ? 'Editar Voluntario' : 'Nuevo Voluntario' }}</h2>
+    <h2 mat-dialog-title>{{ (data.voluntario?.id ? 'Voluntarios.Dialog.TitleEdit' : 'Voluntarios.Dialog.TitleNew') | translate }}</h2>
     <mat-dialog-content>
       <form [formGroup]="form" class="form-grid">
         <div class="row-2">
           <mat-form-field appearance="outline">
-            <mat-label>Nombre</mat-label>
+            <mat-label>{{ 'Voluntarios.Dialog.NombreLabel' | translate }}</mat-label>
             <input matInput formControlName="nombre" required>
-            <mat-error *ngIf="form.get('nombre')?.hasError('required')">Obligatorio</mat-error>
+            <mat-error *ngIf="form.get('nombre')?.hasError('required')">{{ 'Voluntarios.Dialog.Required' | translate }}</mat-error>
           </mat-form-field>
           <mat-form-field appearance="outline">
-            <mat-label>Primer apellido</mat-label>
+            <mat-label>{{ 'Voluntarios.Dialog.Apellido1Label' | translate }}</mat-label>
             <input matInput formControlName="apellido1" required>
-            <mat-error *ngIf="form.get('apellido1')?.hasError('required')">Obligatorio</mat-error>
+            <mat-error *ngIf="form.get('apellido1')?.hasError('required')">{{ 'Voluntarios.Dialog.Required' | translate }}</mat-error>
           </mat-form-field>
         </div>
         <div class="row-2">
           <mat-form-field appearance="outline">
-            <mat-label>Segundo apellido</mat-label>
+            <mat-label>{{ 'Voluntarios.Dialog.Apellido2Label' | translate }}</mat-label>
             <input matInput formControlName="apellido2">
           </mat-form-field>
           <mat-form-field appearance="outline">
-            <mat-label>DNI / NIE</mat-label>
-            <input matInput formControlName="dni" required placeholder="12345678A">
-            <mat-error *ngIf="form.get('dni')?.hasError('required')">Obligatorio</mat-error>
-            <mat-error *ngIf="form.get('dni')?.hasError('pattern')">Formato inválido</mat-error>
+            <mat-label>{{ 'Voluntarios.Dialog.DniLabel' | translate }}</mat-label>
+            <input matInput formControlName="dni" required [placeholder]="'Voluntarios.Dialog.DniPlaceholder' | translate">
+            <mat-error *ngIf="form.get('dni')?.hasError('required')">{{ 'Voluntarios.Dialog.Required' | translate }}</mat-error>
+            <mat-error *ngIf="form.get('dni')?.hasError('pattern')">{{ 'Voluntarios.Dialog.DniInvalid' | translate }}</mat-error>
           </mat-form-field>
         </div>
         <div class="row-2">
           <mat-form-field appearance="outline">
-            <mat-label>Teléfono</mat-label>
+            <mat-label>{{ 'Voluntarios.Dialog.TelefonoLabel' | translate }}</mat-label>
             <input matInput formControlName="telefono">
           </mat-form-field>
           <mat-form-field appearance="outline">
-            <mat-label>Email</mat-label>
+            <mat-label>{{ 'Voluntarios.Dialog.EmailLabel' | translate }}</mat-label>
             <input matInput formControlName="email" type="email">
-            <mat-error *ngIf="form.get('email')?.hasError('email')">Email inválido</mat-error>
+            <mat-error *ngIf="form.get('email')?.hasError('email')">{{ 'Voluntarios.Dialog.EmailInvalid' | translate }}</mat-error>
           </mat-form-field>
         </div>
         <div class="row-2">
           <mat-form-field appearance="outline">
-            <mat-label>Congregación</mat-label>
+            <mat-label>{{ 'Voluntarios.Dialog.CongregacionLabel' | translate }}</mat-label>
             <input matInput formControlName="congregacion">
           </mat-form-field>
           <mat-form-field appearance="outline">
-            <mat-label>Circuito</mat-label>
+            <mat-label>{{ 'Voluntarios.Dialog.CircuitoLabel' | translate }}</mat-label>
             <input matInput formControlName="circuito">
           </mat-form-field>
         </div>
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Correo JW</mat-label>
+          <mat-label>{{ 'Voluntarios.Dialog.CorreoJwLabel' | translate }}</mat-label>
           <input matInput formControlName="correoJw">
         </mat-form-field>
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Departamento</mat-label>
+          <mat-label>{{ 'Voluntarios.Dialog.DepartamentoLabel' | translate }}</mat-label>
           <mat-select formControlName="departamentoId" required>
             <mat-option *ngFor="let d of data.departamentos" [value]="d.id">{{ d.nombre }}</mat-option>
           </mat-select>
-          <mat-error *ngIf="form.get('departamentoId')?.hasError('required')">Obligatorio</mat-error>
+          <mat-error *ngIf="form.get('departamentoId')?.hasError('required')">{{ 'Voluntarios.Dialog.Required' | translate }}</mat-error>
         </mat-form-field>
         <div class="toggles-row">
-          <mat-slide-toggle formControlName="activo" color="primary">Activo</mat-slide-toggle>
-          <mat-slide-toggle formControlName="preAsamblea" color="accent">Pre-asamblea</mat-slide-toggle>
+          <mat-slide-toggle formControlName="activo" color="primary">{{ 'Voluntarios.Dialog.ActivoLabel' | translate }}</mat-slide-toggle>
+          <mat-slide-toggle formControlName="preAsamblea" color="accent">{{ 'Voluntarios.Dialog.PreAsambleaLabel' | translate }}</mat-slide-toggle>
         </div>
       </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button (click)="dialogRef.close()">Cancelar</button>
+      <button mat-button (click)="dialogRef.close()">{{ 'Common.Cancel' | translate }}</button>
       <button mat-raised-button color="primary" (click)="onSave()" [disabled]="!form.valid">
-        <mat-icon>save</mat-icon> {{ data.voluntario?.id ? 'Guardar' : 'Crear' }}
+        <mat-icon>save</mat-icon> {{ (data.voluntario?.id ? 'Common.Save' : 'Common.Create') | translate }}
       </button>
     </mat-dialog-actions>
   `,
@@ -174,46 +175,46 @@ export class VoluntarioDialogComponent implements OnInit {
 @Component({
   selector: 'app-carga-masiva-resultado-dialog',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatTableModule, MatChipsModule, MatDialogModule, MatTabsModule, MatIconModule],
+  imports: [CommonModule, MatButtonModule, MatTableModule, MatChipsModule, MatDialogModule, MatTabsModule, MatIconModule, TranslateModule],
   template: `
-    <h2 mat-dialog-title>Resultado de la carga masiva</h2>
+    <h2 mat-dialog-title>{{ 'Voluntarios.CargaMasivaDialog.Title' | translate }}</h2>
     <mat-dialog-content>
       <div class="resumen">
-        <span class="chip total">📋 Total: {{ data.totalFilas }}</span>
-        <span class="chip creado">✔ Creados: {{ data.creados }}</span>
-        <span class="chip omitido">⚠ Omitidos: {{ data.omitidos }}</span>
-        <span class="chip error">✖ Errores: {{ data.errores }}</span>
+        <span class="chip total">📋 {{ 'Voluntarios.CargaMasivaDialog.Total' | translate:{ count: data.totalFilas } }}</span>
+        <span class="chip creado">✔ {{ 'Voluntarios.CargaMasivaDialog.Created' | translate:{ count: data.creados } }}</span>
+        <span class="chip omitido">⚠ {{ 'Voluntarios.CargaMasivaDialog.Skipped' | translate:{ count: data.omitidos } }}</span>
+        <span class="chip error">✖ {{ 'Voluntarios.CargaMasivaDialog.Errors' | translate:{ count: data.errores } }}</span>
       </div>
       <mat-tab-group>
-        <mat-tab [label]="'Errores (' + errores.length + ')'">
+        <mat-tab [label]="'Voluntarios.CargaMasivaDialog.TabErrors' | translate:{ count: errores.length }">
           <ng-container *ngTemplateOutlet="tablaDetalle; context: { $implicit: errores }"></ng-container>
         </mat-tab>
-        <mat-tab [label]="'Omitidos (' + omitidos.length + ')'">
+        <mat-tab [label]="'Voluntarios.CargaMasivaDialog.TabSkipped' | translate:{ count: omitidos.length }">
           <ng-container *ngTemplateOutlet="tablaDetalle; context: { $implicit: omitidos }"></ng-container>
         </mat-tab>
-        <mat-tab [label]="'Creados (' + creados.length + ')'">
+        <mat-tab [label]="'Voluntarios.CargaMasivaDialog.TabCreated' | translate:{ count: creados.length }">
           <ng-container *ngTemplateOutlet="tablaDetalle; context: { $implicit: creados }"></ng-container>
         </mat-tab>
       </mat-tab-group>
       <ng-template #tablaDetalle let-filas>
-        <p *ngIf="filas.length === 0" class="empty-tab">Sin registros en esta categoría.</p>
+        <p *ngIf="filas.length === 0" class="empty-tab">{{ 'Voluntarios.CargaMasivaDialog.Empty' | translate }}</p>
         <table mat-table [dataSource]="filas" class="detalle-table" *ngIf="filas.length > 0">
           <ng-container matColumnDef="fila">
-            <th mat-header-cell *matHeaderCellDef>Fila</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'Voluntarios.CargaMasivaDialog.ColFila' | translate }}</th>
             <td mat-cell *matCellDef="let r">{{ r.fila }}</td>
           </ng-container>
           <ng-container matColumnDef="estado">
-            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'Voluntarios.CargaMasivaDialog.ColEstado' | translate }}</th>
             <td mat-cell *matCellDef="let r">
               <span [class]="'chip ' + r.estado.toLowerCase()">{{ r.estado }}</span>
             </td>
           </ng-container>
           <ng-container matColumnDef="dni">
-            <th mat-header-cell *matHeaderCellDef>DNI / NIE</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'Voluntarios.CargaMasivaDialog.ColDni' | translate }}</th>
             <td mat-cell *matCellDef="let r">{{ r.dni || '-' }}</td>
           </ng-container>
           <ng-container matColumnDef="mensaje">
-            <th mat-header-cell *matHeaderCellDef>Mensaje</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'Voluntarios.CargaMasivaDialog.ColMensaje' | translate }}</th>
             <td mat-cell *matCellDef="let r">{{ r.mensaje }}</td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="cols"></tr>
@@ -222,7 +223,7 @@ export class VoluntarioDialogComponent implements OnInit {
       </ng-template>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-raised-button color="primary" (click)="dialogRef.close()">Cerrar</button>
+      <button mat-raised-button color="primary" (click)="dialogRef.close()">{{ 'Common.Close' | translate }}</button>
     </mat-dialog-actions>
   `,
   styles: [`
@@ -261,6 +262,7 @@ export class CargaMasivaResultadoDialogComponent {
     MatButtonModule, MatIconModule, MatCardModule,
     MatSnackBarModule, MatDialogModule, MatTooltipModule,
     DataTableComponent,
+    TranslateModule,
   ],
   templateUrl: './voluntarios.component.html',
   styleUrls: ['./voluntarios.component.scss']
@@ -286,7 +288,8 @@ export class VoluntariosComponent implements OnInit {
     private departamentoService: DepartamentoService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private plantillaExcelService: PlantillaExcelService
+    private plantillaExcelService: PlantillaExcelService,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -299,45 +302,58 @@ export class VoluntariosComponent implements OnInit {
 
   private buildColumns(): ColumnDef[] {
     return [
-      { key: 'id', header: 'ID', type: 'text', width: '60px' },
+      { key: 'id', header: this.translate.instant('Voluntarios.Columns.Id'), type: 'text', width: '60px' },
       {
-        key: 'nombreCompleto', header: 'Nombre', type: 'text',
+        key: 'nombreCompleto', header: this.translate.instant('Voluntarios.Columns.Nombre'), type: 'text',
         filterType: 'text', sortable: true,
       },
-      { key: 'dni', header: 'DNI/NIE', type: 'text', filterType: 'text' },
+      { key: 'dni', header: this.translate.instant('Voluntarios.Columns.Dni'), type: 'text', filterType: 'text' },
       {
-        key: 'departamentoNombre', header: 'Departamento', type: 'text',
+        key: 'departamentoNombre', header: this.translate.instant('Voluntarios.Columns.Departamento'), type: 'text',
         filterType: 'select',
         filterOptions: this.departamentos.map(d => d.nombre),
       },
-      { key: 'congregacion', header: 'Congregación', type: 'text' },
-      { key: 'circuito', header: 'Circuito', type: 'text' },
-      { key: 'correoJw', header: 'Correo JW', type: 'text', hidden: true },
+      { key: 'congregacion', header: this.translate.instant('Voluntarios.Columns.Congregacion'), type: 'text' },
+      { key: 'circuito', header: this.translate.instant('Voluntarios.Columns.Circuito'), type: 'text' },
+      { key: 'correoJw', header: this.translate.instant('Voluntarios.Columns.CorreoJw'), type: 'text', hidden: true },
       {
-        key: 'preAsambleaLabel', header: 'Pre-asamblea', type: 'badge',
-        badgeMap: { 'Sí': 'dt-badge--primary', 'No': 'dt-badge--neutral' },
+        key: 'preAsambleaLabel', header: this.translate.instant('Voluntarios.Columns.PreAsamblea'), type: 'badge',
+        badgeMap: {
+          [this.translate.instant('Voluntarios.Badges.Si')]: 'dt-badge--primary',
+          [this.translate.instant('Voluntarios.Badges.No')]: 'dt-badge--neutral',
+        },
       },
       {
-        key: 'activoLabel', header: 'Estado', type: 'badge',
-        filterType: 'select', filterOptions: ['Activo', 'Inactivo'],
-        badgeMap: { 'Activo': 'dt-badge--success', 'Inactivo': 'dt-badge--danger' },
+        key: 'activoLabel', header: this.translate.instant('Voluntarios.Columns.Estado'), type: 'badge',
+        filterType: 'select',
+        filterOptions: [
+          this.translate.instant('Voluntarios.Badges.Activo'),
+          this.translate.instant('Voluntarios.Badges.Inactivo'),
+        ],
+        badgeMap: {
+          [this.translate.instant('Voluntarios.Badges.Activo')]: 'dt-badge--success',
+          [this.translate.instant('Voluntarios.Badges.Inactivo')]: 'dt-badge--danger',
+        },
       },
       {
-        key: 'formacionLabel', header: 'Formación', type: 'badge',
-        badgeMap: { 'Completada': 'dt-badge--success', 'Pendiente': 'dt-badge--warn' },
+        key: 'formacionLabel', header: this.translate.instant('Voluntarios.Columns.Formacion'), type: 'badge',
+        badgeMap: {
+          [this.translate.instant('Voluntarios.Badges.Completada')]: 'dt-badge--success',
+          [this.translate.instant('Voluntarios.Badges.Pendiente')]: 'dt-badge--warn',
+        },
       },
       {
-        key: 'acciones', header: 'Acciones', type: 'actions', sticky: 'end',
+        key: 'acciones', header: this.translate.instant('Voluntarios.Columns.Actions'), type: 'actions', sticky: 'end',
         actions: [
-          { id: 'edit', icon: 'edit', label: 'Editar', color: 'primary' },
+          { id: 'edit', icon: 'edit', label: this.translate.instant('Voluntarios.Actions.Edit'), color: 'primary' },
           {
             id: 'toggle',
             icon: 'person_off',
             iconFn: (row) => row.activo ? 'person_off' : 'person',
-            label: 'Activar/Desactivar',
+            label: this.translate.instant('Voluntarios.Actions.ToggleActive'),
             color: 'accent',
           },
-          { id: 'delete', icon: 'delete', label: 'Eliminar', color: 'warn' },
+          { id: 'delete', icon: 'delete', label: this.translate.instant('Voluntarios.Actions.Delete'), color: 'warn' },
         ],
       },
     ];
@@ -352,7 +368,7 @@ export class VoluntariosComponent implements OnInit {
         this.totalElements = data.totalElements;
         this.loading = false;
       },
-      error: () => { this.loading = false; this.showError('Error al cargar voluntarios'); },
+      error: () => { this.loading = false; this.showError(this.translate.instant('Voluntarios.Snack.LoadError')); },
     });
   }
 
@@ -360,9 +376,9 @@ export class VoluntariosComponent implements OnInit {
     return {
       ...v,
       nombreCompleto: [v.nombre, v.apellido1, v.apellido2].filter(Boolean).join(' '),
-      activoLabel:    v.activo      ? 'Activo'     : 'Inactivo',
-      preAsambleaLabel: v.preAsamblea ? 'Sí'       : 'No',
-      formacionLabel: v.formacion   ? 'Completada' : 'Pendiente',
+      activoLabel:    v.activo      ? this.translate.instant('Voluntarios.Badges.Activo')     : this.translate.instant('Voluntarios.Badges.Inactivo'),
+      preAsambleaLabel: v.preAsamblea ? this.translate.instant('Voluntarios.Badges.Si')       : this.translate.instant('Voluntarios.Badges.No'),
+      formacionLabel: v.formacion   ? this.translate.instant('Voluntarios.Badges.Completada') : this.translate.instant('Voluntarios.Badges.Pendiente'),
     };
   }
 
@@ -416,9 +432,9 @@ export class VoluntariosComponent implements OnInit {
     const ref = this.dialog.open(ConfirmDialogComponent, {
       width: '420px',
       data: {
-        title: 'Eliminar voluntario',
-        message: `¿Estás seguro de que quieres eliminar a ${v.nombre} ${v.apellido1}? Esta acción no se puede deshacer.`,
-        confirmText: 'Eliminar',
+        title: this.translate.instant('Voluntarios.ConfirmDelete.Title'),
+        message: this.translate.instant('Voluntarios.ConfirmDelete.Message', { name: v.nombre + ' ' + v.apellido1 }),
+        confirmText: this.translate.instant('Voluntarios.ConfirmDelete.Confirm'),
         confirmColor: 'warn',
         icon: 'delete',
       },
@@ -428,12 +444,19 @@ export class VoluntariosComponent implements OnInit {
 
   confirmToggleActivo(v: VoluntarioDTO): void {
     const desactivando = v.activo;
+    const name = v.nombre + ' ' + v.apellido1;
     const ref = this.dialog.open(ConfirmDialogComponent, {
       width: '420px',
       data: {
-        title: desactivando ? 'Desactivar voluntario' : 'Activar voluntario',
-        message: `¿Deseas ${desactivando ? 'desactivar' : 'activar'} a ${v.nombre} ${v.apellido1}?`,
-        confirmText: desactivando ? 'Desactivar' : 'Activar',
+        title: desactivando
+          ? this.translate.instant('Voluntarios.ConfirmDeactivate.Title')
+          : this.translate.instant('Voluntarios.ConfirmActivate.Title'),
+        message: desactivando
+          ? this.translate.instant('Voluntarios.ConfirmDeactivate.Message', { name })
+          : this.translate.instant('Voluntarios.ConfirmActivate.Message', { name }),
+        confirmText: desactivando
+          ? this.translate.instant('Voluntarios.ConfirmDeactivate.Confirm')
+          : this.translate.instant('Voluntarios.ConfirmActivate.Confirm'),
         confirmColor: desactivando ? 'warn' : 'primary',
         icon: desactivando ? 'person_off' : 'person',
       },
@@ -443,22 +466,22 @@ export class VoluntariosComponent implements OnInit {
 
   create(dto: VoluntarioDTO): void {
     this.voluntarioService.create(dto).subscribe({
-      next: () => { this.showSuccess('Voluntario creado'); this.loadVoluntarios(0); },
-      error: (err) => this.showError(err?.error?.message || 'Error al crear voluntario'),
+      next: () => { this.showSuccess(this.translate.instant('Voluntarios.Snack.Created')); this.loadVoluntarios(0); },
+      error: (err) => this.showError(err?.error?.message || this.translate.instant('Voluntarios.Snack.CreateError')),
     });
   }
 
   update(id: number, dto: VoluntarioDTO): void {
     this.voluntarioService.update(id, dto).subscribe({
-      next: () => { this.showSuccess('Voluntario actualizado'); this.loadVoluntarios(); },
-      error: (err) => this.showError(err?.error?.message || 'Error al actualizar voluntario'),
+      next: () => { this.showSuccess(this.translate.instant('Voluntarios.Snack.Updated')); this.loadVoluntarios(); },
+      error: (err) => this.showError(err?.error?.message || this.translate.instant('Voluntarios.Snack.UpdateError')),
     });
   }
 
   delete(v: VoluntarioDTO): void {
     this.voluntarioService.delete(v.id!).subscribe({
-      next: () => { this.showSuccess('Voluntario eliminado'); this.loadVoluntarios(); },
-      error: () => this.showError('Error al eliminar voluntario'),
+      next: () => { this.showSuccess(this.translate.instant('Voluntarios.Snack.Deleted')); this.loadVoluntarios(); },
+      error: () => this.showError(this.translate.instant('Voluntarios.Snack.DeleteError')),
     });
   }
 
@@ -467,8 +490,8 @@ export class VoluntariosComponent implements OnInit {
       ? this.voluntarioService.desactivar(v.id!)
       : this.voluntarioService.activar(v.id!);
     accion.subscribe({
-      next: () => { this.showSuccess('Estado actualizado'); this.loadVoluntarios(); },
-      error: () => this.showError('Error al cambiar estado'),
+      next: () => { this.showSuccess(this.translate.instant('Voluntarios.Snack.StatusUpdated')); this.loadVoluntarios(); },
+      error: () => this.showError(this.translate.instant('Voluntarios.Snack.StatusError')),
     });
   }
 
@@ -501,7 +524,7 @@ export class VoluntariosComponent implements OnInit {
     const ext = archivo.name.toLowerCase();
     const allowed = ext.endsWith('.csv') || ext.endsWith('.xlsx') || ext.endsWith('.xls');
     if (!allowed) {
-      this.showError('El archivo debe ser CSV (.csv) o Excel (.xlsx, .xls)');
+      this.showError(this.translate.instant('Voluntarios.Snack.InvalidFile'));
       return;
     }
 
@@ -514,16 +537,16 @@ export class VoluntariosComponent implements OnInit {
       },
       error: (err) => {
         this.subiendoArchivo = false;
-        this.showError(err?.error?.message || 'Error al procesar el archivo');
+        this.showError(err?.error?.message || this.translate.instant('Voluntarios.Snack.FileError'));
       },
     });
   }
 
   private showSuccess(msg: string): void {
-    this.snackBar.open(msg, 'Cerrar', { duration: 3000, panelClass: ['success-snackbar'] });
+    this.snackBar.open(msg, this.translate.instant('Common.Close'), { duration: 3000, panelClass: ['success-snackbar'] });
   }
 
   private showError(msg: string): void {
-    this.snackBar.open(msg, 'Cerrar', { duration: 4000, panelClass: ['error-snackbar'] });
+    this.snackBar.open(msg, this.translate.instant('Common.Close'), { duration: 4000, panelClass: ['error-snackbar'] });
   }
 }

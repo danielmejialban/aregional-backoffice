@@ -11,12 +11,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { FormacionService } from '../../services/formacion.service';
-import { FormacionDTO } from '../../models/formacion.model';
-import { EventoService } from '../../services/evento.service';
-import { EventoDTO } from '../../models/evento.model';
-import { VoluntarioService } from '../../services/voluntario.service';
-import { VoluntarioDTO } from '../../models/voluntario.model';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { FormacionService } from '@app/services/formacion.service';
+import { FormacionDTO } from '@app/models/formacion.model';
+import { EventoService } from '@app/services/evento.service';
+import { EventoDTO } from '@app/models/evento.model';
+import { VoluntarioService } from '@app/services/voluntario.service';
+import { VoluntarioDTO } from '@app/models/voluntario.model';
 import { DataTableComponent } from '../data-table/data-table/data-table.component';
 import { ColumnDef, TableActionEvent } from '@app/@core';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
@@ -32,27 +33,28 @@ export interface RegistrarFormacionData {
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule,
-    MatDialogModule, MatFormFieldModule, MatSelectModule, MatButtonModule, MatIconModule
+    MatDialogModule, MatFormFieldModule, MatSelectModule, MatButtonModule, MatIconModule,
+    TranslateModule
   ],
   template: `
-    <h2 mat-dialog-title>Registrar voluntario en formación</h2>
+    <h2 mat-dialog-title>{{ 'Formaciones.RegistrarDialog.Title' | translate }}</h2>
     <mat-dialog-content>
       <form [formGroup]="form" style="min-width:340px; padding-top:8px">
         <mat-form-field appearance="outline" style="width:100%">
-          <mat-label>Voluntario</mat-label>
+          <mat-label>{{ 'Formaciones.RegistrarDialog.VoluntarioLabel' | translate }}</mat-label>
           <mat-select formControlName="voluntarioId" required>
             <mat-option *ngFor="let v of data.voluntarios" [value]="v.id">
               {{ v.apellido1 }} {{ v.apellido2 }} {{ v.nombre }} — {{ v.dni }}
             </mat-option>
           </mat-select>
-          <mat-error>Selecciona un voluntario</mat-error>
+          <mat-error>{{ 'Formaciones.RegistrarDialog.VoluntarioRequired' | translate }}</mat-error>
         </mat-form-field>
       </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button (click)="dialogRef.close()">Cancelar</button>
+      <button mat-button (click)="dialogRef.close()">{{ 'Common.Cancel' | translate }}</button>
       <button mat-raised-button color="primary" (click)="onSave()" [disabled]="!form.valid">
-        <mat-icon>add</mat-icon> Registrar
+        <mat-icon>add</mat-icon> {{ 'Formaciones.RegistrarDialog.RegisterButton' | translate }}
       </button>
     </mat-dialog-actions>
   `
@@ -85,6 +87,7 @@ export class RegistrarFormacionDialogComponent implements OnInit {
     MatProgressSpinnerModule, MatSnackBarModule, MatDialogModule,
     MatTooltipModule, MatFormFieldModule, MatSelectModule, MatSlideToggleModule,
     DataTableComponent,
+    TranslateModule,
   ],
   templateUrl: './formaciones.component.html',
   styleUrls: ['./formaciones.component.scss']
@@ -106,14 +109,15 @@ export class FormacionesComponent implements OnInit {
     private eventoService: EventoService,
     private voluntarioService: VoluntarioService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
     this.loading = true;
     this.eventoService.getByTipo('FORMACION').subscribe({
       next: (data) => { this.eventosFormacion = data; this.loading = false; },
-      error: () => { this.loading = false; this.showError('Error al cargar eventos de formación'); },
+      error: () => { this.loading = false; this.showError(this.translate.instant('Formaciones.Snack.LoadEventsError')); },
     });
     this.voluntarioService.getAll().subscribe({
       next: (data) => this.voluntarios = data,
@@ -126,17 +130,17 @@ export class FormacionesComponent implements OnInit {
 
   private buildColumns(): ColumnDef[] {
     return [
-      { key: 'voluntarioNombre', header: 'Voluntario', type: 'text', filterType: 'text', sortable: true },
-      { key: 'voluntarioDni', header: 'DNI/NIE', type: 'text', filterType: 'text' },
+      { key: 'voluntarioNombre', header: this.translate.instant('Formaciones.Columns.Voluntario'), type: 'text', filterType: 'text', sortable: true },
+      { key: 'voluntarioDni', header: this.translate.instant('Formaciones.Columns.Dni'), type: 'text', filterType: 'text' },
       {
-        key: 'asistioLabel', header: 'Asistió', type: 'badge',
-        badgeMap: { 'Sí': 'dt-badge--success', 'No': 'dt-badge--neutral' },
+        key: 'asistioLabel', header: this.translate.instant('Formaciones.Columns.Asistio'), type: 'badge',
+        badgeMap: { [this.translate.instant('Formaciones.Badges.Si')]: 'dt-badge--success', [this.translate.instant('Formaciones.Badges.No')]: 'dt-badge--neutral' },
       },
-      { key: 'aprobada', header: 'Aprobada', type: 'custom', cellTemplate: this.aprobadaTpl },
+      { key: 'aprobada', header: this.translate.instant('Formaciones.Columns.Aprobada'), type: 'custom', cellTemplate: this.aprobadaTpl },
       {
-        key: 'acciones', header: 'Acciones', type: 'actions', sticky: 'end',
+        key: 'acciones', header: this.translate.instant('Formaciones.Columns.Actions'), type: 'actions', sticky: 'end',
         actions: [
-          { id: 'delete', icon: 'delete', label: 'Eliminar registro', color: 'warn' },
+          { id: 'delete', icon: 'delete', label: this.translate.instant('Formaciones.Actions.Delete'), color: 'warn' },
         ],
       },
     ];
@@ -154,11 +158,11 @@ export class FormacionesComponent implements OnInit {
       next: (data) => {
         this.registros = data.map(r => ({
           ...r,
-          asistioLabel: r.asistio ? 'Sí' : 'No',
+          asistioLabel: r.asistio ? this.translate.instant('Formaciones.Badges.Si') : this.translate.instant('Formaciones.Badges.No'),
         }));
         this.loadingRegistros = false;
       },
-      error: () => { this.loadingRegistros = false; this.showError('Error al cargar registros'); },
+      error: () => { this.loadingRegistros = false; this.showError(this.translate.instant('Formaciones.Snack.LoadError')); },
     });
   }
 
@@ -174,9 +178,9 @@ export class FormacionesComponent implements OnInit {
       next: () => {
         registro.aprobada = nuevoValor;
         this.registros = this.registros.map(r => r.id === registro.id ? { ...r, aprobada: nuevoValor } : r);
-        this.showSuccess(nuevoValor ? 'Marcado como aprobado' : 'Desmarcado como aprobado');
+        this.showSuccess(nuevoValor ? this.translate.instant('Formaciones.Snack.Approved') : this.translate.instant('Formaciones.Snack.Unapproved'));
       },
-      error: () => this.showError('Error al actualizar aprobada'),
+      error: () => this.showError(this.translate.instant('Formaciones.Snack.UpdateError')),
     });
   }
 
@@ -184,9 +188,9 @@ export class FormacionesComponent implements OnInit {
     const ref = this.dialog.open(ConfirmDialogComponent, {
       width: '420px',
       data: {
-        title: 'Eliminar registro',
-        message: `¿Estás seguro de que quieres eliminar el registro de ${registro.voluntarioNombre}?`,
-        confirmText: 'Eliminar',
+        title: this.translate.instant('Formaciones.ConfirmDelete.Title'),
+        message: this.translate.instant('Formaciones.ConfirmDelete.Message', { name: registro.voluntarioNombre }),
+        confirmText: this.translate.instant('Formaciones.ConfirmDelete.Confirm'),
         confirmColor: 'warn',
         icon: 'delete',
       },
@@ -196,8 +200,8 @@ export class FormacionesComponent implements OnInit {
 
   eliminar(registro: FormacionDTO): void {
     this.formacionService.delete(registro.id!).subscribe({
-      next: () => { this.showSuccess('Registro eliminado'); this.cargarRegistros(); },
-      error: () => this.showError('Error al eliminar registro'),
+      next: () => { this.showSuccess(this.translate.instant('Formaciones.Snack.Deleted')); this.cargarRegistros(); },
+      error: () => this.showError(this.translate.instant('Formaciones.Snack.DeleteError')),
     });
   }
 
@@ -205,10 +209,10 @@ export class FormacionesComponent implements OnInit {
   countAprobados(): number { return this.registros.filter(r => r.aprobada).length; }
 
   private showSuccess(msg: string): void {
-    this.snackBar.open(msg, 'Cerrar', { duration: 3000, panelClass: ['success-snackbar'] });
+    this.snackBar.open(msg, this.translate.instant('Common.Close'), { duration: 3000, panelClass: ['success-snackbar'] });
   }
 
   private showError(msg: string): void {
-    this.snackBar.open(msg, 'Cerrar', { duration: 4000, panelClass: ['error-snackbar'] });
+    this.snackBar.open(msg, this.translate.instant('Common.Close'), { duration: 4000, panelClass: ['error-snackbar'] });
   }
 }

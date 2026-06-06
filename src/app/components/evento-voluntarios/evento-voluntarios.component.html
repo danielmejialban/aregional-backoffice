@@ -1,18 +1,18 @@
 <div class="page-container">
 
   <div class="page-header">
-    <h1><mat-icon class="header-icon">assignment_ind</mat-icon> Asignaciones</h1>
+    <h1><mat-icon class="header-icon">assignment_ind</mat-icon> {{ 'EventoVoluntarios.PageTitle' | translate }}</h1>
     <div class="header-actions">
       <button mat-stroked-button color="primary" (click)="openAsignacionMasivaDialog()">
-        <mat-icon>group_add</mat-icon> Asignación Masiva
+        <mat-icon>group_add</mat-icon> {{ 'EventoVoluntarios.Buttons.AsignacionMasiva' | translate }}
       </button>
       <button mat-stroked-button color="accent"
-              matTooltip="Descargar PDF con todas las tarjetas QR generadas de esta página"
+              [matTooltip]="'EventoVoluntarios.Tooltips.DescargarPdf' | translate"
               (click)="descargarPdfGlobal()">
-        <mat-icon>picture_as_pdf</mat-icon> Descargar PDF
+        <mat-icon>picture_as_pdf</mat-icon> {{ 'EventoVoluntarios.Buttons.DescargarPdf' | translate }}
       </button>
       <button mat-raised-button color="primary" (click)="openCreateDialog()">
-        <mat-icon>person_add</mat-icon> Nueva Asignación
+        <mat-icon>person_add</mat-icon> {{ 'EventoVoluntarios.Buttons.NuevaAsignacion' | translate }}
       </button>
     </div>
   </div>
@@ -22,19 +22,19 @@
     <div class="qr-status-cell">
       @if (row.qrImageBase64) {
         <mat-chip class="qr-chip" (click)="verQr(row)" style="cursor:pointer">
-          <mat-icon>qr_code_2</mat-icon>&nbsp;Generado
+          <mat-icon>qr_code_2</mat-icon>&nbsp;{{ 'EventoVoluntarios.Badges.Generado' | translate }}
         </mat-chip>
       } @else {
         <button mat-stroked-button color="primary" class="gen-qr-btn"
                 [disabled]="generandoQrIds.has(row.id)"
-                matTooltip="Generar código QR"
+                [matTooltip]="'EventoVoluntarios.Tooltips.GenerarQr' | translate"
                 (click)="generarQr(row)">
           @if (generandoQrIds.has(row.id)) {
             <mat-spinner diameter="16" />
           } @else {
             <mat-icon>qr_code</mat-icon>
           }
-          {{ generandoQrIds.has(row.id) ? 'Generando...' : 'Generar QR' }}
+          {{ (generandoQrIds.has(row.id) ? 'EventoVoluntarios.Buttons.Generando' : 'EventoVoluntarios.Buttons.GenerarQr') | translate }}
         </button>
       }
     </div>

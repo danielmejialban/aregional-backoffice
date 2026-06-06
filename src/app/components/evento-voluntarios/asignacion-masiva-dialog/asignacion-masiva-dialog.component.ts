@@ -11,10 +11,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { EventoDTO } from '../../../models/evento.model';
-import { DepartamentoDTO } from '../../../models/departamento.model';
-import { AsignacionMasivaResultadoDTO, AsignacionMasivaDetalleDTO } from '../../../models/evento-voluntario.model';
-import { EventoVoluntarioService } from '../../../services/evento-voluntario.service';
+import { TranslateModule } from '@ngx-translate/core';
+import { EventoDTO } from '@app/models/evento.model';
+import { DepartamentoDTO } from '@app/models/departamento.model';
+import { AsignacionMasivaResultadoDTO } from '@app/models/evento-voluntario.model';
+import { EventoVoluntarioService } from '@app/services/evento-voluntario.service';
 
 export interface AsignacionMasivaDialogData {
   eventos: EventoDTO[];
@@ -36,7 +37,8 @@ export interface AsignacionMasivaDialogData {
     MatProgressSpinnerModule,
     MatTableModule,
     MatChipsModule,
-    MatTooltipModule
+    MatTooltipModule,
+    TranslateModule,
   ],
   templateUrl: './asignacion-masiva-dialog.component.html',
   styleUrls: ['./asignacion-masiva-dialog.component.scss']

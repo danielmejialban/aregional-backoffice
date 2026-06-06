@@ -1,32 +1,32 @@
 <div class="page-container">
   <div class="page-header">
-    <h1>Voluntarios</h1>
+    <h1>{{ 'Voluntarios.PageTitle' | translate }}</h1>
     <div class="header-actions">
       <input #fileInput type="file" accept=".csv,.xlsx,.xls" style="display:none"
              (change)="onArchivoSeleccionado($event)">
 
       <button mat-stroked-button color="primary"
               (click)="descargarPlantillaMaestra()"
-              matTooltip="Descarga la plantilla Excel maestra">
-        <mat-icon>table_view</mat-icon> Plantilla Maestra .xlsx
+              [matTooltip]="'Voluntarios.Tooltips.PlantillaMaestra' | translate">
+        <mat-icon>table_view</mat-icon> {{ 'Voluntarios.Buttons.PlantillaMaestra' | translate }}
       </button>
 
       <button mat-stroked-button
               (click)="descargarPlantillaCsv()"
-              matTooltip="Plantilla CSV sencilla">
-        <mat-icon>download</mat-icon> Plantilla CSV
+              [matTooltip]="'Voluntarios.Tooltips.PlantillaCsv' | translate">
+        <mat-icon>download</mat-icon> {{ 'Voluntarios.Buttons.PlantillaCsv' | translate }}
       </button>
 
       <button mat-stroked-button color="accent"
               [disabled]="subiendoArchivo"
               (click)="abrirSelectorArchivo()"
-              matTooltip="Sube un CSV o Excel con la plantilla descargada">
+              [matTooltip]="'Voluntarios.Tooltips.CargaMasiva' | translate">
         <mat-icon>upload_file</mat-icon>
-        {{ subiendoArchivo ? 'Subiendo...' : 'Carga masiva CSV/Excel' }}
+        {{ (subiendoArchivo ? 'Voluntarios.Buttons.Uploading' : 'Voluntarios.Buttons.CargaMasiva') | translate }}
       </button>
 
       <button mat-raised-button color="primary" (click)="openCreateDialog()">
-        <mat-icon>add</mat-icon> Nuevo Voluntario
+        <mat-icon>add</mat-icon> {{ 'Voluntarios.NewButton' | translate }}
       </button>
     </div>
   </div>

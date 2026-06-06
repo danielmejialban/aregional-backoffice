@@ -9,7 +9,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { provideNativeDateAdapter } from '@angular/material/core';
-import { EventoDTO } from '../../../models/evento.model';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { EventoDTO } from '@app/models/evento.model';
 
 export interface EventoDialogData {
   evento?: EventoDTO;
@@ -29,6 +30,7 @@ export interface EventoDialogData {
     MatIconModule,
     MatSelectModule,
     MatDatepickerModule,
+    TranslateModule,
   ],
   templateUrl: './evento-dialog.component.html',
   styleUrls: ['./evento-dialog.component.scss']
@@ -37,22 +39,30 @@ export class EventoDialogComponent implements OnInit {
   form!: FormGroup;
   isEdit: boolean = false;
 
-  tiposEvento = [
-    { value: 'Asamblea',  label: 'Asamblea' },
-    { value: 'FORMACION', label: 'Formación' },
-    { value: 'Servicio',  label: 'Servicio' },
-    { value: 'Reunión',   label: 'Reunión' },
-    { value: 'Otro',      label: 'Otro' },
-  ];
-  sesiones = ['Mañana', 'Tarde', 'Todo el día'];
+  tiposEvento: { value: string; label: string }[] = [];
+  sesiones: { value: string; label: string }[] = [];
 
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<EventoDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: EventoDialogData
+    @Inject(MAT_DIALOG_DATA) public data: EventoDialogData,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
+    this.tiposEvento = [
+      { value: 'Asamblea',  label: this.translate.instant('Eventos.Dialog.Tipos.Asamblea') },
+      { value: 'FORMACION', label: this.translate.instant('Eventos.Dialog.Tipos.Formacion') },
+      { value: 'Servicio',  label: this.translate.instant('Eventos.Dialog.Tipos.Servicio') },
+      { value: 'Reunión',   label: this.translate.instant('Eventos.Dialog.Tipos.Reunion') },
+      { value: 'Otro',      label: this.translate.instant('Eventos.Dialog.Tipos.Otro') },
+    ];
+    this.sesiones = [
+      { value: 'Mañana',     label: this.translate.instant('Eventos.Dialog.Sesiones.Manana') },
+      { value: 'Tarde',      label: this.translate.instant('Eventos.Dialog.Sesiones.Tarde') },
+      { value: 'Todo el día', label: this.translate.instant('Eventos.Dialog.Sesiones.TodoElDia') },
+    ];
+
     this.isEdit = !!this.data.evento?.id;
     const e = this.data.evento;
 
@@ -111,8 +121,7 @@ export class EventoDialogComponent implements OnInit {
 
   private toIso(date: Date | null): string | undefined {
     if (!date) return undefined;
-    const now = new Date();
     const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T00:00:00`;
   }
 }

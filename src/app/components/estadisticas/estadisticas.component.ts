@@ -3,22 +3,23 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { TranslateModule } from '@ngx-translate/core';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions } from 'chart.js';
 import { forkJoin } from 'rxjs';
-import { CheckInService } from '../../services/check-in.service';
-import { VoluntarioService } from '../../services/voluntario.service';
-import { EventoService } from '../../services/evento.service';
-import { DepartamentoService } from '../../services/departamento.service';
-import { CheckInDTO } from '../../models/check-in.model';
-import { VoluntarioDTO } from '../../models/voluntario.model';
-import { EventoDTO } from '../../models/evento.model';
-import { DepartamentoDTO } from '../../models/departamento.model';
+import { CheckInService } from '@app/services/check-in.service';
+import { VoluntarioService } from '@app/services/voluntario.service';
+import { EventoService } from '@app/services/evento.service';
+import { DepartamentoService } from '@app/services/departamento.service';
+import { CheckInDTO } from '@app/models/check-in.model';
+import { VoluntarioDTO } from '@app/models/voluntario.model';
+import { EventoDTO } from '@app/models/evento.model';
+import { DepartamentoDTO } from '@app/models/departamento.model';
 
 @Component({
   selector: 'app-estadisticas',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, BaseChartDirective],
+  imports: [CommonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, TranslateModule, BaseChartDirective],
   templateUrl: './estadisticas.component.html',
   styleUrls: ['./estadisticas.component.scss']
 })

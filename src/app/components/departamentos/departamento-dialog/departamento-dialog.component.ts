@@ -7,7 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
-import { VoluntarioDTO } from '../../../models/voluntario.model';
+import { TranslateModule } from '@ngx-translate/core';
+import { VoluntarioDTO } from '@app/models/voluntario.model';
 
 export interface DepartamentoDialogData {
   id?: number;
@@ -28,7 +29,8 @@ export interface DepartamentoDialogData {
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatSelectModule
+    MatSelectModule,
+    TranslateModule,
   ],
   templateUrl: './departamento-dialog.component.html',
   styleUrls: ['./departamento-dialog.component.scss']

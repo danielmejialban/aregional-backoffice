@@ -5,13 +5,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
-import { AuthService } from '../../services/auth.service';
-import { EventoVoluntarioService } from '../../services/evento-voluntario.service';
-import { EventoService } from '../../services/evento.service';
-import { EventoVoluntarioDTO } from '../../models/evento-voluntario.model';
-import { EventoDTO } from '../../models/evento.model';
-import { LoginResponse } from '../../models/login.model';
-import { forkJoin, of } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { AuthService } from '@app/services/auth.service';
+import { EventoVoluntarioService } from '@app/services/evento-voluntario.service';
+import { EventoService } from '@app/services/evento.service';
+import { EventoVoluntarioDTO } from '@app/models/evento-voluntario.model';
+import { EventoDTO } from '@app/models/evento.model';
+import { LoginResponse } from '@app/models/login.model';
+import {  of } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 
 export interface PaseConEvento {
@@ -28,7 +29,8 @@ export interface PaseConEvento {
     MatIconModule,
     MatButtonModule,
     MatProgressSpinnerModule,
-    MatChipsModule
+    MatChipsModule,
+    TranslateModule
   ],
   templateUrl: './mis-pases.component.html',
   styleUrls: ['./mis-pases.component.scss']
@@ -42,7 +44,8 @@ export class MisPasesComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private eventoVoluntarioService: EventoVoluntarioService,
-    private eventoService: EventoService
+    private eventoService: EventoService,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -63,7 +66,7 @@ export class MisPasesComponent implements OnInit {
       switchMap(asignaciones => this.enrichWithEventos(asignaciones))
     ).subscribe({
       next: pases => { this.pases = pases; this.loading = false; },
-      error: () => { this.error = 'No se pudieron cargar los pases.'; this.loading = false; }
+      error: () => { this.error = this.translate.instant('MisPases.LoadError'); this.loading = false; }
     });
   }
 
@@ -74,7 +77,7 @@ export class MisPasesComponent implements OnInit {
       switchMap(asignaciones => this.enrichWithEventos(asignaciones))
     ).subscribe({
       next: pases => { this.pases = pases; this.loading = false; },
-      error: () => { this.error = 'No se pudieron cargar los pases.'; this.loading = false; }
+      error: () => { this.error = this.translate.instant('MisPases.LoadError'); this.loading = false; }
     });
   }
 
