@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -11,7 +11,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -24,6 +24,36 @@ import { UsuarioDTO } from '@app/models/usuario.model';
 import { RolDTO } from '@app/models/rol.model';
 import { VoluntarioDTO } from '@app/models/voluntario.model';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+
+@Component({
+  selector: 'app-reset-password-dialog',
+  standalone: true,
+  imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatDialogModule, MatIconModule, TranslateModule],
+  template: `
+    <h2 mat-dialog-title>{{ 'Admin.ResetPassword.Title' | translate }}</h2>
+    <mat-dialog-content>
+      <mat-form-field appearance="outline" style="width:100%; margin-top:8px">
+        <mat-label>{{ 'Admin.ResetPassword.NewPassword' | translate }}</mat-label>
+        <input matInput [(ngModel)]="contrasena" [type]="hide ? 'password' : 'text'" autocomplete="new-password" />
+        <button mat-icon-button matSuffix (click)="hide = !hide" type="button">
+          <mat-icon>{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </mat-form-field>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>{{ 'Common.Cancel' | translate }}</button>
+      <button mat-raised-button color="primary" [disabled]="!contrasena.trim()" (click)="confirmar()">
+        {{ 'Admin.ResetPassword.Confirm' | translate }}
+      </button>
+    </mat-dialog-actions>
+  `,
+})
+export class ResetPasswordDialogComponent {
+  contrasena = '';
+  hide = true;
+  private ref = inject(MatDialogRef<ResetPasswordDialogComponent>);
+  confirmar() { this.ref.close(this.contrasena.trim()); }
+}
 
 interface UsuarioRow extends UsuarioDTO {
   rolIdEdit: number;
@@ -69,7 +99,7 @@ export class AdminPanelComponent implements OnInit {
   limpiando = false;
   creando = false;
 
-  readonly displayedColumns = ['nombre', 'voluntario', 'rol', 'acciones'];
+  readonly displayedColumns = ['nombre', 'voluntario', 'rol', 'acciones', 'password'];
 
   nuevoUsuario: NuevoUsuarioForm = { voluntarioId: null, rolId: null, contrasena: 'admin123' };
   voluntarioBusqueda = '';
@@ -221,5 +251,24 @@ export class AdminPanelComponent implements OnInit {
 
   rolCambiado(row: UsuarioRow): boolean {
     return row.rolIdEdit !== row.rolId;
+  }
+
+  resetearContrasena(row: UsuarioRow): void {
+    const ref = this.dialog.open(ResetPasswordDialogComponent, { width: '380px' });
+    ref.afterClosed().subscribe((nuevaContrasena: string | undefined) => {
+      if (!nuevaContrasena) return;
+      this.usuarioService.cambiarContrasena(row.id!, nuevaContrasena).subscribe({
+        next: () => this.snackBar.open(
+          this.translate.instant('Admin.Snack.PasswordReset'),
+          this.translate.instant('Common.Close'),
+          { duration: 3000, panelClass: ['success-snackbar'] }
+        ),
+        error: () => this.snackBar.open(
+          this.translate.instant('Admin.Snack.PasswordResetError'),
+          this.translate.instant('Common.Close'),
+          { duration: 4000 }
+        ),
+      });
+    });
   }
 }

@@ -512,6 +512,12 @@
     "CreateUserCreating": "Creando...",
     "CreateUserVoluntarioRequired": "Selecciona un voluntario",
     "CreateUserRolRequired": "Selecciona un rol",
+    "ResetPassword": {
+      "Title": "Restablecer Contraseña",
+      "NewPassword": "Nueva contraseña",
+      "Confirm": "Guardar",
+      "Tooltip": "Restablecer contraseña"
+    },
     "Snack": {
       "LoadError": "Error al cargar los datos",
       "RoleUpdated": "Rol actualizado correctamente",
@@ -519,7 +525,9 @@
       "DbCleaned": "Base de datos limpiada correctamente",
       "DbCleanError": "Error al limpiar la base de datos",
       "UserCreated": "Usuario creado correctamente",
-      "UserCreateError": "Error al crear el usuario"
+      "UserCreateError": "Error al crear el usuario",
+      "PasswordReset": "Contraseña actualizada correctamente",
+      "PasswordResetError": "Error al actualizar la contraseña"
     }
   },
   "DescargaQr": {

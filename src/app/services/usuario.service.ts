@@ -32,6 +32,10 @@ export class UsuarioService {
     return this.http.patch<UsuarioDTO>(`${this.API_URL}/${id}/rol`, { rolId });
   }
 
+  cambiarContrasena(id: number, contrasena: string): Observable<UsuarioDTO> {
+    return this.http.patch<UsuarioDTO>(`${this.API_URL}/${id}/contrasena`, { contrasena });
+  }
+
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
