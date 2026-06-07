@@ -3,62 +3,40 @@ import * as ExcelJS from 'exceljs';
 import { EventoDTO } from '../models/evento.model';
 
 // ── Colores ──────────────────────────────────────────────────────────────────
-const COLOR_EVENTO  = 'FF1565C0'; // azul  — evento
 const COLOR_DEPT    = 'FF2E7D32'; // verde — departamento
 const COLOR_VOL     = 'FFE65100'; // naranja — voluntario
 const COLOR_ACCESO  = 'FF6A1B9A'; // morado — días de acceso
 const COLOR_TEXT    = 'FFFFFFFF'; // blanco
-
-interface ColDef {
-  header: string;
-  key: string;
-  width: number;
-  color: string;
-  tipo: 'texto' | 'fecha' | 'entero';
-  nota?: string;
-}
-
-const COLUMNAS: ColDef[] = [
-  // Evento
-  { header: 'evento',           key: 'A', width: 28, color: COLOR_EVENTO,  tipo: 'texto',  nota: 'Nombre del evento (obligatorio)' },
-  { header: 'fechaInicioEvento',key: 'B', width: 18, color: COLOR_EVENTO,  tipo: 'fecha',  nota: 'Fecha inicio (dd/mm/aaaa)' },
-  { header: 'fechaFinEvento',   key: 'C', width: 18, color: COLOR_EVENTO,  tipo: 'fecha',  nota: 'Fecha fin (dd/mm/aaaa)' },
-  { header: 'diasPreEvento',    key: 'D', width: 14, color: COLOR_EVENTO,  tipo: 'entero', nota: 'Días de acceso previo al evento (0 si ninguno)' },
-  // Departamento
-  { header: 'departamento',     key: 'E', width: 22, color: COLOR_DEPT,    tipo: 'texto',  nota: 'Nombre del departamento (obligatorio)' },
-  { header: 'responsable',      key: 'F', width: 16, color: COLOR_DEPT,    tipo: 'texto',  nota: 'DNI/NIE del responsable del departamento' },
-  { header: 'auxiliares',       key: 'G', width: 24, color: COLOR_DEPT,    tipo: 'texto',  nota: 'DNIs/NIEs de auxiliares separados por comas' },
-  // Voluntario
-  { header: 'nombre',           key: 'H', width: 18, color: COLOR_VOL,     tipo: 'texto',  nota: 'Máx. 25 caracteres (obligatorio)' },
-  { header: 'apellido1',        key: 'I', width: 16, color: COLOR_VOL,     tipo: 'texto',  nota: 'Máx. 15 caracteres (obligatorio)' },
-  { header: 'apellido2',        key: 'J', width: 16, color: COLOR_VOL,     tipo: 'texto',  nota: 'Máx. 15 caracteres (opcional)' },
-  { header: 'dni',              key: 'K', width: 13, color: COLOR_VOL,     tipo: 'texto',  nota: 'DNI (8 dígitos + letra) o NIE (X/Y/Z + 7 dígitos + letra)' },
-  { header: 'telefono',         key: 'L', width: 18, color: COLOR_VOL,     tipo: 'texto',  nota: 'Ej: +34 612 345 678 (opcional)' },
-  { header: 'email',            key: 'M', width: 26, color: COLOR_VOL,     tipo: 'texto',  nota: 'Email (opcional)' },
-  // Días de acceso
-  { header: 'dia_acceso_1',     key: 'N', width: 15, color: COLOR_ACCESO,  tipo: 'fecha',  nota: 'Fecha específica de acceso 1 (opcional)' },
-  { header: 'dia_acceso_2',     key: 'O', width: 15, color: COLOR_ACCESO,  tipo: 'fecha',  nota: 'Fecha específica de acceso 2 (opcional)' },
-  { header: 'dia_acceso_3',     key: 'P', width: 15, color: COLOR_ACCESO,  tipo: 'fecha',  nota: 'Fecha específica de acceso 3 (opcional)' },
-  { header: 'dia_acceso_4',     key: 'Q', width: 15, color: COLOR_ACCESO,  tipo: 'fecha',  nota: 'Fecha específica de acceso 4 (opcional)' },
-  { header: 'dia_acceso_5',     key: 'R', width: 15, color: COLOR_ACCESO,  tipo: 'fecha',  nota: 'Fecha específica de acceso 5 (opcional)' },
-  { header: 'dia_acceso_6',     key: 'S', width: 15, color: COLOR_ACCESO,  tipo: 'fecha',  nota: 'Fecha específica de acceso 6 (opcional)' },
-  { header: 'dia_acceso_7',     key: 'T', width: 15, color: COLOR_ACCESO,  tipo: 'fecha',  nota: 'Fecha específica de acceso 7 (opcional)' },
-];
 
 @Injectable({ providedIn: 'root' })
 export class PlantillaExcelService {
 
   async descargarPlantillaMaestra(): Promise<void> {
     const wb = new ExcelJS.Workbook();
-    wb.creator  = 'Asamblea Regional Backoffice';
-    wb.created  = new Date();
+    wb.creator = 'Asamblea Regional Backoffice';
+    wb.created = new Date();
     const ws = wb.addWorksheet('Carga Maestra', {
-      views: [{ state: 'frozen', ySplit: 2 }],   // congela las dos primeras filas (cabecera + leyenda)
+      views: [{ state: 'frozen', ySplit: 2 }],
       pageSetup: { orientation: 'landscape', fitToPage: true }
     });
 
+    const cols = [
+      { header: 'departamento',  color: COLOR_DEPT,  width: 22, nota: 'Nombre del departamento (obligatorio)' },
+      { header: 'responsable',   color: COLOR_DEPT,  width: 12, nota: 'Sí si es el responsable del departamento' },
+      { header: 'auxiliar',      color: COLOR_DEPT,  width: 12, nota: 'Sí si es auxiliar del departamento' },
+      { header: 'nombre',        color: COLOR_VOL,   width: 18, nota: 'Máx. 25 caracteres (obligatorio)' },
+      { header: 'apellido1',     color: COLOR_VOL,   width: 16, nota: 'Máx. 15 caracteres (obligatorio)' },
+      { header: 'apellido2',     color: COLOR_VOL,   width: 16, nota: 'Máx. 15 caracteres (opcional)' },
+      { header: 'dni/nie',       color: COLOR_VOL,   width: 13, nota: 'DNI (8 dígitos+letra) o NIE (X/Y/Z+7+letra)' },
+      { header: 'telefono',      color: COLOR_VOL,   width: 16, nota: 'Opcional' },
+      { header: 'email',         color: COLOR_VOL,   width: 26, nota: 'Opcional' },
+      { header: 'congregación',  color: COLOR_VOL,   width: 20, nota: 'Opcional' },
+      { header: 'circuito',      color: COLOR_VOL,   width: 14, nota: 'Opcional' },
+      { header: 'formación',     color: COLOR_VOL,   width: 12, nota: 'Sí si ha completado formación' },
+    ];
+
     // ── Cabecera: fila 1 ────────────────────────────────────────────────────
-    COLUMNAS.forEach((col, idx) => {
+    cols.forEach((col, idx) => {
       const cell = ws.getCell(1, idx + 1);
       cell.value = col.header;
       cell.font  = { bold: true, color: { argb: COLOR_TEXT }, size: 10 };
@@ -72,10 +50,10 @@ export class PlantillaExcelService {
     });
     ws.getRow(1).height = 30;
 
-    // ── Fila 2: notas de ayuda ───────────────────────────────────────────────
-    COLUMNAS.forEach((col, idx) => {
+    // ── Fila 2: notas de ayuda ──────────────────────────────────────────────
+    cols.forEach((col, idx) => {
       const cell = ws.getCell(2, idx + 1);
-      cell.value = col.nota ?? '';
+      cell.value = col.nota;
       cell.font  = { italic: true, size: 8, color: { argb: 'FF546E7A' } };
       cell.fill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } };
       cell.alignment = { wrapText: true, vertical: 'top' };
@@ -83,55 +61,41 @@ export class PlantillaExcelService {
     ws.getRow(2).height = 36;
 
     // ── Fila 3: ejemplo ─────────────────────────────────────────────────────
-    const ejemplo: (string | number | Date | undefined)[] = [
-      'Congreso 2026', new Date(2026, 8, 21), new Date(2026, 8, 23), 2,
-      'Acomodación', '12345678A', '87654321B,23456789C',
-      'Juan', 'García', 'López', '34567890D', '+34 612 345 678', 'juan@email.com',
-      new Date(2026, 8, 21), new Date(2026, 8, 23), undefined, undefined, undefined, undefined, undefined,
+    const exampleRow = [
+      'Acomodación', 'Sí', 'No',
+      'Juan', 'García', 'López', '34567890D',
+      '+34 612 345 678', 'juan@email.com',
+      'Congregación Sur', 'Circuito 12', 'No',
     ];
     const filaEjemplo = ws.getRow(3);
-    ejemplo.forEach((val, idx) => {
+    exampleRow.forEach((val, idx) => {
       const cell = filaEjemplo.getCell(idx + 1);
-      cell.value = val ?? null;
+      cell.value = val;
       cell.font  = { size: 9, color: { argb: 'FF212121' } };
       cell.fill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFCE4EC' } };
-      if (val instanceof Date) cell.numFmt = 'dd/mm/yyyy';
     });
 
-    // ── Data validation en columnas de fecha (B, C, N-T) ────────────────────
-    // ExcelJS Worksheet es en realidad XSSFWorksheet que sí tiene dataValidations.
-    // Usamos cast explícito para acceder a la API extendida.
+    // ── Data validation: columnas booleanas (Sí/No) ─────────────────────────
     const wsAny = ws as any;
-    const fechaCols = ['B', 'C', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'];
-    const fechaValidation = {
-      type:             'date',
-      allowBlank:       true,
-      operator:         'greaterThan',
-      formulae:         [new Date(2020, 0, 1)],
+    const siNoValidation = {
+      type: 'list',
+      allowBlank: true,
+      formulae: ['"Sí,No"'],
       showInputMessage: true,
-      promptTitle:      'Fecha',
-      prompt:           'Selecciona o escribe una fecha (dd/mm/aaaa)',
+      promptTitle: 'Selecciona',
+      prompt: 'Sí = verdadero, No = falso',
       showErrorMessage: true,
-      errorStyle:       'warning',
-      errorTitle:       'Fecha inválida',
-      error:            'Introduce una fecha válida en formato dd/mm/aaaa',
+      errorStyle: 'warning',
+      errorTitle: 'Valor inválido',
+      error: 'Selecciona Sí o No',
     };
-    fechaCols.forEach(col => {
+    // responsable (col 2), auxiliar (col 3), formación (col 12)
+    [2, 3, 12].forEach(colIdx => {
+      const letter = this.colLetter(colIdx);
       if (wsAny.dataValidations?.add) {
-        wsAny.dataValidations.add(`${col}4:${col}5004`, fechaValidation);
+        wsAny.dataValidations.add(`${letter}4:${letter}5004`, siNoValidation);
       }
-      ws.getColumn(col).numFmt = 'dd/mm/yyyy';
     });
-
-    // Data validation columna D (diasPreEvento): entero 0-365
-    if (wsAny.dataValidations?.add) {
-      wsAny.dataValidations.add('D4:D5004', {
-        type: 'whole', allowBlank: true, operator: 'between',
-        formulae: [0, 365],
-        showErrorMessage: true, errorStyle: 'warning',
-        errorTitle: 'Valor inválido', error: 'Introduce un número entero entre 0 y 365',
-      });
-    }
 
     // ── Descargar ────────────────────────────────────────────────────────────
     const buffer = await wb.xlsx.writeBuffer();
@@ -140,7 +104,7 @@ export class PlantillaExcelService {
     const url  = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href     = url;
-    link.download = 'plantilla_maestra_carga.xlsx';
+    link.download = 'plantilla_carga_masiva.xlsx';
     link.click();
     URL.revokeObjectURL(url);
   }
