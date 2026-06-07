@@ -15,7 +15,8 @@ const ROWS        = 5;
 const CARDS_PER_PAGE = COLS * ROWS;
 
 // ── Colores ──────────────────────────────────────────────────────────────────
-const COLOR_HEADER_BG  = '#1565C0';
+const COLOR_HEADER_BG        = '#1565C0';
+const COLOR_HEADER_BG_ORANGE = '#E65100';
 const COLOR_HEADER_TXT = '#FFFFFF';
 const COLOR_BODY_BG    = '#FFFFFF';
 const COLOR_BORDER     = '#BBDEFB';
@@ -77,8 +78,10 @@ export class QrPdfService {
     doc.setLineWidth(0.4);
     doc.roundedRect(x, y, CARD_W, CARD_H, 3, 3, 'FD');
 
-    // ── Cabecera azul ─────────────────────────────────────────────────────────
-    doc.setFillColor(COLOR_HEADER_BG);
+    // ── Cabecera (azul o naranja según preAsamblea) ───────────────────────────
+    const vol = voluntarios.find(v => v.id === a.voluntarioId);
+    const headerColor = vol?.preAsamblea ? COLOR_HEADER_BG_ORANGE : COLOR_HEADER_BG;
+    doc.setFillColor(headerColor);
     doc.roundedRect(x, y, CARD_W, HEADER_H, 3, 3, 'F');
     doc.rect(x, y + 4, CARD_W, HEADER_H - 4, 'F');
 
@@ -89,7 +92,6 @@ export class QrPdfService {
     doc.text(this.truncar(a.eventoNombre ?? 'Evento', 42), x + 4, y + 6.5);
 
     // ── Nombre completo del voluntario ────────────────────────────────────────
-    const vol = voluntarios.find(v => v.id === a.voluntarioId);
     const nombreCompleto = vol
       ? [vol.nombre, vol.apellido1, vol.apellido2].filter(Boolean).join(' ')
       : (a.voluntarioNombre ?? '-');
@@ -101,11 +103,12 @@ export class QrPdfService {
     doc.text(lineasNombre.slice(0, 2), x + 4, y + HEADER_H + 8);
 
     // ── Departamento ──────────────────────────────────────────────────────────
-    if (vol?.departamentoNombre) {
+    const deptNombre = a.voluntarioDepartamentoNombre ?? vol?.departamentoNombre;
+    if (deptNombre) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(6.5);
       doc.setTextColor(COLOR_TEXT_MUTED);
-      doc.text(this.truncar(vol.departamentoNombre, 30), x + 4, y + HEADER_H + 16);
+      doc.text(this.truncar(deptNombre, 30), x + 4, y + HEADER_H + 16);
     }
 
     // ── Fecha ─────────────────────────────────────────────────────────────────

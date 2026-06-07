@@ -2,6 +2,7 @@ export interface EventoVoluntarioDTO {
   id?: number;
   voluntarioId: number;
   voluntarioNombre?: string;
+  voluntarioDepartamentoNombre?: string;
   eventoId: number;
   eventoNombre?: string;
   fechaInicioEvento?: string;

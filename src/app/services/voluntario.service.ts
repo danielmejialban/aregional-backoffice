@@ -22,7 +22,8 @@ export class VoluntarioService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<VoluntarioDTO[]> {
-    return this.http.get<VoluntarioDTO[] | PageDTO<VoluntarioDTO>>(this.API_URL).pipe(
+    const params = new HttpParams().set('size', '10000');
+    return this.http.get<VoluntarioDTO[] | PageDTO<VoluntarioDTO>>(this.API_URL, { params }).pipe(
       map(r => Array.isArray(r) ? r : (r.content ?? []))
     );
   }

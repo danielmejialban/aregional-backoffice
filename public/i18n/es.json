@@ -239,8 +239,20 @@
       "Message": "¿Estás seguro de que quieres eliminar el rol \"{{name}}\"?",
       "Confirm": "Eliminar"
     },
+    "Dialog": {
+      "Title": "Nuevo Rol",
+      "TitleEdit": "Editar Rol",
+      "NombreLabel": "Nombre del rol",
+      "NombrePlaceholder": "Ej: COORDINADOR",
+      "DescripcionLabel": "Descripción",
+      "DescripcionPlaceholder": "Descripción opcional del rol"
+    },
     "Snack": {
-      "DeletePending": "Funcionalidad de eliminar rol pendiente de implementar"
+      "DeletePending": "Funcionalidad de eliminar rol pendiente de implementar",
+      "Created": "Rol creado correctamente",
+      "CreateError": "Error al crear el rol",
+      "Updated": "Rol actualizado correctamente",
+      "UpdateError": "Error al actualizar el rol"
     }
   },
   "Eventos": {
@@ -490,12 +502,24 @@
       "Message": "Se eliminarán TODOS los voluntarios, eventos, asignaciones, check-ins y departamentos. Solo se conservará el super-usuario admin. Esta acción es irreversible.",
       "Confirm": "Sí, limpiar todo"
     },
+    "CreateUserTitle": "Crear Nuevo Usuario",
+    "CreateUserSubtitle": "Asocia un voluntario existente a una cuenta de acceso.",
+    "CreateUserVoluntarioLabel": "Voluntario",
+    "CreateUserVoluntarioPlaceholder": "Buscar por nombre o DNI...",
+    "CreateUserRolLabel": "Rol",
+    "CreateUserPasswordLabel": "Contraseña inicial",
+    "CreateUserButton": "Crear Usuario",
+    "CreateUserCreating": "Creando...",
+    "CreateUserVoluntarioRequired": "Selecciona un voluntario",
+    "CreateUserRolRequired": "Selecciona un rol",
     "Snack": {
       "LoadError": "Error al cargar los datos",
       "RoleUpdated": "Rol actualizado correctamente",
       "RoleUpdateError": "Error al actualizar el rol",
       "DbCleaned": "Base de datos limpiada correctamente",
-      "DbCleanError": "Error al limpiar la base de datos"
+      "DbCleanError": "Error al limpiar la base de datos",
+      "UserCreated": "Usuario creado correctamente",
+      "UserCreateError": "Error al crear el usuario"
     }
   },
   "DescargaQr": {

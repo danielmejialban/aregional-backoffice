@@ -14,6 +14,58 @@
 
   <ng-container *ngIf="!loading">
 
+    <!-- Sección 0: Crear nuevo usuario -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>person_add</mat-icon> {{ 'Admin.CreateUserTitle' | translate }}
+        </mat-card-title>
+        <mat-card-subtitle>{{ 'Admin.CreateUserSubtitle' | translate }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="create-user-form">
+
+          <!-- Voluntario autocomplete -->
+          <mat-form-field appearance="outline" class="create-field">
+            <mat-label>{{ 'Admin.CreateUserVoluntarioLabel' | translate }}</mat-label>
+            <input matInput
+              [(ngModel)]="voluntarioBusqueda"
+              [matAutocomplete]="autoVol"
+              (ngModelChange)="filtrarVoluntarios($event)"
+              [placeholder]="'Admin.CreateUserVoluntarioPlaceholder' | translate" />
+            <mat-autocomplete #autoVol="matAutocomplete" (optionSelected)="seleccionarVoluntario($event.option.value)">
+              <mat-option *ngFor="let v of voluntariosFiltrados" [value]="v">
+                {{ v.nombre }} {{ v.apellido1 }}{{ v.apellido2 ? ' ' + v.apellido2 : '' }} — {{ v.dni }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <!-- Rol -->
+          <mat-form-field appearance="outline" class="create-field">
+            <mat-label>{{ 'Admin.CreateUserRolLabel' | translate }}</mat-label>
+            <mat-select [(ngModel)]="nuevoUsuario.rolId">
+              <mat-option *ngFor="let r of roles" [value]="r.id">{{ r.nombre }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Contraseña -->
+          <mat-form-field appearance="outline" class="create-field">
+            <mat-label>{{ 'Admin.CreateUserPasswordLabel' | translate }}</mat-label>
+            <input matInput [(ngModel)]="nuevoUsuario.contrasena" type="password" autocomplete="new-password" />
+          </mat-form-field>
+
+          <button mat-raised-button color="primary"
+            [disabled]="!formularioValido()"
+            (click)="crearUsuario()"
+            class="create-btn">
+            <mat-spinner diameter="16" *ngIf="creando"></mat-spinner>
+            <mat-icon *ngIf="!creando">person_add</mat-icon>
+            {{ (creando ? 'Admin.CreateUserCreating' : 'Admin.CreateUserButton') | translate }}
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
     <!-- Sección 1: Gestión de usuarios -->
     <mat-card class="section-card">
       <mat-card-header>

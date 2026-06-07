@@ -6,24 +6,34 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { forkJoin } from 'rxjs';
 import { UsuarioService } from '@app/services/usuario.service';
 import { RolService } from '@app/services/rol.service';
+import { VoluntarioService } from '@app/services/voluntario.service';
 import { AdminService } from '@app/services/admin.service';
 import { UsuarioDTO } from '@app/models/usuario.model';
 import { RolDTO } from '@app/models/rol.model';
+import { VoluntarioDTO } from '@app/models/voluntario.model';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 interface UsuarioRow extends UsuarioDTO {
   rolIdEdit: number;
   guardando: boolean;
+}
+
+interface NuevoUsuarioForm {
+  voluntarioId: number | null;
+  rolId: number | null;
+  contrasena: string;
 }
 
 @Component({
@@ -37,12 +47,14 @@ interface UsuarioRow extends UsuarioDTO {
     MatIconModule,
     MatSelectModule,
     MatFormFieldModule,
+    MatInputModule,
     MatTableModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
     MatSnackBarModule,
     MatDialogModule,
     MatDividerModule,
+    MatAutocompleteModule,
     TranslateModule,
   ],
   templateUrl: './admin-panel.component.html',
@@ -51,14 +63,21 @@ interface UsuarioRow extends UsuarioDTO {
 export class AdminPanelComponent implements OnInit {
   usuarios: UsuarioRow[] = [];
   roles: RolDTO[] = [];
+  voluntarios: VoluntarioDTO[] = [];
+  voluntariosFiltrados: VoluntarioDTO[] = [];
   loading = true;
   limpiando = false;
+  creando = false;
 
   readonly displayedColumns = ['nombre', 'voluntario', 'rol', 'acciones'];
+
+  nuevoUsuario: NuevoUsuarioForm = { voluntarioId: null, rolId: null, contrasena: 'admin123' };
+  voluntarioBusqueda = '';
 
   constructor(
     private usuarioService: UsuarioService,
     private rolService: RolService,
+    private voluntarioService: VoluntarioService,
     private adminService: AdminService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
@@ -74,9 +93,12 @@ export class AdminPanelComponent implements OnInit {
     forkJoin({
       usuarios: this.usuarioService.getAll(),
       roles: this.rolService.getAll(),
+      voluntarios: this.voluntarioService.getAll(),
     }).subscribe({
-      next: ({ usuarios, roles }) => {
+      next: ({ usuarios, roles, voluntarios }) => {
         this.roles = roles;
+        this.voluntarios = voluntarios;
+        this.voluntariosFiltrados = voluntarios;
         this.usuarios = usuarios.map(u => ({
           ...u,
           rolIdEdit: u.rolId,
@@ -89,6 +111,57 @@ export class AdminPanelComponent implements OnInit {
         this.snackBar.open(this.translate.instant('Admin.Snack.LoadError'), this.translate.instant('Common.Close'), { duration: 4000 });
       }
     });
+  }
+
+  filtrarVoluntarios(busqueda: string): void {
+    this.nuevoUsuario.voluntarioId = null;
+    const term = busqueda.toLowerCase().trim();
+    this.voluntariosFiltrados = term
+      ? this.voluntarios.filter(v =>
+          `${v.nombre} ${v.apellido1} ${v.apellido2 ?? ''}`.toLowerCase().includes(term) ||
+          v.dni.toLowerCase().includes(term)
+        )
+      : this.voluntarios;
+  }
+
+  seleccionarVoluntario(vol: VoluntarioDTO): void {
+    this.nuevoUsuario.voluntarioId = vol.id ?? null;
+    this.voluntarioBusqueda = `${vol.nombre} ${vol.apellido1}${vol.apellido2 ? ' ' + vol.apellido2 : ''} (${vol.dni})`;
+  }
+
+  displayVoluntario(vol: VoluntarioDTO): string {
+    return vol ? `${vol.nombre} ${vol.apellido1} (${vol.dni})` : '';
+  }
+
+  crearUsuario(): void {
+    if (!this.nuevoUsuario.voluntarioId || !this.nuevoUsuario.rolId) return;
+    this.creando = true;
+    const payload: UsuarioDTO = {
+      nombre: '',
+      voluntarioId: this.nuevoUsuario.voluntarioId,
+      rolId: this.nuevoUsuario.rolId,
+      contrasena: this.nuevoUsuario.contrasena || 'admin123',
+    };
+    this.usuarioService.create(payload).subscribe({
+      next: () => {
+        this.creando = false;
+        this.nuevoUsuario = { voluntarioId: null, rolId: null, contrasena: 'admin123' };
+        this.voluntarioBusqueda = '';
+        this.snackBar.open(this.translate.instant('Admin.Snack.UserCreated'), this.translate.instant('Common.Close'), {
+          duration: 3000, panelClass: ['success-snackbar']
+        });
+        this.cargarDatos();
+      },
+      error: (err) => {
+        this.creando = false;
+        const msg = err?.error?.message ?? this.translate.instant('Admin.Snack.UserCreateError');
+        this.snackBar.open(msg, this.translate.instant('Common.Close'), { duration: 5000 });
+      }
+    });
+  }
+
+  formularioValido(): boolean {
+    return !!this.nuevoUsuario.voluntarioId && !!this.nuevoUsuario.rolId && !this.creando;
   }
 
   guardarRol(row: UsuarioRow): void {
