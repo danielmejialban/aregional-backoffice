@@ -1,5 +1,5 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -8,10 +8,13 @@ import { TranslateService } from '@ngx-translate/core';
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const snackBar = inject(MatSnackBar);
-  const translate = inject(TranslateService);
+  const injector = inject(Injector);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      // Lazy-resolve TranslateService to break the circular DI cycle:
+      // TranslateService → HttpClient → errorInterceptor → TranslateService
+      const translate = injector.get(TranslateService);
       let errorMessage = translate.instant('Errors.Default');
 
       if (error.error instanceof ErrorEvent || error.status === 0) {

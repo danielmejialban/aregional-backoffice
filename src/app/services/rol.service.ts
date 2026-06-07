@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { RolDTO } from '../models/rol.model';
 import { PageDTO } from '../models/page.model';
 import { environment } from '../../environments/environment';
@@ -14,7 +15,9 @@ export class RolService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<RolDTO[]> {
-    return this.http.get<RolDTO[]>(this.API_URL);
+    return this.http.get<RolDTO[] | PageDTO<RolDTO>>(this.API_URL).pipe(
+      map(resp => Array.isArray(resp) ? resp : resp.content ?? [])
+    );
   }
 
   getAllPaged(page: number, size: number, nombre?: string): Observable<PageDTO<RolDTO>> {

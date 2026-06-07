@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:8080',
-  hcaptchaSiteKey: '10000000-ffff-ffff-ffff-000000000001', // test key — always passes
+  hcaptchaSiteKey: 'dd7c660c-908a-4c5c-89e8-d70cad4adb84',
   captchaEnabled: false
 };
 

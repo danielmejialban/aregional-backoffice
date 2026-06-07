@@ -8,16 +8,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule } from '@ngx-translate/core';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions } from 'chart.js';
-import { forkJoin } from 'rxjs';
 import { Workbook } from 'exceljs';
 import { CheckInService } from '@app/services/check-in.service';
-import { VoluntarioService } from '@app/services/voluntario.service';
-import { EventoService } from '@app/services/evento.service';
-import { DepartamentoService } from '@app/services/departamento.service';
+import { EstadisticasService } from '@app/services/estadisticas.service';
+import { ItemConteoDTO } from '@app/models/estadisticas.model';
 import { CheckInDTO } from '@app/models/check-in.model';
-import { VoluntarioDTO } from '@app/models/voluntario.model';
-import { EventoDTO } from '@app/models/evento.model';
-import { DepartamentoDTO } from '@app/models/departamento.model';
 
 export interface DiaRow {
   fecha: string;
@@ -52,8 +47,6 @@ export class EstadisticasComponent implements OnInit {
   diasRows: DiaRow[] = [];
   readonly diasColumns = ['fecha', 'cantidad'];
 
-  private allCheckIns: CheckInDTO[] = [];
-
   barChartData: ChartData<'bar'> = { labels: [], datasets: [] };
   barChartOptions: ChartOptions<'bar'> = {
     responsive: true,
@@ -75,77 +68,52 @@ export class EstadisticasComponent implements OnInit {
   };
 
   constructor(
+    private estadisticasService: EstadisticasService,
     private checkInService: CheckInService,
-    private voluntarioService: VoluntarioService,
-    private eventoService: EventoService,
-    private departamentoService: DepartamentoService
   ) {}
 
   ngOnInit(): void {
     this.loading = true;
-    forkJoin({
-      checkIns: this.checkInService.getAll(),
-      voluntarios: this.voluntarioService.getAll(),
-      eventos: this.eventoService.getAll(),
-      departamentos: this.departamentoService.getAll()
-    }).subscribe({
-      next: ({ checkIns, voluntarios, eventos, departamentos }) => {
-        this.allCheckIns = checkIns;
-        this.totalCheckIns = checkIns.length;
-        this.totalVoluntarios = voluntarios.length;
-        this.totalEventos = eventos.length;
-        this.totalDepartamentos = departamentos.length;
-        this.buildBarChart(checkIns, eventos);
-        this.buildDoughnutChart(voluntarios, departamentos);
-        this.buildLineChart(checkIns);
-        this.buildDiasTable(checkIns);
+    this.estadisticasService.getResumen().subscribe({
+      next: (resumen) => {
+        this.totalVoluntarios   = resumen.totalVoluntarios;
+        this.totalEventos       = resumen.totalEventos;
+        this.totalCheckIns      = resumen.totalCheckIns;
+        this.totalDepartamentos = resumen.totalDepartamentos;
+        this.buildBarChart(resumen.checkInsPorEvento);
+        this.buildDoughnutChart(resumen.voluntariosPorDepartamento);
+        this.buildLineChart(resumen.checkInsPorDia);
+        this.buildDiasTable(resumen.checkInsPorDia);
         this.loading = false;
       },
       error: () => { this.loading = false; }
     });
   }
 
-  private buildBarChart(checkIns: CheckInDTO[], eventos: EventoDTO[]): void {
-    const counts: Record<string, number> = {};
-    checkIns.forEach(c => {
-      const name = c.eventoNombre || `Evento ${c.eventoId}`;
-      counts[name] = (counts[name] || 0) + 1;
-    });
-    const labels = Object.keys(counts);
-    const data = labels.map(l => counts[l]);
+  private buildBarChart(data: ItemConteoDTO[]): void {
+    const labels = data.map(d => d.nombre);
+    const values = data.map(d => d.cantidad);
     const colors = labels.map((_, i) => `hsl(${(i * 47) % 360}, 65%, 55%)`);
-    this.barChartData = { labels, datasets: [{ data, backgroundColor: colors, borderRadius: 6 }] };
+    this.barChartData = { labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: 6 }] };
   }
 
-  private buildDoughnutChart(voluntarios: VoluntarioDTO[], departamentos: DepartamentoDTO[]): void {
-    const counts: Record<string, number> = {};
-    departamentos.forEach(d => { counts[d.nombre] = 0; });
-    voluntarios.forEach(v => {
-      const dep = v.departamentoNombre || `Dep. ${v.departamentoId}`;
-      counts[dep] = (counts[dep] || 0) + 1;
-    });
-    const labels = Object.keys(counts).filter(k => counts[k] > 0);
-    const data = labels.map(l => counts[l]);
+  private buildDoughnutChart(data: ItemConteoDTO[]): void {
+    const labels = data.map(d => d.nombre);
+    const values = data.map(d => d.cantidad);
     const colors = labels.map((_, i) => `hsl(${(i * 67 + 20) % 360}, 60%, 55%)`);
-    this.doughnutChartData = { labels, datasets: [{ data, backgroundColor: colors, hoverOffset: 8 }] };
+    this.doughnutChartData = { labels, datasets: [{ data: values, backgroundColor: colors, hoverOffset: 8 }] };
   }
 
-  private buildLineChart(checkIns: CheckInDTO[]): void {
+  private buildLineChart(data: ItemConteoDTO[]): void {
+    const today = new Date();
     const days: string[] = [];
-    const counts: Record<string, number> = {};
     for (let i = 6; i >= 0; i--) {
-      const d = new Date();
+      const d = new Date(today);
       d.setDate(d.getDate() - i);
-      const key = d.toISOString().slice(0, 10);
-      days.push(key);
-      counts[key] = 0;
+      days.push(d.toISOString().slice(0, 10));
     }
-    checkIns.forEach(c => {
-      if (c.fechaHora) {
-        const key = c.fechaHora.slice(0, 10);
-        if (counts[key] !== undefined) counts[key]++;
-      }
-    });
+    const counts: Record<string, number> = Object.fromEntries(days.map(d => [d, 0]));
+    data.forEach(d => { if (counts[d.nombre] !== undefined) counts[d.nombre] = d.cantidad; });
     this.lineChartData = {
       labels: days.map(d => d.slice(5)),
       datasets: [{
@@ -159,24 +127,23 @@ export class EstadisticasComponent implements OnInit {
     };
   }
 
-  private buildDiasTable(checkIns: CheckInDTO[]): void {
-    const counts: Record<string, number> = {};
-    checkIns.forEach(c => {
-      if (c.fechaHora) {
-        const key = c.fechaHora.slice(0, 10);
-        counts[key] = (counts[key] || 0) + 1;
-      }
-    });
-    this.diasRows = Object.entries(counts)
-      .sort(([a], [b]) => b.localeCompare(a))
-      .map(([fecha, cantidad]) => ({ fecha, cantidad }));
+  private buildDiasTable(data: ItemConteoDTO[]): void {
+    this.diasRows = [...data]
+      .sort((a, b) => b.nombre.localeCompare(a.nombre))
+      .map(d => ({ fecha: d.nombre, cantidad: d.cantidad }));
   }
 
   exportarXls(): void {
     this.exportando = true;
+    this.checkInService.getAll().subscribe({
+      next: (checkIns) => this.generarExcel(checkIns),
+      error: () => { this.exportando = false; }
+    });
+  }
+
+  private generarExcel(checkIns: CheckInDTO[]): void {
     const wb = new Workbook();
 
-    // Sheet 1: daily summary
     const wsSummary = wb.addWorksheet('Resumen por Día');
     wsSummary.columns = [
       { header: 'Fecha', key: 'fecha', width: 14 },
@@ -185,7 +152,6 @@ export class EstadisticasComponent implements OnInit {
     wsSummary.getRow(1).font = { bold: true };
     this.diasRows.forEach(r => wsSummary.addRow(r));
 
-    // Sheet 2: detailed check-ins
     const wsDetail = wb.addWorksheet('Detalle Check-Ins');
     wsDetail.columns = [
       { header: 'ID', key: 'id', width: 8 },
@@ -195,7 +161,7 @@ export class EstadisticasComponent implements OnInit {
       { header: 'Observaciones', key: 'observaciones', width: 40 },
     ];
     wsDetail.getRow(1).font = { bold: true };
-    this.allCheckIns.forEach(c => wsDetail.addRow({
+    checkIns.forEach(c => wsDetail.addRow({
       id: c.id,
       fechaHora: c.fechaHora,
       voluntarioNombre: c.voluntarioNombre,

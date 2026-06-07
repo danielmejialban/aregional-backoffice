@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -67,7 +67,8 @@ export class EventoVoluntariosComponent implements OnInit {
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private qrPdfService: QrPdfService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -88,6 +89,7 @@ export class EventoVoluntariosComponent implements OnInit {
 
   ngAfterViewInit(): void {
     this.columns = this.buildColumns();
+    this.cdr.detectChanges();
   }
 
   private buildColumns(): ColumnDef[] {
