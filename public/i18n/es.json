@@ -269,7 +269,9 @@
     },
     "Actions": {
       "Edit": "Editar",
-      "Delete": "Eliminar"
+      "Delete": "Eliminar",
+      "Plantilla": "Descargar plantilla Excel",
+      "Importar": "Importar Excel"
     },
     "ConfirmDelete": {
       "Title": "Eliminar evento",
@@ -283,7 +285,9 @@
       "Updated": "Evento actualizado",
       "UpdateError": "Error al actualizar el evento",
       "Deleted": "Evento eliminado",
-      "DeleteError": "Error al eliminar el evento"
+      "DeleteError": "Error al eliminar el evento",
+      "PlantillaError": "Error al generar la plantilla Excel",
+      "ImportarError": "Error al importar el archivo Excel"
     },
     "Dialog": {
       "TitleEdit": "Editar Evento",

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { EventoDTO } from '../models/evento.model';
 import { PageDTO } from '../models/page.model';
+import { CargaMasivaResultadoDTO } from '../models/carga-masiva-resultado.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -47,6 +48,14 @@ export class EventoService {
 
   getConvocatoriaActiva(): Observable<EventoDTO[]> {
     return this.http.get<EventoDTO[]>(`${this.API_URL}/convocatoria-activa`);
+  }
+
+  importarExcel(eventoId: number, archivo: File): Observable<CargaMasivaResultadoDTO> {
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+    return this.http.post<CargaMasivaResultadoDTO>(
+      `${environment.apiUrl}/api/carga-maestra/importar/${eventoId}`, formData
+    );
   }
 }
 

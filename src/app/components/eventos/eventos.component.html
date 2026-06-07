@@ -1,10 +1,17 @@
 <div class="page-container">
 
+  <!-- Hidden file input for Excel import -->
+  <input #fileInput type="file" accept=".xlsx" style="display:none"
+    (change)="onArchivoSeleccionado($event)" />
+
   <div class="page-header">
     <h1><mat-icon class="header-icon">event</mat-icon> {{ 'Eventos.PageTitle' | translate }}</h1>
-    <button mat-raised-button color="primary" (click)="openCreateDialog()">
-      <mat-icon>add</mat-icon> {{ 'Eventos.NewButton' | translate }}
-    </button>
+    <div style="display:flex; gap:8px; align-items:center">
+      <mat-spinner *ngIf="importando" diameter="24"></mat-spinner>
+      <button mat-raised-button color="primary" (click)="openCreateDialog()">
+        <mat-icon>add</mat-icon> {{ 'Eventos.NewButton' | translate }}
+      </button>
+    </div>
   </div>
 
   <mat-card>
