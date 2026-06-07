@@ -1,6 +1,11 @@
 <div class="page-container">
   <div class="page-header">
     <h1><mat-icon>bar_chart</mat-icon> {{ 'Estadisticas.PageTitle' | translate }}</h1>
+    <button mat-raised-button color="primary" class="export-btn"
+            (click)="exportarXls()" [disabled]="loading || exportando">
+      <mat-icon>download</mat-icon>
+      {{ exportando ? 'Exportando...' : 'Exportar XLS' }}
+    </button>
   </div>
 
   <div *ngIf="loading" class="loading-container">
@@ -86,6 +91,31 @@
         </mat-card-content>
       </mat-card>
     </div>
+
+    <!-- Daily breakdown table -->
+    <mat-card class="dias-card" *ngIf="diasRows.length > 0">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>calendar_today</mat-icon>
+          Check-Ins por Día
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <table mat-table [dataSource]="diasRows" class="dias-table">
+          <ng-container matColumnDef="fecha">
+            <th mat-header-cell *matHeaderCellDef>Fecha</th>
+            <td mat-cell *matCellDef="let row">{{ row.fecha }}</td>
+          </ng-container>
+          <ng-container matColumnDef="cantidad">
+            <th mat-header-cell *matHeaderCellDef>Check-Ins</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="badge">{{ row.cantidad }}</span>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="diasColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: diasColumns;"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
   </ng-container>
 </div>
-

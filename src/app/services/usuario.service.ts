@@ -28,6 +28,10 @@ export class UsuarioService {
     return this.http.put<UsuarioDTO>(`${this.API_URL}/${id}`, usuario);
   }
 
+  cambiarRol(id: number, rolId: number): Observable<UsuarioDTO> {
+    return this.http.patch<UsuarioDTO>(`${this.API_URL}/${id}/rol`, { rolId });
+  }
+
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/${id}`);
   }

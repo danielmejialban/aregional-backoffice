@@ -100,6 +100,14 @@ export class QrPdfService {
     const lineasNombre = doc.splitTextToSize(this.truncar(nombreCompleto, 36), TEXT_W);
     doc.text(lineasNombre.slice(0, 2), x + 4, y + HEADER_H + 8);
 
+    // ── Departamento ──────────────────────────────────────────────────────────
+    if (vol?.departamentoNombre) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(6.5);
+      doc.setTextColor(COLOR_TEXT_MUTED);
+      doc.text(this.truncar(vol.departamentoNombre, 30), x + 4, y + HEADER_H + 16);
+    }
+
     // ── Fecha ─────────────────────────────────────────────────────────────────
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);

@@ -94,7 +94,7 @@ export class AdminPanelComponent implements OnInit {
   guardarRol(row: UsuarioRow): void {
     if (row.rolIdEdit === row.rolId) return;
     row.guardando = true;
-    this.usuarioService.update(row.id!, { ...row, rolId: row.rolIdEdit }).subscribe({
+    this.usuarioService.cambiarRol(row.id!, row.rolIdEdit).subscribe({
       next: (updated) => {
         row.rolId      = updated.rolId;
         row.rolNombre  = updated.rolNombre;
