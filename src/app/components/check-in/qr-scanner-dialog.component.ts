@@ -119,7 +119,7 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
   scanError: string | null = null;
   observaciones = '';
 
-  private codeReader = new BrowserMultiFormatReader();
+  private codeReader: BrowserMultiFormatReader | null = null;
   private scannerControls: any = null;
 
   constructor(
@@ -142,6 +142,7 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
     }
     this.loadingCamera = true;
     this.cameraError = null;
+    this.codeReader = new BrowserMultiFormatReader();
 
     // Intenta primero con cámara trasera (ideal), si falla prueba cualquier cámara
     const constraints: MediaStreamConstraints[] = [
@@ -189,12 +190,14 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
   }
 
   reset(): void {
+    this.stopCamera();
     this.scanResult = null;
     this.scanError = null;
     this.cameraError = null;
     this.observaciones = '';
     this.loadingCamera = true;
-    this.startCamera();
+    // Defer until Angular re-renders the video element into the DOM
+    setTimeout(() => this.startCamera());
   }
 
   private stopCamera(): void {
