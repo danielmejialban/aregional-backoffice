@@ -1,16 +1,24 @@
-﻿import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+﻿import { APP_INITIALIZER, ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withHashLocation } from '@angular/router';
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { routes } from './app.routes';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
+import { firstValueFrom } from 'rxjs';
 
 export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, './i18n/', '.json');
+}
+
+export function preloadTranslations(translate: TranslateService) {
+  return () => {
+    translate.setDefaultLang('es');
+    return firstValueFrom(translate.use('es'));
+  };
 }
 
 export const appConfig: ApplicationConfig = {
@@ -27,6 +35,12 @@ export const appConfig: ApplicationConfig = {
         loader: { provide: TranslateLoader, useFactory: createTranslateLoader, deps: [HttpClient] },
         defaultLanguage: 'es'
       })
-    )
+    ),
+    {
+      provide: APP_INITIALIZER,
+      useFactory: preloadTranslations,
+      deps: [TranslateService],
+      multi: true,
+    },
   ]
 };

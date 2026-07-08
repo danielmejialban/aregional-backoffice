@@ -31,7 +31,8 @@
     "DniRequired": "El DNI es obligatorio",
     "PasswordRequired": "La contraseña es obligatoria",
     "Submit": "Iniciar Sesión",
-    "Welcome": "¡Bienvenido!"
+    "Welcome": "¡Bienvenido!",
+    "CaptchaRequired": "Por favor completa el captcha"
   },
   "Dashboard": {
     "Title": "Dashboard",
@@ -130,6 +131,7 @@
       "Congregacion": "Congregación",
       "Circuito": "Circuito",
       "CorreoJw": "Correo JW",
+      "Email": "Email",
       "PreAsamblea": "Pre-asamblea",
       "Estado": "Estado",
       "Formacion": "Formación",
