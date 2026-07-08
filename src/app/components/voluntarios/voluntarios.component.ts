@@ -352,6 +352,11 @@ export class VoluntariosComponent implements OnInit {
       },
       {
         key: 'formacionLabel', header: this.translate.instant('Voluntarios.Columns.Formacion'), type: 'badge',
+        filterType: 'select',
+        filterOptions: [
+          this.translate.instant('Voluntarios.Badges.Completada'),
+          this.translate.instant('Voluntarios.Badges.Pendiente'),
+        ],
         badgeMap: {
           [this.translate.instant('Voluntarios.Badges.Completada')]: 'dt-badge--success',
           [this.translate.instant('Voluntarios.Badges.Pendiente')]: 'dt-badge--warn',
@@ -402,9 +407,12 @@ export class VoluntariosComponent implements OnInit {
     const nombre = (filters['nombreCompleto'] as string) || undefined;
     const dni    = (filters['dni']            as string) || undefined;
     const email  = (filters['email']          as string) || undefined;
-    const deptoNombre = filters['departamentoNombre'] as string | null;
-    const activoLabel = filters['activoLabel']        as string | null;
+    const deptoNombre    = filters['departamentoNombre'] as string | null;
+    const activoLabel    = filters['activoLabel']        as string | null;
+    const formacionLabel = filters['formacionLabel']     as string | null;
 
+    const completada = this.translate.instant('Voluntarios.Badges.Completada');
+    const pendiente  = this.translate.instant('Voluntarios.Badges.Pendiente');
     const depto = deptoNombre ? this.departamentos.find(d => d.nombre === deptoNombre) : null;
 
     this.currentFiltros = {
@@ -412,6 +420,7 @@ export class VoluntariosComponent implements OnInit {
       email:          email,
       departamentoId: depto?.id ?? null,
       activo:         activoLabel === 'Activo' ? true : activoLabel === 'Inactivo' ? false : null,
+      formacion:      formacionLabel === completada ? true : formacionLabel === pendiente ? false : null,
     };
     this.loadVoluntarios(0);
   }

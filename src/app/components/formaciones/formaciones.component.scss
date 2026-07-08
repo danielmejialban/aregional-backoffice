@@ -1,3 +1,47 @@
+.selector-card {
+  margin-bottom: 24px;
+}
+
+.selector-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  .evento-select {
+    flex: 1;
+    min-width: 260px;
+  }
+}
+
+.loading-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #666;
+  font-size: 14px;
+}
+
+.empty-state-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+  font-size: 14px;
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+
+  h3 { margin: 0; }
+  .contadores { font-size: 13px; color: #666; }
+}
+
 .page-container {
   h1 {
     margin: 0;

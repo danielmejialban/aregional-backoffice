@@ -480,13 +480,23 @@
       "Unapproved": "Desmarcado como aprobado",
       "UpdateError": "Error al actualizar aprobada",
       "Deleted": "Registro eliminado",
-      "DeleteError": "Error al eliminar registro"
+      "DeleteError": "Error al eliminar registro",
+      "WrongFilename": "El archivo debe llamarse exactamente 'formaciones.xlsx'",
+      "ImportSuccess": "Importación completada. Voluntarios marcados como formados.",
+      "ImportError": "Error al importar el archivo"
     },
     "RegistrarDialog": {
       "Title": "Registrar voluntario en formación",
       "VoluntarioLabel": "Voluntario",
       "VoluntarioRequired": "Selecciona un voluntario",
       "RegisterButton": "Registrar"
+    },
+    "Buttons": {
+      "Importar": "Importar formaciones.xlsx",
+      "Importing": "Importando..."
+    },
+    "Tooltips": {
+      "Importar": "Sube un archivo llamado 'formaciones.xlsx' para marcar automáticamente a los voluntarios como formados"
     }
   },
   "Admin": {

@@ -26,6 +26,18 @@
             </mat-option>
           </mat-select>
         </mat-form-field>
+
+        <button mat-raised-button color="accent"
+          [disabled]="!eventoSeleccionado || importando"
+          [matTooltip]="'Formaciones.Tooltips.Importar' | translate"
+          (click)="abrirImportacion()">
+          <mat-spinner *ngIf="importando" diameter="18" style="display:inline-block;margin-right:8px"></mat-spinner>
+          <mat-icon *ngIf="!importando">upload_file</mat-icon>
+          {{ (importando ? 'Formaciones.Buttons.Importing' : 'Formaciones.Buttons.Importar') | translate }}
+        </button>
+
+        <input #fileInput type="file" accept=".xlsx" style="display:none"
+          (change)="onArchivoSeleccionado($event)" />
       </div>
 
       <div *ngIf="!loading && eventosFormacion.length === 0" class="empty-state-inline">

@@ -12,6 +12,7 @@ export interface VoluntarioFiltros {
   email?: string;
   departamentoId?: number | null;
   activo?: boolean | null;
+  formacion?: boolean | null;
 }
 
 @Injectable({
@@ -34,6 +35,7 @@ export class VoluntarioService {
     if (filtros?.busqueda?.trim()) params = params.set('busqueda', filtros.busqueda.trim());
     if (filtros?.email?.trim())    params = params.set('email', filtros.email.trim());
     if (filtros?.activo != null)   params = params.set('activo', filtros.activo);
+    if (filtros?.formacion != null) params = params.set('formacion', filtros.formacion);
 
     if (filtros?.departamentoId != null) {
       return this.http.get<PageDTO<VoluntarioDTO>>(

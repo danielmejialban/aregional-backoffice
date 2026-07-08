@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, Inject, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,6 +21,7 @@ import { VoluntarioDTO } from '@app/models/voluntario.model';
 import { DataTableComponent } from '../data-table/data-table/data-table.component';
 import { ColumnDef, TableActionEvent } from '@app/@core';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { CargaMasivaResultadoDialogComponent } from '../voluntarios/voluntarios.component';
 
 export interface RegistrarFormacionData {
   eventoId: number;
@@ -94,6 +95,7 @@ export class RegistrarFormacionDialogComponent implements OnInit {
 })
 export class FormacionesComponent implements OnInit {
   @ViewChild('aprobadaTpl', { static: false }) aprobadaTpl!: TemplateRef<{ $implicit: any }>;
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   eventosFormacion: EventoDTO[] = [];
   eventoSeleccionado: EventoDTO | null = null;
@@ -103,6 +105,7 @@ export class FormacionesComponent implements OnInit {
 
   loading = false;
   loadingRegistros = false;
+  importando = false;
 
   constructor(
     private formacionService: FormacionService,
@@ -207,6 +210,36 @@ export class FormacionesComponent implements OnInit {
 
   countAsistio(): number   { return this.registros.filter(r => r.asistio).length; }
   countAprobados(): number { return this.registros.filter(r => r.aprobada).length; }
+
+  abrirImportacion(): void {
+    this.fileInput.nativeElement.value = '';
+    this.fileInput.nativeElement.click();
+  }
+
+  onArchivoSeleccionado(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const archivo = input.files?.[0];
+    if (!archivo || !this.eventoSeleccionado?.id) return;
+
+    if (archivo.name.toLowerCase() !== 'formaciones.xlsx') {
+      this.showError(this.translate.instant('Formaciones.Snack.WrongFilename'));
+      return;
+    }
+
+    this.importando = true;
+    this.eventoService.importarExcel(this.eventoSeleccionado.id, archivo).subscribe({
+      next: (resultado) => {
+        this.importando = false;
+        this.dialog.open(CargaMasivaResultadoDialogComponent, { width: '750px', data: resultado });
+        this.cargarRegistros();
+      },
+      error: (err) => {
+        this.importando = false;
+        const msg = err?.error?.message ?? this.translate.instant('Formaciones.Snack.ImportError');
+        this.showError(msg);
+      },
+    });
+  }
 
   private showSuccess(msg: string): void {
     this.snackBar.open(msg, this.translate.instant('Common.Close'), { duration: 3000, panelClass: ['success-snackbar'] });
