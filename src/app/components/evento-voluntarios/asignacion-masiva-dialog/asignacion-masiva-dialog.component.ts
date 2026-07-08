@@ -20,6 +20,7 @@ import { EventoVoluntarioService } from '@app/services/evento-voluntario.service
 export interface AsignacionMasivaDialogData {
   eventos: EventoDTO[];
   departamentos: DepartamentoDTO[];
+  eventoId?: number;
 }
 
 @Component({
@@ -58,7 +59,7 @@ export class AsignacionMasivaDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      eventoId: [null, Validators.required],
+      eventoId: [this.data.eventoId ?? null, Validators.required],
       departamentoId: [null, Validators.required],
       generarQr: [true]
     });

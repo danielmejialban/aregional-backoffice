@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, DestroyRef, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -59,6 +60,8 @@ export class EventoVoluntariosComponent implements OnInit {
   pageSize = 10;
   currentPage = 0;
 
+  eventoActual: EventoDTO | null = null;
+  private eventoIdDeRuta: number | null = null;
   private currentFiltros: AsignacionFiltros = {};
 
   constructor(
@@ -72,18 +75,31 @@ export class EventoVoluntariosComponent implements OnInit {
     private plantillaExcelService: PlantillaExcelService,
     private translate: TranslateService,
     private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
+    const param = this.route.snapshot.queryParamMap.get('eventoId');
+    this.eventoIdDeRuta = param ? +param : null;
+    if (this.eventoIdDeRuta) {
+      this.currentFiltros = { eventoId: this.eventoIdDeRuta };
+    }
+
     forkJoin({
       voluntarios: this.voluntarioService.getAll(),
       eventos: this.eventoService.getAll(),
       departamentos: this.departamentoService.getAll(),
     }).subscribe({
       next: ({ voluntarios, eventos, departamentos }) => {
-        this.voluntarios  = voluntarios;
-        this.eventos      = eventos;
+        this.voluntarios   = voluntarios;
+        this.eventos       = eventos;
         this.departamentos = departamentos;
+        if (this.eventoIdDeRuta) {
+          this.eventoActual = eventos.find(e => e.id === this.eventoIdDeRuta) ?? null;
+          this.columns = this.buildColumns();
+          this.cdr.detectChanges();
+        }
       },
       error: () => this.showError(this.translate.instant('EventoVoluntarios.Snack.LoadSupportError')),
     });
@@ -96,10 +112,16 @@ export class EventoVoluntariosComponent implements OnInit {
   }
 
   private buildColumns(): ColumnDef[] {
-    return [
+    const cols: ColumnDef[] = [
       { key: 'id', header: this.translate.instant('EventoVoluntarios.Columns.Id'), type: 'text', width: '60px' },
       { key: 'voluntarioNombre', header: this.translate.instant('EventoVoluntarios.Columns.Voluntario'), type: 'text', filterType: 'text' },
-      { key: 'eventoNombre', header: this.translate.instant('EventoVoluntarios.Columns.Evento'), type: 'text', filterType: 'text' },
+    ];
+
+    if (!this.eventoActual) {
+      cols.push({ key: 'eventoNombre', header: this.translate.instant('EventoVoluntarios.Columns.Evento'), type: 'text', filterType: 'text' });
+    }
+
+    cols.push(
       {
         key: 'qr', header: this.translate.instant('EventoVoluntarios.Columns.Qr'), type: 'custom',
         cellTemplate: this.qrCellTpl,
@@ -109,16 +131,18 @@ export class EventoVoluntariosComponent implements OnInit {
         actions: [
           {
             id: 'viewQr', icon: 'visibility', label: this.translate.instant('EventoVoluntarios.Actions.VerQr'), color: 'primary',
-            hidden: (row) => !row.qrImageBase64,
+            hidden: (row: any) => !row.qrImageBase64,
           },
           {
             id: 'downloadPdf', icon: 'picture_as_pdf', label: this.translate.instant('EventoVoluntarios.Actions.DescargarPdf'),
-            hidden: (row) => !row.qrImageBase64,
+            hidden: (row: any) => !row.qrImageBase64,
           },
           { id: 'delete', icon: 'delete', label: this.translate.instant('EventoVoluntarios.Actions.Delete'), color: 'warn' },
         ],
       },
-    ];
+    );
+
+    return cols;
   }
 
   loadAsignaciones(page = this.currentPage): void {
@@ -135,14 +159,15 @@ export class EventoVoluntariosComponent implements OnInit {
   }
 
   onFilterChange(filters: ActiveFilters): void {
-    const busqueda  = (filters['voluntarioNombre'] as string) || undefined;
-    const eventoNom = (filters['eventoNombre']     as string) || undefined;
-    const evento    = eventoNom ? this.eventos.find(e => e.nombre === eventoNom) : null;
+    const busqueda = (filters['voluntarioNombre'] as string) || undefined;
 
-    this.currentFiltros = {
-      busqueda,
-      eventoId: evento?.id ?? null,
-    };
+    if (this.eventoActual) {
+      this.currentFiltros = { busqueda, eventoId: this.eventoActual.id };
+    } else {
+      const eventoNom = (filters['eventoNombre'] as string) || undefined;
+      const evento    = eventoNom ? this.eventos.find(e => e.nombre === eventoNom) : null;
+      this.currentFiltros = { busqueda, eventoId: evento?.id ?? null };
+    }
     this.loadAsignaciones(0);
   }
 
@@ -163,7 +188,7 @@ export class EventoVoluntariosComponent implements OnInit {
   openCreateDialog(): void {
     const ref = this.dialog.open(AsignacionDialogComponent, {
       width: '520px', disableClose: true,
-      data: { voluntarios: this.voluntarios, eventos: this.eventos },
+      data: { voluntarios: this.voluntarios, eventos: this.eventos, eventoId: this.eventoActual?.id },
     });
     ref.afterClosed().subscribe(result => { if (result) this.createAsignacion(result); });
   }
@@ -171,11 +196,15 @@ export class EventoVoluntariosComponent implements OnInit {
   openAsignacionMasivaDialog(): void {
     const ref = this.dialog.open(AsignacionMasivaDialogComponent, {
       width: '640px', disableClose: true,
-      data: { eventos: this.eventos, departamentos: this.departamentos },
+      data: { eventos: this.eventos, departamentos: this.departamentos, eventoId: this.eventoActual?.id },
     });
     ref.afterClosed().subscribe((recargar: boolean) => {
       if (recargar) this.loadAsignaciones(0);
     });
+  }
+
+  irAtras(): void {
+    this.router.navigate(['/eventos']);
   }
 
   createAsignacion(asignacion: EventoVoluntarioDTO): void {

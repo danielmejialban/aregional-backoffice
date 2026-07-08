@@ -15,6 +15,7 @@ import { EventoDTO } from '@app/models/evento.model';
 export interface AsignacionDialogData {
   voluntarios: VoluntarioDTO[];
   eventos: EventoDTO[];
+  eventoId?: number;
 }
 
 @Component({
@@ -52,7 +53,7 @@ export class AsignacionDialogComponent implements OnInit {
 
     this.form = this.fb.group({
       voluntarioId: [null, Validators.required],
-      eventoId: [null, Validators.required]
+      eventoId: [this.data.eventoId ?? null, Validators.required]
     });
   }
 

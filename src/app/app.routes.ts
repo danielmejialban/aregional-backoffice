@@ -50,6 +50,10 @@ export const routes: Routes = [
         loadComponent: () => import('./components/eventos/eventos.component')
           .then( m => m.EventosComponent),
          canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
+      { path: 'eventos/:id',
+        loadComponent: () => import('./components/eventos/evento-detail/evento-detail.component')
+          .then(m => m.EventoDetailComponent),
+        canActivate: [roleGuard(['ADMIN', 'COORDINADOR'])] },
       { path: 'evento-voluntarios',
         loadComponent: () => import('./components/evento-voluntarios/evento-voluntarios.component')
           .then( m => m.EventoVoluntariosComponent),

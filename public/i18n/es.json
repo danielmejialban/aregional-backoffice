@@ -337,6 +337,76 @@
       }
     }
   },
+  "EventoDetail": {
+    "PageTitle": "Detalle del Evento",
+    "Buttons": {
+      "Volver": "Volver a Eventos",
+      "Editar": "Editar Evento",
+      "ExportarExcel": "Exportar Excel",
+      "Exportando": "Exportando...",
+      "DescargarPdf": "Descargar PDF",
+      "AsignacionMasiva": "Asignación Masiva",
+      "AsignarVoluntario": "Asignar Voluntario"
+    },
+    "Info": {
+      "FechaEvento": "Fecha del Evento",
+      "Convocatoria": "Convocatoria",
+      "Sesion": "Sesión",
+      "DiasPreEvento": "Días Pre-Evento",
+      "Direccion": "Dirección",
+      "Dias": "días"
+    },
+    "Voluntarios": {
+      "Title": "Voluntarios Asignados"
+    },
+    "Columns": {
+      "Voluntario": "Voluntario",
+      "Dni": "DNI/NIE",
+      "Departamento": "Departamento",
+      "Telefono": "Teléfono",
+      "PreAsamblea": "Pre-asamblea",
+      "DiasAcceso": "Días de Acceso",
+      "Qr": "QR",
+      "Actions": "Acciones"
+    },
+    "Actions": {
+      "VerQr": "Ver QR",
+      "DescargarPdf": "Descargar PDF",
+      "EditVoluntario": "Editar voluntario",
+      "Delete": "Eliminar asignación"
+    },
+    "Qr": {
+      "Generado": "Generado",
+      "Generar": "Generar QR",
+      "Generando": "Generando..."
+    },
+    "DiasAcceso": {
+      "Todos": "Todos los días",
+      "Dias": "días"
+    },
+    "ConfirmDelete": {
+      "Title": "Eliminar asignación",
+      "Message": "¿Eliminar la asignación de {{name}}?",
+      "Confirm": "Eliminar"
+    },
+    "Snack": {
+      "LoadError": "Error al cargar el evento",
+      "LoadAsignacionesError": "Error al cargar los voluntarios",
+      "Updated": "Evento actualizado",
+      "UpdateError": "Error al actualizar el evento",
+      "AsignacionCreada": "Voluntario asignado correctamente",
+      "AsignacionError": "Error al asignar el voluntario",
+      "AsignacionEliminada": "Asignación eliminada",
+      "DeleteError": "Error al eliminar la asignación",
+      "QrGenerado": "QR generado correctamente",
+      "QrError": "Error al generar el QR",
+      "NoQr": "No hay QR generados. Genera los QR primero.",
+      "ExportError": "Error al exportar el Excel",
+      "VoluntarioActualizado": "Voluntario actualizado correctamente",
+      "VoluntarioError": "Error al actualizar el voluntario",
+      "VoluntarioNoEncontrado": "No se encontró el voluntario"
+    }
+  },
   "EventoVoluntarios": {
     "PageTitle": "Asignaciones",
     "Columns": {
@@ -353,7 +423,11 @@
       "DescargarPdf": "Descargar PDF",
       "NuevaAsignacion": "Nueva Asignación",
       "GenerarQr": "Generar QR",
-      "Generando": "Generando..."
+      "Generando": "Generando...",
+      "Volver": "Volver a Eventos"
+    },
+    "ContextBar": {
+      "Voluntarios": "voluntarios asignados"
     },
     "Tooltips": {
       "ExportarExcel": "Exporta los voluntarios del evento en formato Excel (con días de acceso si hay evento filtrado)",

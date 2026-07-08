@@ -1,0 +1,196 @@
+.page-container {
+  padding: 0 8px;
+}
+
+// ── Header ──────────────────────────────────────────────────────────────────
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.header-titles {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-width: 0;
+
+  h1 {
+    margin: 0;
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: #212121;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.tipo-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  &.tipo-asamblea  { background: #e3f2fd; color: #1565c0; }
+  &.tipo-formacion { background: #e8f5e9; color: #2e7d32; }
+  &.tipo-especial  { background: #fce4ec; color: #c62828; }
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+// ── Info card ────────────────────────────────────────────────────────────────
+.evento-info-card {
+  margin-bottom: 24px;
+  border-left: 4px solid #1976d2;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px 24px;
+  padding: 4px 0;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  mat-icon {
+    color: #1976d2;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  &--full {
+    grid-column: 1 / -1;
+  }
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  color: #78909c;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.info-value {
+  font-size: 0.95rem;
+  color: #212121;
+  font-weight: 500;
+}
+
+// ── Section header ───────────────────────────────────────────────────────────
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  mat-icon {
+    color: #1976d2;
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #37474f;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #1976d2;
+  color: #fff;
+  border-radius: 12px;
+  padding: 0 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  min-width: 28px;
+  height: 22px;
+}
+
+.section-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+// ── QR cell ──────────────────────────────────────────────────────────────────
+.qr-cell {
+  display: flex;
+  align-items: center;
+}
+
+.qr-chip {
+  background: #e8f5e9 !important;
+  color: #2e7d32 !important;
+  font-size: 0.8rem;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+  }
+}
+
+.gen-qr-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  height: 32px;
+  padding: 0 10px;
+  line-height: 32px;
+}

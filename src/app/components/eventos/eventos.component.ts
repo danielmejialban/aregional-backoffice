@@ -8,6 +8,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { EventoService } from '@app/services/evento.service';
 import { EventoVoluntarioService } from '@app/services/evento-voluntario.service';
@@ -52,7 +53,8 @@ export class EventosComponent implements OnInit {
     private plantillaService: PlantillaExcelService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private router: Router,
   ) {}
 
   private buildColumns(): ColumnDef[] {
@@ -221,6 +223,12 @@ export class EventosComponent implements OnInit {
       next: () => { this.showSuccess(this.translate.instant('Eventos.Snack.Deleted')); this.loadEventos(); },
       error: () => { this.loading = false; this.showError(this.translate.instant('Eventos.Snack.DeleteError')); },
     });
+  }
+
+  onRowClick(evento: EventoDTO): void {
+    if (evento.id) {
+      this.router.navigate(['/eventos', evento.id]);
+    }
   }
 
   private showSuccess(msg: string): void {

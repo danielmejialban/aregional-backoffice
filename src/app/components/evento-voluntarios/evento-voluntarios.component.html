@@ -1,7 +1,16 @@
 <div class="page-container">
 
   <div class="page-header">
-    <h1><mat-icon class="header-icon">assignment_ind</mat-icon> {{ 'EventoVoluntarios.PageTitle' | translate }}</h1>
+    <h1>
+      @if (eventoActual) {
+        <button mat-icon-button color="primary" (click)="irAtras()"
+                [matTooltip]="'EventoVoluntarios.Buttons.Volver' | translate">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+      }
+      <mat-icon class="header-icon">assignment_ind</mat-icon>
+      {{ eventoActual ? eventoActual.nombre : ('EventoVoluntarios.PageTitle' | translate) }}
+    </h1>
     <div class="header-actions">
       <button mat-stroked-button color="primary" (click)="openAsignacionMasivaDialog()">
         <mat-icon>group_add</mat-icon> {{ 'EventoVoluntarios.Buttons.AsignacionMasiva' | translate }}
@@ -16,6 +25,24 @@
       </button>
     </div>
   </div>
+
+  @if (eventoActual) {
+    <div class="evento-context-bar">
+      <mat-icon>event</mat-icon>
+      <span class="evento-context-fechas">
+        {{ eventoActual.fechaInicioEvento | date:'dd/MM/yyyy' }}
+        @if (eventoActual.fechaFinEvento !== eventoActual.fechaInicioEvento) {
+          &nbsp;—&nbsp;{{ eventoActual.fechaFinEvento | date:'dd/MM/yyyy' }}
+        }
+      </span>
+      @if (eventoActual.tipoEvento) {
+        <span class="evento-context-tipo">{{ eventoActual.tipoEvento }}</span>
+      }
+      @if (totalElements >= 0) {
+        <span class="evento-context-count">{{ totalElements }} {{ 'EventoVoluntarios.ContextBar.Voluntarios' | translate }}</span>
+      }
+    </div>
+  }
 
   <!-- Template para la celda QR personalizada -->
   <ng-template #qrCellTpl let-row>

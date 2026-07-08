@@ -1,0 +1,174 @@
+<div class="page-container">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div class="header-left">
+      <button mat-icon-button color="primary" (click)="irAtras()"
+              [matTooltip]="'EventoDetail.Buttons.Volver' | translate">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-titles">
+        @if (loadingEvento) {
+          <mat-spinner diameter="28" />
+        } @else {
+          <h1>{{ evento?.nombre ?? ('EventoDetail.PageTitle' | translate) }}</h1>
+          @if (evento?.tipoEvento) {
+            <span class="tipo-badge tipo-{{ evento!.tipoEvento | lowercase }}">
+              {{ evento!.tipoEvento }}
+            </span>
+          }
+        }
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button color="accent"
+              [disabled]="exportandoExcel"
+              (click)="exportarExcel()">
+        <mat-icon>table_view</mat-icon>
+        {{ exportandoExcel ? ('EventoDetail.Buttons.Exportando' | translate) : ('EventoDetail.Buttons.ExportarExcel' | translate) }}
+      </button>
+      <button mat-stroked-button color="primary" (click)="editarEvento()" [disabled]="loadingEvento">
+        <mat-icon>edit</mat-icon>
+        {{ 'EventoDetail.Buttons.Editar' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Info del evento ────────────────────────────────────────────────── -->
+  @if (!loadingEvento && evento) {
+    <mat-card class="evento-info-card">
+      <mat-card-content>
+        <div class="info-grid">
+
+          <div class="info-item">
+            <mat-icon>calendar_today</mat-icon>
+            <div class="info-content">
+              <span class="info-label">{{ 'EventoDetail.Info.FechaEvento' | translate }}</span>
+              <span class="info-value">
+                {{ evento.fechaInicioEvento | date:'dd/MM/yyyy' }}
+                @if (evento.fechaFinEvento !== evento.fechaInicioEvento) {
+                  &nbsp;→&nbsp;{{ evento.fechaFinEvento | date:'dd/MM/yyyy' }}
+                }
+              </span>
+            </div>
+          </div>
+
+          @if (evento.fechaInicioConvocatoria) {
+            <div class="info-item">
+              <mat-icon>how_to_reg</mat-icon>
+              <div class="info-content">
+                <span class="info-label">{{ 'EventoDetail.Info.Convocatoria' | translate }}</span>
+                <span class="info-value">
+                  {{ evento.fechaInicioConvocatoria | date:'dd/MM/yyyy' }}
+                  @if (evento.fechaFinConvocatoria) {
+                    &nbsp;→&nbsp;{{ evento.fechaFinConvocatoria | date:'dd/MM/yyyy' }}
+                  }
+                </span>
+              </div>
+            </div>
+          }
+
+          @if (evento.sesion) {
+            <div class="info-item">
+              <mat-icon>schedule</mat-icon>
+              <div class="info-content">
+                <span class="info-label">{{ 'EventoDetail.Info.Sesion' | translate }}</span>
+                <span class="info-value">{{ evento.sesion }}</span>
+              </div>
+            </div>
+          }
+
+          @if (evento.diasPreEvento) {
+            <div class="info-item">
+              <mat-icon>event_available</mat-icon>
+              <div class="info-content">
+                <span class="info-label">{{ 'EventoDetail.Info.DiasPreEvento' | translate }}</span>
+                <span class="info-value">{{ evento.diasPreEvento }} {{ 'EventoDetail.Info.Dias' | translate }}</span>
+              </div>
+            </div>
+          }
+
+          @if (evento.direccion) {
+            <div class="info-item info-item--full">
+              <mat-icon>location_on</mat-icon>
+              <div class="info-content">
+                <span class="info-label">{{ 'EventoDetail.Info.Direccion' | translate }}</span>
+                <span class="info-value">{{ evento.direccion }}</span>
+              </div>
+            </div>
+          }
+
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
+  <!-- ── Sección voluntarios ────────────────────────────────────────────── -->
+  <div class="section-header">
+    <div class="section-title">
+      <mat-icon>people</mat-icon>
+      <h2>
+        {{ 'EventoDetail.Voluntarios.Title' | translate }}
+        <span class="count-badge">{{ totalElements }}</span>
+      </h2>
+    </div>
+    <div class="section-actions">
+      <button mat-stroked-button color="accent"
+              [disabled]="loadingAsignaciones"
+              [matTooltip]="'EventoDetail.Buttons.DescargarPdf' | translate"
+              (click)="descargarPdfGlobal()">
+        <mat-icon>picture_as_pdf</mat-icon>
+        {{ 'EventoDetail.Buttons.DescargarPdf' | translate }}
+      </button>
+      <button mat-stroked-button color="primary" (click)="openAsignacionMasivaDialog()">
+        <mat-icon>group_add</mat-icon>
+        {{ 'EventoDetail.Buttons.AsignacionMasiva' | translate }}
+      </button>
+      <button mat-raised-button color="primary" (click)="openCreateDialog()">
+        <mat-icon>person_add</mat-icon>
+        {{ 'EventoDetail.Buttons.AsignarVoluntario' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <!-- QR cell template -->
+  <ng-template #qrCellTpl let-row>
+    <div class="qr-cell">
+      @if (row.qrImageBase64) {
+        <mat-chip class="qr-chip" (click)="verQr(row)" style="cursor:pointer">
+          <mat-icon>qr_code_2</mat-icon>&nbsp;{{ 'EventoDetail.Qr.Generado' | translate }}
+        </mat-chip>
+      } @else {
+        <button mat-stroked-button color="primary" class="gen-qr-btn"
+                [disabled]="generandoQrIds.has(row.id)"
+                (click)="generarQr(row)">
+          @if (generandoQrIds.has(row.id)) {
+            <mat-spinner diameter="16" />
+          } @else {
+            <mat-icon>qr_code</mat-icon>
+          }
+          {{ (generandoQrIds.has(row.id) ? 'EventoDetail.Qr.Generando' : 'EventoDetail.Qr.Generar') | translate }}
+        </button>
+      }
+    </div>
+  </ng-template>
+
+  <mat-card>
+    <mat-card-content>
+      <app-data-table
+        [columns]="columns"
+        [data]="asignaciones"
+        [isLoading]="loadingAsignaciones"
+        [serverSide]="true"
+        [totalItems]="totalElements"
+        [pageSize]="pageSize"
+        [pageIndex]="currentPage"
+        [pageSizeOptions]="[10, 25, 50, 100]"
+        (filterChange)="onFilterChange($event)"
+        (pageChange)="onPageChange($event)"
+        (actionClick)="onActionClick($event)"
+      />
+    </mat-card-content>
+  </mat-card>
+
+</div>
