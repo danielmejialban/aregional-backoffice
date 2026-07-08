@@ -11,6 +11,14 @@
         <mat-icon>table_view</mat-icon> {{ 'Voluntarios.Buttons.PlantillaMaestra' | translate }}
       </button>
 
+      <button mat-stroked-button color="primary"
+              [disabled]="exportandoExcel"
+              (click)="exportarExcel()"
+              [matTooltip]="'Voluntarios.Tooltips.ExportarExcel' | translate">
+        <mat-icon>download</mat-icon>
+        {{ (exportandoExcel ? 'Voluntarios.Buttons.Exporting' : 'Voluntarios.Buttons.ExportarExcel') | translate }}
+      </button>
+
       <button mat-stroked-button
               (click)="descargarPlantillaCsv()"
               [matTooltip]="'Voluntarios.Tooltips.PlantillaCsv' | translate">

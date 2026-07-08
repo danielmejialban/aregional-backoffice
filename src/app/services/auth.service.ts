@@ -55,6 +55,14 @@ export class AuthService {
     return user ? roles.includes(user.rol) : false;
   }
 
+  recuperarContrasena(email: string): Observable<{ mensaje: string }> {
+    return this.http.post<{ mensaje: string }>(`${this.API_URL}/recuperar-contrasena`, { email });
+  }
+
+  restablecerContrasena(token: string, nuevaContrasena: string): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/restablecer-contrasena`, { token, nuevaContrasena });
+  }
+
   private setSession(authResult: LoginResponse): void {
     localStorage.setItem(this.TOKEN_KEY, authResult.token);
     localStorage.setItem(this.USER_KEY, JSON.stringify(authResult));

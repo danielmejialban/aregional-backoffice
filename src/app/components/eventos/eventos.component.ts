@@ -8,7 +8,10 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { forkJoin } from 'rxjs';
 import { EventoService } from '@app/services/evento.service';
+import { EventoVoluntarioService } from '@app/services/evento-voluntario.service';
+import { VoluntarioService } from '@app/services/voluntario.service';
 import { PlantillaExcelService } from '@app/services/plantilla-excel.service';
 import { EventoDTO } from '@app/models/evento.model';
 import { EventoDialogComponent } from './evento-dialog/evento-dialog.component';
@@ -40,9 +43,12 @@ export class EventosComponent implements OnInit {
   columns: ColumnDef[] = [];
 
   private eventoParaImportar: EventoDTO | null = null;
+  exportandoEventoId: number | null = null;
 
   constructor(
     private eventoService: EventoService,
+    private eventoVoluntarioService: EventoVoluntarioService,
+    private voluntarioService: VoluntarioService,
     private plantillaService: PlantillaExcelService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
@@ -75,10 +81,12 @@ export class EventosComponent implements OnInit {
       {
         key: 'acciones', header: this.translate.instant('Eventos.Columns.Actions'), type: 'actions', sticky: 'end',
         actions: [
-          { id: 'plantilla', icon: 'download', label: this.translate.instant('Eventos.Actions.Plantilla'), color: 'accent' },
-          { id: 'importar',  icon: 'upload_file', label: this.translate.instant('Eventos.Actions.Importar'), color: 'accent' },
-          { id: 'edit',    icon: 'edit',   label: this.translate.instant('Eventos.Actions.Edit'),   color: 'primary' },
-          { id: 'delete',  icon: 'delete', label: this.translate.instant('Eventos.Actions.Delete'), color: 'warn' },
+          { id: 'plantilla', icon: 'download',      label: this.translate.instant('Eventos.Actions.Plantilla'),     color: 'accent' },
+          { id: 'importar',  icon: 'upload_file',   label: this.translate.instant('Eventos.Actions.Importar'),      color: 'accent' },
+          { id: 'exportar',  icon: 'table_view',    label: this.translate.instant('Eventos.Actions.ExportarExcel'), color: 'primary',
+            hidden: (row) => this.exportandoEventoId === row.id },
+          { id: 'edit',      icon: 'edit',          label: this.translate.instant('Eventos.Actions.Edit'),          color: 'primary' },
+          { id: 'delete',    icon: 'delete',        label: this.translate.instant('Eventos.Actions.Delete'),        color: 'warn' },
         ],
       },
     ];
@@ -103,11 +111,32 @@ export class EventosComponent implements OnInit {
       this.descargarPlantilla(e);
     } else if (event.action === 'importar') {
       this.abrirImportacion(e);
+    } else if (event.action === 'exportar') {
+      this.exportarExcel(e);
     } else if (event.action === 'edit') {
       this.openEditDialog(e);
     } else if (event.action === 'delete') {
       this.confirmDelete(e);
     }
+  }
+
+  exportarExcel(evento: EventoDTO): void {
+    if (!evento.id) return;
+    this.exportandoEventoId = evento.id;
+    forkJoin({
+      asignaciones: this.eventoVoluntarioService.getByEvento(evento.id),
+      voluntarios:  this.voluntarioService.getAll(),
+    }).subscribe({
+      next: ({ asignaciones, voluntarios }) => {
+        this.plantillaService
+          .exportarAsignacionesEvento(asignaciones, voluntarios, evento)
+          .finally(() => { this.exportandoEventoId = null; });
+      },
+      error: () => {
+        this.exportandoEventoId = null;
+        this.showError(this.translate.instant('Eventos.Snack.ExportarError'));
+      },
+    });
   }
 
   descargarPlantilla(evento: EventoDTO): void {

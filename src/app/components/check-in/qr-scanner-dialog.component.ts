@@ -121,6 +121,7 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
 
   private codeReader: BrowserMultiFormatReader | null = null;
   private scannerControls: any = null;
+  private audioCtx: AudioContext | null = null;
 
   constructor(
     private dialogRef: MatDialogRef<QrScannerDialogComponent>,
@@ -178,15 +179,50 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
 
   private onQrDetected(token: string): void {
     this.processing = true;
+    const scanTime = new Date().toISOString();
     this.checkInService.scanQr({ qrToken: token, observaciones: this.observaciones || undefined })
       .subscribe({
-        next: (result) => { this.processing = false; this.scanResult = result; this.stopCamera(); },
+        next: (result) => {
+          this.processing = false;
+          this.scanResult = { ...result, fechaHora: result.fechaHora ?? scanTime };
+          this.playBeep('ok');
+          this.stopCamera();
+        },
         error: (err) => {
           this.processing = false;
           this.scanError = err?.error?.message || this.translate.instant('CheckIn.ScannerDialog.CheckInError');
+          this.playBeep('ko');
           this.stopCamera();
         }
       });
+  }
+
+  private playBeep(type: 'ok' | 'ko'): void {
+    try {
+      if (!this.audioCtx) {
+        this.audioCtx = new AudioContext();
+      }
+      const ctx = this.audioCtx;
+      if (type === 'ok') {
+        this.tone(ctx, 1046, 0, 0.18);
+      } else {
+        this.tone(ctx, 440, 0, 0.15);
+        this.tone(ctx, 330, 0.2, 0.15);
+      }
+    } catch { /* AudioContext not available */ }
+  }
+
+  private tone(ctx: AudioContext, frequency: number, delaySeconds: number, duration: number): void {
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(frequency, ctx.currentTime + delaySeconds);
+    gain.gain.setValueAtTime(0.6, ctx.currentTime + delaySeconds);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delaySeconds + duration);
+    oscillator.start(ctx.currentTime + delaySeconds);
+    oscillator.stop(ctx.currentTime + delaySeconds + duration);
   }
 
   reset(): void {
@@ -214,6 +250,7 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopCamera();
+    this.audioCtx?.close();
   }
 }
 

@@ -43,7 +43,10 @@ export class EventoVoluntarioService {
   }
 
   getByEvento(eventoId: number): Observable<EventoVoluntarioDTO[]> {
-    return this.http.get<EventoVoluntarioDTO[]>(`${this.API_URL}/evento/${eventoId}`);
+    const params = new HttpParams().set('size', '5000');
+    return this.http.get<EventoVoluntarioDTO[] | PageDTO<EventoVoluntarioDTO>>(
+      `${this.API_URL}/evento/${eventoId}`, { params }
+    ).pipe(map(r => Array.isArray(r) ? r : (r.content ?? [])));
   }
 
   getById(id: number): Observable<EventoVoluntarioDTO> {

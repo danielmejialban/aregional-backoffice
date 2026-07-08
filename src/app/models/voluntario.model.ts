@@ -7,8 +7,8 @@ export interface VoluntarioDTO {
   telefono?: string;
   email?: string;
   activo?: boolean;
-  departamentoId: number;
-  departamentoNombre?: string;
+  departamentoIds: number[];
+  departamentoNombres?: string[];
   congregacion?: string;
   circuito?: string;
   correoJw?: string;

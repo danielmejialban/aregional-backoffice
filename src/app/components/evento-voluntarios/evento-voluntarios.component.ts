@@ -24,6 +24,7 @@ import { AsignacionDialogComponent } from './asignacion-dialog/asignacion-dialog
 import { QrPreviewDialogComponent } from './qr-preview-dialog/qr-preview-dialog.component';
 import { AsignacionMasivaDialogComponent } from './asignacion-masiva-dialog/asignacion-masiva-dialog.component';
 import { QrPdfService } from '@app/services/qr-pdf.service';
+import { PlantillaExcelService } from '@app/services/plantilla-excel.service';
 import { DataTableComponent } from '../data-table/data-table/data-table.component';
 import { ColumnDef, TableActionEvent, ActiveFilters } from '@app/@core';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
@@ -51,6 +52,7 @@ export class EventoVoluntariosComponent implements OnInit {
   departamentos: DepartamentoDTO[] = [];
   columns: ColumnDef[] = [];
   loading = false;
+  exportandoExcel = false;
   generandoQrIds = new Set<number>();
 
   totalElements = 0;
@@ -67,6 +69,7 @@ export class EventoVoluntariosComponent implements OnInit {
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private qrPdfService: QrPdfService,
+    private plantillaExcelService: PlantillaExcelService,
     private translate: TranslateService,
     private cdr: ChangeDetectorRef,
   ) {}
@@ -245,6 +248,24 @@ export class EventoVoluntariosComponent implements OnInit {
     const vol = (asignacion.voluntarioNombre ?? 'voluntario').replace(/\s+/g, '_');
     const ev  = (asignacion.eventoNombre    ?? 'evento').replace(/\s+/g, '_');
     this.qrPdfService.generarPdf([asignacion], this.voluntarios, `QR_${vol}_${ev}.pdf`);
+  }
+
+  exportarExcel(): void {
+    this.exportandoExcel = true;
+    this.eventoVoluntarioService.getAllPaged(0, 5000, this.currentFiltros).subscribe({
+      next: (data) => {
+        const evento = this.currentFiltros.eventoId != null
+          ? this.eventos.find(e => e.id === this.currentFiltros.eventoId)
+          : undefined;
+        this.plantillaExcelService
+          .exportarAsignacionesEvento(data.content, this.voluntarios, evento)
+          .finally(() => { this.exportandoExcel = false; });
+      },
+      error: () => {
+        this.exportandoExcel = false;
+        this.showError(this.translate.instant('EventoVoluntarios.Snack.LoadError'));
+      },
+    });
   }
 
   descargarPdfGlobal(): void {

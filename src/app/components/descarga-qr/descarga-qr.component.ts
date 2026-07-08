@@ -124,7 +124,7 @@ export class DescargaQrComponent implements OnInit {
 
     if (departamentoId) {
       const voluntariosDelDepto = this.voluntarios
-        .filter(v => v.departamentoId === departamentoId)
+        .filter(v => (v.departamentoIds ?? []).includes(departamentoId))
         .map(v => v.id);
       resultado = resultado.filter(a => voluntariosDelDepto.includes(a.voluntarioId));
     }
@@ -155,7 +155,7 @@ export class DescargaQrComponent implements OnInit {
 
   getVoluntarioDepartamento(voluntarioId: number): string {
     const v = this.voluntarios.find(vol => vol.id === voluntarioId);
-    return v?.departamentoNombre || '—';
+    return (v?.departamentoNombres ?? []).join(' | ') || '—';
   }
 
   getQrSrc(base64: string): string {

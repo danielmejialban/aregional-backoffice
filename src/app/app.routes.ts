@@ -1,5 +1,7 @@
 ﻿import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { LayoutComponent } from './components/layout/layout.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { DepartamentosComponent } from './components/departamentos/departamentos.component';
@@ -15,6 +17,8 @@ import { authGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'recuperar-contrasena', component: ForgotPasswordComponent },
+  { path: 'restablecer-contrasena', component: ResetPasswordComponent },
   {
     path: '',
     component: LayoutComponent,

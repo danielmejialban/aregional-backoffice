@@ -106,12 +106,12 @@ export interface VoluntarioDialogData {
         </mat-form-field>
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>{{ 'Voluntarios.Dialog.DepartamentoLabel' | translate }}</mat-label>
-          <mat-select formControlName="departamentoId" required>
+          <mat-select formControlName="departamentoIds" [multiple]="true" required>
             @for (d of data.departamentos; track d.id) {
               <mat-option [value]="d.id">{{ d.nombre }}</mat-option>
             }
           </mat-select>
-          @if (form.get('departamentoId')?.hasError('required')) {
+          @if (form.get('departamentoIds')?.hasError('required')) {
             <mat-error>{{ 'Voluntarios.Dialog.Required' | translate }}</mat-error>
           }
         </mat-form-field>
@@ -156,7 +156,7 @@ export class VoluntarioDialogComponent implements OnInit {
       congregacion:   [v?.congregacion || ''],
       circuito:       [v?.circuito    || ''],
       correoJw:       [v?.correoJw    || ''],
-      departamentoId: [v?.departamentoId ?? null, Validators.required],
+      departamentoIds: [v?.departamentoIds ?? [], Validators.required],
       activo:         [v?.activo      ?? true],
       preAsamblea:    [v?.preAsamblea ?? false],
     });
@@ -176,7 +176,7 @@ export class VoluntarioDialogComponent implements OnInit {
       congregacion:   val.congregacion?.trim() || undefined,
       circuito:       val.circuito?.trim()     || undefined,
       correoJw:       val.correoJw?.trim()     || undefined,
-      departamentoId: val.departamentoId,
+      departamentoIds: val.departamentoIds ?? [],
       activo:         val.activo,
       preAsamblea:    val.preAsamblea,
     };
@@ -287,6 +287,7 @@ export class VoluntariosComponent implements OnInit {
   columns: ColumnDef[] = [];
   loading = false;
   subiendoArchivo = false;
+  exportandoExcel = false;
 
   totalElements = 0;
   pageSize = 10;
@@ -321,6 +322,7 @@ export class VoluntariosComponent implements OnInit {
         filterType: 'text', sortable: true,
       },
       { key: 'dni', header: this.translate.instant('Voluntarios.Columns.Dni'), type: 'text', filterType: 'text' },
+      { key: 'email', header: this.translate.instant('Voluntarios.Columns.Email'), type: 'text', filterType: 'text' },
       {
         key: 'departamentoNombre', header: this.translate.instant('Voluntarios.Columns.Departamento'), type: 'text',
         filterType: 'select',
@@ -388,16 +390,18 @@ export class VoluntariosComponent implements OnInit {
   private mapRow(v: VoluntarioDTO) {
     return {
       ...v,
-      nombreCompleto: [v.nombre, v.apellido1, v.apellido2].filter(Boolean).join(' '),
-      activoLabel:    v.activo      ? this.translate.instant('Voluntarios.Badges.Activo')     : this.translate.instant('Voluntarios.Badges.Inactivo'),
-      preAsambleaLabel: v.preAsamblea ? this.translate.instant('Voluntarios.Badges.Si')       : this.translate.instant('Voluntarios.Badges.No'),
-      formacionLabel: v.formacion   ? this.translate.instant('Voluntarios.Badges.Completada') : this.translate.instant('Voluntarios.Badges.Pendiente'),
+      nombreCompleto:    [v.nombre, v.apellido1, v.apellido2].filter(Boolean).join(' '),
+      departamentoNombre: (v.departamentoNombres ?? []).join(' | '),
+      activoLabel:       v.activo      ? this.translate.instant('Voluntarios.Badges.Activo')     : this.translate.instant('Voluntarios.Badges.Inactivo'),
+      preAsambleaLabel:  v.preAsamblea ? this.translate.instant('Voluntarios.Badges.Si')         : this.translate.instant('Voluntarios.Badges.No'),
+      formacionLabel:    v.formacion   ? this.translate.instant('Voluntarios.Badges.Completada') : this.translate.instant('Voluntarios.Badges.Pendiente'),
     };
   }
 
   onFilterChange(filters: ActiveFilters): void {
     const nombre = (filters['nombreCompleto'] as string) || undefined;
     const dni    = (filters['dni']            as string) || undefined;
+    const email  = (filters['email']          as string) || undefined;
     const deptoNombre = filters['departamentoNombre'] as string | null;
     const activoLabel = filters['activoLabel']        as string | null;
 
@@ -405,6 +409,7 @@ export class VoluntariosComponent implements OnInit {
 
     this.currentFiltros = {
       busqueda:       nombre || dni || undefined,
+      email:          email,
       departamentoId: depto?.id ?? null,
       activo:         activoLabel === 'Activo' ? true : activoLabel === 'Inactivo' ? false : null,
     };
@@ -513,13 +518,29 @@ export class VoluntariosComponent implements OnInit {
     this.fileInput.nativeElement.click();
   }
 
+  exportarExcel(): void {
+    this.exportandoExcel = true;
+    this.voluntarioService.getAllPaged(0, 5000, this.currentFiltros).subscribe({
+      next: (data) => {
+        const voluntarios = data.content.map(v => v as VoluntarioDTO);
+        this.plantillaExcelService.exportarVoluntarios(voluntarios).finally(() => {
+          this.exportandoExcel = false;
+        });
+      },
+      error: () => {
+        this.exportandoExcel = false;
+        this.showError(this.translate.instant('Voluntarios.Snack.LoadError'));
+      },
+    });
+  }
+
   descargarPlantillaMaestra(): void {
     this.plantillaExcelService.descargarPlantillaMaestra();
   }
 
   descargarPlantillaCsv(): void {
-    const cabecera = 'apellido1,apellido2,nombre,dni,congregacion,circuito,departamento,correo_jw,pre_asamblea';
-    const ejemplo  = 'García,López,Juan,12345678A,Madrid Norte,Circuito 5,Acomodación,juan@jw.org,false';
+    const cabecera = 'apellido1,apellido2,nombre,dni,congregacion,circuito,departamento,correo_jw,pre_asamblea,email';
+    const ejemplo  = 'García,López,Juan,12345678A,Madrid Norte,Circuito 5,Acomodación,juan@jw.org,false,juan@email.com';
     const blob = new Blob([`${cabecera}\n${ejemplo}\n`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

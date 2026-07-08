@@ -103,7 +103,7 @@ export class QrPdfService {
     doc.text(lineasNombre.slice(0, 2), x + 4, y + HEADER_H + 8);
 
     // ── Departamento ──────────────────────────────────────────────────────────
-    const deptNombre = a.voluntarioDepartamentoNombre ?? vol?.departamentoNombre;
+    const deptNombre = a.voluntarioDepartamentoNombre ?? (vol?.departamentoNombres ?? []).join(' | ');
     if (deptNombre) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(6.5);

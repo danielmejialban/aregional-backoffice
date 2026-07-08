@@ -148,12 +148,15 @@
     },
     "Buttons": {
       "PlantillaMaestra": "Plantilla Maestra .xlsx",
+      "ExportarExcel": "Exportar Excel",
+      "Exporting": "Exportando...",
       "PlantillaCsv": "Plantilla CSV",
       "CargaMasiva": "Carga masiva CSV/Excel",
       "Uploading": "Subiendo..."
     },
     "Tooltips": {
       "PlantillaMaestra": "Descarga la plantilla Excel maestra",
+      "ExportarExcel": "Exporta los voluntarios filtrados en formato Excel",
       "PlantillaCsv": "Plantilla CSV sencilla",
       "CargaMasiva": "Sube un CSV o Excel con la plantilla descargada"
     },
@@ -271,7 +274,8 @@
       "Edit": "Editar",
       "Delete": "Eliminar",
       "Plantilla": "Descargar plantilla Excel",
-      "Importar": "Importar Excel"
+      "Importar": "Importar Excel",
+      "ExportarExcel": "Exportar voluntarios a Excel"
     },
     "ConfirmDelete": {
       "Title": "Eliminar evento",
@@ -287,7 +291,8 @@
       "Deleted": "Evento eliminado",
       "DeleteError": "Error al eliminar el evento",
       "PlantillaError": "Error al generar la plantilla Excel",
-      "ImportarError": "Error al importar el archivo Excel"
+      "ImportarError": "Error al importar el archivo Excel",
+      "ExportarError": "Error al exportar los voluntarios del evento"
     },
     "Dialog": {
       "TitleEdit": "Editar Evento",
@@ -341,12 +346,15 @@
     },
     "Buttons": {
       "AsignacionMasiva": "Asignación Masiva",
+      "ExportarExcel": "Exportar Excel",
+      "Exporting": "Exportando...",
       "DescargarPdf": "Descargar PDF",
       "NuevaAsignacion": "Nueva Asignación",
       "GenerarQr": "Generar QR",
       "Generando": "Generando..."
     },
     "Tooltips": {
+      "ExportarExcel": "Exporta los voluntarios del evento en formato Excel (con días de acceso si hay evento filtrado)",
       "DescargarPdf": "Descargar PDF con todas las tarjetas QR generadas de esta página",
       "GenerarQr": "Generar código QR"
     },
@@ -414,7 +422,7 @@
       "Observaciones": "Observaciones"
     },
     "Snack": {
-      "Success": "Check-in registrado: {{volunteer}} — {{event}}"
+      "Success": "Check-in registrado: {{volunteer}} — {{event}} a las {{date}}"
     },
     "ScannerDialog": {
       "Title": "Escanear QR de Voluntario",

@@ -9,6 +9,7 @@ import { environment } from '../../environments/environment';
 
 export interface VoluntarioFiltros {
   busqueda?: string;
+  email?: string;
   departamentoId?: number | null;
   activo?: boolean | null;
 }
@@ -31,7 +32,8 @@ export class VoluntarioService {
   getAllPaged(page: number, size: number, filtros?: VoluntarioFiltros): Observable<PageDTO<VoluntarioDTO>> {
     let params = new HttpParams().set('page', page).set('size', size);
     if (filtros?.busqueda?.trim()) params = params.set('busqueda', filtros.busqueda.trim());
-    if (filtros?.activo != null) params = params.set('activo', filtros.activo);
+    if (filtros?.email?.trim())    params = params.set('email', filtros.email.trim());
+    if (filtros?.activo != null)   params = params.set('activo', filtros.activo);
 
     if (filtros?.departamentoId != null) {
       return this.http.get<PageDTO<VoluntarioDTO>>(

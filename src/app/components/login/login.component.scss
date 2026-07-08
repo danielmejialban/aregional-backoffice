@@ -75,6 +75,22 @@ mat-spinner {
   margin: 0 auto;
 }
 
+.forgot-password-container {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.forgot-password-link {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.55);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+    color: rgba(0, 0, 0, 0.8);
+  }
+}
+
 .captcha-container {
   display: flex;
   justify-content: center;

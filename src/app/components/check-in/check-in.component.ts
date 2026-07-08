@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -16,6 +16,7 @@ import { QrScannerDialogComponent } from './qr-scanner-dialog.component';
   selector: 'app-check-in',
   standalone: true,
   imports: [CommonModule, MatTableModule, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule, MatSnackBarModule, MatDialogModule, TranslateModule],
+  providers: [DatePipe],
   template: `
     <div class="page-container">
       <div class="page-header">
@@ -42,7 +43,7 @@ import { QrScannerDialogComponent } from './qr-scanner-dialog.component';
             </ng-container>
             <ng-container matColumnDef="fecha">
               <th mat-header-cell *matHeaderCellDef>{{ 'CheckIn.Columns.FechaHora' | translate }}</th>
-              <td mat-cell *matCellDef="let element">{{element.fechaHora | date:'short'}}</td>
+              <td mat-cell *matCellDef="let element">{{element.fechaHora | date:'dd/MM/yyyy HH:mm' }}</td>
             </ng-container>
             <ng-container matColumnDef="observaciones">
               <th mat-header-cell *matHeaderCellDef>{{ 'CheckIn.Columns.Observaciones' | translate }}</th>
@@ -68,7 +69,8 @@ export class CheckInComponent implements OnInit {
     private checkInService: CheckInService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private datePipe: DatePipe
   ) {}
 
   ngOnInit(): void {
@@ -92,8 +94,9 @@ export class CheckInComponent implements OnInit {
 
     ref.afterClosed().subscribe((result: CheckInDTO | null) => {
       if (result) {
+        const fecha = this.datePipe.transform(result.fechaHora, 'dd/MM/yyyy HH:mm') ?? '';
         this.snackBar.open(
-          this.translate.instant('CheckIn.Snack.Success', { volunteer: result.voluntarioNombre, event: result.eventoNombre }),
+          this.translate.instant('CheckIn.Snack.Success', { volunteer: result.voluntarioNombre, event: result.eventoNombre, date: fecha }),
           this.translate.instant('Common.Close'),
           { duration: 5000, panelClass: ['snack-success'] }
         );
