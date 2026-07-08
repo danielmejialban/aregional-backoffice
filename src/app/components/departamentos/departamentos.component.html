@@ -7,10 +7,16 @@
       </h1>
       <p class="subtitle">{{ 'Departamentos.PageSubtitle' | translate }}</p>
     </div>
-    <button mat-raised-button color="primary" (click)="openCreateDialog()" class="create-button">
-      <mat-icon>add</mat-icon>
-      {{ 'Departamentos.NewButton' | translate }}
-    </button>
+    <div class="header-actions">
+      <button mat-stroked-button color="primary" (click)="exportarExcel()" [disabled]="loading">
+        <mat-icon>download</mat-icon>
+        {{ 'Departamentos.ExportButton' | translate }}
+      </button>
+      <button mat-raised-button color="primary" (click)="openCreateDialog()" class="create-button">
+        <mat-icon>add</mat-icon>
+        {{ 'Departamentos.NewButton' | translate }}
+      </button>
+    </div>
   </div>
 
   <mat-card>

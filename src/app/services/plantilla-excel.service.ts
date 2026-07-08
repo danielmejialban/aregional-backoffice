@@ -3,6 +3,7 @@ import * as ExcelJS from 'exceljs';
 import { EventoDTO } from '../models/evento.model';
 import { VoluntarioDTO } from '../models/voluntario.model';
 import { EventoVoluntarioDTO } from '../models/evento-voluntario.model';
+import { DepartamentoDTO } from '../models/departamento.model';
 
 // ── Colores ──────────────────────────────────────────────────────────────────
 const COLOR_DEPT    = 'FF2E7D32'; // verde — departamento
@@ -436,6 +437,152 @@ export class PlantillaExcelService {
     const link = document.createElement('a');
     link.href     = url;
     link.download = `${nombre}_${fecha}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async exportarDepartamentos(departamentos: DepartamentoDTO[], voluntarios: VoluntarioDTO[]): Promise<void> {
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'Asamblea Regional Backoffice';
+    wb.created = new Date();
+
+    const volByDni = new Map<string, VoluntarioDTO>();
+    voluntarios.forEach(v => { if (v.dni) volByDni.set(v.dni.trim().toUpperCase(), v); });
+
+    const getVolNombre = (v: VoluntarioDTO): string =>
+      [v.nombre, v.apellido1, v.apellido2].filter(Boolean).join(' ');
+
+    const resolveDisplay = (dni?: string): string => {
+      if (!dni) return '';
+      const found = volByDni.get(dni.trim().toUpperCase());
+      return found ? getVolNombre(found) : dni;
+    };
+
+    const resolveAuxiliares = (aux?: string): string => {
+      if (!aux) return '';
+      return aux.split(',').map(v => resolveDisplay(v.trim())).filter(Boolean).join(', ');
+    };
+
+    const COLS = [
+      { header: 'ID',           color: 'FF546E7A', width: 8  },
+      { header: 'Apellido 1',   color: COLOR_VOL,  width: 18 },
+      { header: 'Apellido 2',   color: COLOR_VOL,  width: 18 },
+      { header: 'Nombre',       color: COLOR_VOL,  width: 20 },
+      { header: 'DNI',          color: COLOR_VOL,  width: 14 },
+      { header: 'Teléfono',     color: COLOR_VOL,  width: 16 },
+      { header: 'Email',        color: COLOR_VOL,  width: 28 },
+      { header: 'Congregación', color: COLOR_VOL,  width: 22 },
+      { header: 'Circuito',     color: COLOR_VOL,  width: 14 },
+      { header: 'Correo JW',    color: COLOR_VOL,  width: 26 },
+      { header: 'Formación',    color: COLOR_ACCESO, width: 12 },
+      { header: 'Pre-Asamblea', color: COLOR_ACCESO, width: 14 },
+      { header: 'Activo',       color: COLOR_DEPT, width: 10 },
+    ];
+
+    const sortedDepts = [...departamentos].sort((a, b) => a.nombre.localeCompare(b.nombre));
+    const usedSheetNames = new Set<string>();
+
+    const uniqueSheetName = (nombre: string): string => {
+      const base = nombre.slice(0, 31);
+      if (!usedSheetNames.has(base)) { usedSheetNames.add(base); return base; }
+      let n = 2;
+      let candidate: string;
+      do {
+        const suffix = ` ${n++}`;
+        candidate = `${nombre.slice(0, 31 - suffix.length)}${suffix}`;
+      } while (usedSheetNames.has(candidate));
+      usedSheetNames.add(candidate);
+      return candidate;
+    };
+
+    for (const dept of sortedDepts) {
+      const sheetName = uniqueSheetName(dept.nombre);
+      const ws = wb.addWorksheet(sheetName, {
+        views: [{ state: 'frozen', ySplit: 4 }],
+        pageSetup: { orientation: 'landscape', fitToPage: true },
+      });
+
+      COLS.forEach((col, idx) => { ws.getColumn(idx + 1).width = col.width; });
+
+      // Row 1: Department title
+      ws.mergeCells(1, 1, 1, COLS.length);
+      const titleCell = ws.getCell(1, 1);
+      titleCell.value = `DEPARTAMENTO: ${dept.nombre.toUpperCase()}`;
+      titleCell.font = { bold: true, size: 14, color: { argb: COLOR_TEXT } };
+      titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_DEPT } };
+      titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getRow(1).height = 32;
+
+      // Row 2: Responsable / Auxiliares
+      ws.mergeCells(2, 1, 2, COLS.length);
+      const infoCell = ws.getCell(2, 1);
+      infoCell.value = `Responsable: ${resolveDisplay(dept.responsable) || '—'}   |   Auxiliares: ${resolveAuxiliares(dept.auxiliares) || '—'}`;
+      infoCell.font = { italic: true, size: 10, color: { argb: 'FF37474F' } };
+      infoCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F5E9' } };
+      infoCell.alignment = { horizontal: 'left', vertical: 'middle' };
+      ws.getRow(2).height = 20;
+
+      // Row 3: empty separator
+      ws.getRow(3).height = 8;
+
+      // Row 4: Column headers
+      COLS.forEach((col, idx) => {
+        const cell = ws.getCell(4, idx + 1);
+        cell.value = col.header;
+        cell.font  = { bold: true, color: { argb: COLOR_TEXT }, size: 10 };
+        cell.fill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: col.color } };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = {
+          bottom: { style: 'medium', color: { argb: 'FFFFFFFF' } },
+          right:  { style: 'thin',   color: { argb: 'FFFFFFFF' } },
+        };
+      });
+      ws.getRow(4).height = 26;
+
+      // Rows 5+: Volunteers sorted by apellido1
+      const deptVols = voluntarios
+        .filter(v => dept.id != null && (v.departamentoIds ?? []).includes(dept.id))
+        .sort((a, b) => (a.apellido1 ?? '').localeCompare(b.apellido1 ?? ''));
+
+      deptVols.forEach((v, i) => {
+        const rowBg = i % 2 === 1 ? 'FFF9F9F9' : 'FFFFFFFF';
+        const values: (string | number)[] = [
+          v.id ?? '',
+          v.apellido1 ?? '',
+          v.apellido2 ?? '',
+          v.nombre ?? '',
+          v.dni ?? '',
+          v.telefono ?? '',
+          v.email ?? '',
+          v.congregacion ?? '',
+          v.circuito ?? '',
+          v.correoJw ?? '',
+          v.formacion ? 'Sí' : 'No',
+          v.preAsamblea ? 'Sí' : 'No',
+          v.activo !== false ? 'Sí' : 'No',
+        ];
+        values.forEach((val, idx) => {
+          const cell = ws.getCell(5 + i, idx + 1);
+          cell.value = val;
+          cell.font  = { size: 10 };
+          cell.fill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowBg } };
+          cell.border = {
+            bottom: { style: 'thin', color: { argb: 'FFE0E0E0' } },
+            right:  { style: 'thin', color: { argb: 'FFE0E0E0' } },
+          };
+        });
+      });
+
+      ws.autoFilter = `A4:${this.colLetter(COLS.length)}4`;
+    }
+
+    const fecha  = new Date().toISOString().slice(0, 10);
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob   = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url  = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href     = url;
+    link.download = `departamentos_${fecha}.xlsx`;
     link.click();
     URL.revokeObjectURL(url);
   }

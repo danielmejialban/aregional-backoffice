@@ -70,6 +70,7 @@
     "PageTitle": "Gestión de Departamentos",
     "PageSubtitle": "Administra los departamentos de la organización",
     "NewButton": "Nuevo Departamento",
+    "ExportButton": "Exportar Excel",
     "Columns": {
       "Id": "ID",
       "Nombre": "Nombre",
@@ -93,7 +94,8 @@
       "Updated": "Departamento actualizado",
       "UpdateError": "Error al actualizar departamento",
       "Deleted": "Departamento eliminado",
-      "DeleteError": "Error al eliminar departamento"
+      "DeleteError": "Error al eliminar departamento",
+      "ExportError": "Error al exportar el Excel de departamentos"
     },
     "Dialog": {
       "TitleEdit": "Editar Departamento",

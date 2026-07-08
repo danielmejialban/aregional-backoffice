@@ -16,6 +16,7 @@ import { DepartamentoDialogComponent } from './departamento-dialog/departamento-
 import { DataTableComponent } from '../data-table/data-table/data-table.component';
 import { ColumnDef, TableActionEvent } from '@app/@core';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { PlantillaExcelService } from '@app/services/plantilla-excel.service';
 
 @Component({
   selector: 'app-departamentos',
@@ -42,7 +43,8 @@ export class DepartamentosComponent implements OnInit {
     private voluntarioService: VoluntarioService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private plantillaExcelService: PlantillaExcelService,
   ) {}
 
   private buildColumns(): ColumnDef[] {
@@ -195,6 +197,16 @@ export class DepartamentosComponent implements OnInit {
 
   private getVolNombre(v: VoluntarioDTO): string {
     return [v.nombre, v.apellido1, v.apellido2].filter(Boolean).join(' ');
+  }
+
+  async exportarExcel(): Promise<void> {
+    try {
+      const departamentos = this.tableData as DepartamentoDTO[];
+      await this.plantillaExcelService.exportarDepartamentos(departamentos, this.voluntarios);
+    } catch (e) {
+      console.error('[exportarExcel]', e);
+      this.showError(this.translate.instant('Departamentos.Snack.ExportError'));
+    }
   }
 
   private showSuccess(msg: string): void {
