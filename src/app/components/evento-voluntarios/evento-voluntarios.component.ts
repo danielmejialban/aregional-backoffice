@@ -386,10 +386,10 @@ export class EventoVoluntariosComponent implements OnInit {
     });
   }
 
-  descargarPdfIndividual(asignacion: EventoVoluntarioDTO): void {
+  async descargarPdfIndividual(asignacion: EventoVoluntarioDTO): Promise<void> {
     const vol = (asignacion.voluntarioNombre ?? 'voluntario').replace(/\s+/g, '_');
     const ev  = (asignacion.eventoNombre    ?? 'evento').replace(/\s+/g, '_');
-    this.qrPdfService.generarPdf([asignacion], this.voluntarios, `QR_${vol}_${ev}.pdf`);
+    await this.qrPdfService.generarPdf([asignacion], this.voluntarios, `QR_${vol}_${ev}.pdf`);
   }
 
   exportarExcel(): void {
@@ -419,13 +419,13 @@ export class EventoVoluntariosComponent implements OnInit {
     }
   }
 
-  descargarPdfGlobal(): void {
+  async descargarPdfGlobal(): Promise<void> {
     const conQr = this.asignaciones.filter(a => !!a.qrImageBase64);
     if (!conQr.length) {
       this.showError(this.translate.instant('EventoVoluntarios.Snack.NoQr'));
       return;
     }
-    this.qrPdfService.generarPdf(conQr, this.voluntarios, 'pases_todos.pdf');
+    await this.qrPdfService.generarPdf(conQr, this.voluntarios, 'pases_todos.pdf');
   }
 
   private showSuccess(msg: string): void {

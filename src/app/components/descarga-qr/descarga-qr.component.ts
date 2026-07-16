@@ -220,20 +220,20 @@ export class DescargaQrComponent implements OnInit {
     link.click();
   }
 
-  descargarPasePdf(a: AsignacionConQr): void {
+  async descargarPasePdf(a: AsignacionConQr): Promise<void> {
     const vol = this.voluntarios.find(v => v.id === a.voluntarioId);
     const nombre = vol ? `${vol.nombre}_${vol.apellido1}` : (a.voluntarioNombre || 'pase');
-    this.qrPdfService.generarPdf(
+    await this.qrPdfService.generarPdf(
       [a],
       this.voluntarios,
       `Pase_${nombre.replace(/\s+/g, '_')}.pdf`
     );
   }
 
-  descargarPasesPdf(): void {
+  async descargarPasesPdf(): Promise<void> {
     const lista = this.seleccionadas;
     if (lista.length === 0) return;
-    this.qrPdfService.generarPdf(
+    await this.qrPdfService.generarPdf(
       lista,
       this.voluntarios,
       `Pases_${new Date().toISOString().slice(0, 10)}.pdf`

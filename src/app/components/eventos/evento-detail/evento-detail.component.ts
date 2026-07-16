@@ -433,20 +433,20 @@ export class EventoDetailComponent implements OnInit {
     this.dialog.open(QrPreviewDialogComponent, { width: '400px', data: { asignacion } });
   }
 
-  descargarPdfIndividual(asignacion: EventoVoluntarioDTO): void {
+  async descargarPdfIndividual(asignacion: EventoVoluntarioDTO): Promise<void> {
     const vol = (asignacion.voluntarioNombre ?? 'voluntario').replace(/\s+/g, '_');
     const ev  = (this.evento?.nombre ?? 'evento').replace(/\s+/g, '_');
-    this.qrPdfService.generarPdf([asignacion], this.voluntarios, `QR_${vol}_${ev}.pdf`);
+    await this.qrPdfService.generarPdf([asignacion], this.voluntarios, `QR_${vol}_${ev}.pdf`);
   }
 
-  descargarPdfGlobal(): void {
+  async descargarPdfGlobal(): Promise<void> {
     const conQr = this.asignaciones.filter(a => !!a.qrImageBase64);
     if (!conQr.length) {
       this.showError(this.translate.instant('EventoDetail.Snack.NoQr'));
       return;
     }
     const nombre = (this.evento?.nombre ?? 'evento').replace(/\s+/g, '_');
-    this.qrPdfService.generarPdf(conQr, this.voluntarios, `pases_${nombre}.pdf`);
+    await this.qrPdfService.generarPdf(conQr, this.voluntarios, `pases_${nombre}.pdf`);
   }
 
   exportarExcel(): void {
