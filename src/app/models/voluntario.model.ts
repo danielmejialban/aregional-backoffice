@@ -14,5 +14,7 @@ export interface VoluntarioDTO {
   correoJw?: string;
   formacion?: boolean;
   preAsamblea?: boolean;
+  dniTemporal?: boolean;
+  dniInvalid?: boolean;
 }
 

@@ -113,6 +113,7 @@ export class RolesComponent implements OnInit {
   pageSize = 10;
   currentPage = 0;
   private nombre = '';
+  private descripcion = '';
 
   constructor(
     private rolService: RolService,
@@ -125,7 +126,7 @@ export class RolesComponent implements OnInit {
     return [
       { key: 'id', header: this.translate.instant('Roles.Columns.Id'), type: 'text', width: '60px' },
       { key: 'nombre', header: this.translate.instant('Roles.Columns.Nombre'), type: 'text', filterType: 'text', sortable: true },
-      { key: 'descripcion', header: this.translate.instant('Roles.Columns.Descripcion'), type: 'text' },
+      { key: 'descripcion', header: this.translate.instant('Roles.Columns.Descripcion'), type: 'text', filterType: 'text' },
       {
         key: 'acciones', header: this.translate.instant('Roles.Columns.Actions'), type: 'actions', sticky: 'end',
         actions: [
@@ -144,7 +145,7 @@ export class RolesComponent implements OnInit {
   loadRoles(page = this.currentPage): void {
     this.currentPage = page;
     this.loading = true;
-    this.rolService.getAllPaged(page, this.pageSize, this.nombre).subscribe({
+    this.rolService.getAllPaged(page, this.pageSize, this.nombre, this.descripcion).subscribe({
       next: (data) => {
         this.roles = data.content;
         this.totalElements = data.totalElements;
@@ -155,7 +156,8 @@ export class RolesComponent implements OnInit {
   }
 
   onFilterChange(filters: ActiveFilters): void {
-    this.nombre = (filters['nombre'] as string) || '';
+    this.nombre      = (filters['nombre']      as string) || '';
+    this.descripcion = (filters['descripcion'] as string) || '';
     this.loadRoles(0);
   }
 

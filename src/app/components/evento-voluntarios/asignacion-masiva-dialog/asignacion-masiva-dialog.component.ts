@@ -11,6 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDividerModule } from '@angular/material/divider';
 import { TranslateModule } from '@ngx-translate/core';
 import { EventoDTO } from '@app/models/evento.model';
 import { DepartamentoDTO } from '@app/models/departamento.model';
@@ -22,6 +23,8 @@ export interface AsignacionMasivaDialogData {
   departamentos: DepartamentoDTO[];
   eventoId?: number;
 }
+
+export const TODOS_DEPARTAMENTOS = -1;
 
 @Component({
   selector: 'app-asignacion-masiva-dialog',
@@ -39,12 +42,15 @@ export interface AsignacionMasivaDialogData {
     MatTableModule,
     MatChipsModule,
     MatTooltipModule,
+    MatDividerModule,
     TranslateModule,
   ],
   templateUrl: './asignacion-masiva-dialog.component.html',
   styleUrls: ['./asignacion-masiva-dialog.component.scss']
 })
 export class AsignacionMasivaDialogComponent implements OnInit {
+  readonly todosDeptos = TODOS_DEPARTAMENTOS;
+
   form!: FormGroup;
   loading = false;
   resultado: AsignacionMasivaResultadoDTO | null = null;
@@ -72,15 +78,25 @@ export class AsignacionMasivaDialogComponent implements OnInit {
   onAsignar(): void {
     if (!this.canSubmit) return;
 
-    const eventoNombre = this.data.eventos.find(e => e.id === this.form.value.eventoId)?.nombre ?? '';
-    const deptNombre = this.data.departamentos.find(d => d.id === this.form.value.departamentoId)?.nombre ?? '';
+    const { eventoId, departamentoId, generarQr } = this.form.value;
+    const eventoNombre = this.data.eventos.find(e => e.id === eventoId)?.nombre ?? '';
+    const esTodos = departamentoId === TODOS_DEPARTAMENTOS;
+    const deptNombre = esTodos
+      ? 'TODOS LOS DEPARTAMENTOS'
+      : (this.data.departamentos.find(d => d.id === departamentoId)?.nombre ?? '');
 
     if (!confirm(`¿Asignar todos los voluntarios activos de "${deptNombre}" al evento "${eventoNombre}"?`)) return;
 
     this.loading = true;
     this.resultado = null;
 
-    this.eventoVoluntarioService.asignacionMasiva(this.form.value).subscribe({
+    const request = {
+      eventoId,
+      departamentoId: esTodos ? null : departamentoId,
+      generarQr
+    };
+
+    this.eventoVoluntarioService.asignacionMasiva(request).subscribe({
       next: (res) => {
         this.loading = false;
         this.resultado = res;
@@ -105,4 +121,3 @@ export class AsignacionMasivaDialogComponent implements OnInit {
     this.dialogRef.close(recargar);
   }
 }
-

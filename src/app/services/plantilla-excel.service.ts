@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import * as ExcelJS from 'exceljs';
+import JSZip from 'jszip';
 import { EventoDTO } from '../models/evento.model';
 import { VoluntarioDTO } from '../models/voluntario.model';
 import { EventoVoluntarioDTO } from '../models/evento-voluntario.model';
@@ -442,10 +443,6 @@ export class PlantillaExcelService {
   }
 
   async exportarDepartamentos(departamentos: DepartamentoDTO[], voluntarios: VoluntarioDTO[]): Promise<void> {
-    const wb = new ExcelJS.Workbook();
-    wb.creator = 'Asamblea Regional Backoffice';
-    wb.created = new Date();
-
     const volByDni = new Map<string, VoluntarioDTO>();
     voluntarios.forEach(v => { if (v.dni) volByDni.set(v.dni.trim().toUpperCase(), v); });
 
@@ -480,31 +477,21 @@ export class PlantillaExcelService {
     ];
 
     const sortedDepts = [...departamentos].sort((a, b) => a.nombre.localeCompare(b.nombre));
-    const usedSheetNames = new Set<string>();
-
-    const uniqueSheetName = (nombre: string): string => {
-      const base = nombre.slice(0, 31);
-      if (!usedSheetNames.has(base)) { usedSheetNames.add(base); return base; }
-      let n = 2;
-      let candidate: string;
-      do {
-        const suffix = ` ${n++}`;
-        candidate = `${nombre.slice(0, 31 - suffix.length)}${suffix}`;
-      } while (usedSheetNames.has(candidate));
-      usedSheetNames.add(candidate);
-      return candidate;
-    };
+    const fecha = new Date().toISOString().slice(0, 10);
+    const zip = new JSZip();
 
     for (const dept of sortedDepts) {
-      const sheetName = uniqueSheetName(dept.nombre);
-      const ws = wb.addWorksheet(sheetName, {
+      const deptWb = new ExcelJS.Workbook();
+      deptWb.creator = 'Asamblea Regional Backoffice';
+      deptWb.created = new Date();
+
+      const ws = deptWb.addWorksheet(dept.nombre.slice(0, 31), {
         views: [{ state: 'frozen', ySplit: 4 }],
         pageSetup: { orientation: 'landscape', fitToPage: true },
       });
 
       COLS.forEach((col, idx) => { ws.getColumn(idx + 1).width = col.width; });
 
-      // Row 1: Department title
       ws.mergeCells(1, 1, 1, COLS.length);
       const titleCell = ws.getCell(1, 1);
       titleCell.value = `DEPARTAMENTO: ${dept.nombre.toUpperCase()}`;
@@ -513,7 +500,6 @@ export class PlantillaExcelService {
       titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
       ws.getRow(1).height = 32;
 
-      // Row 2: Responsable / Auxiliares
       ws.mergeCells(2, 1, 2, COLS.length);
       const infoCell = ws.getCell(2, 1);
       infoCell.value = `Responsable: ${resolveDisplay(dept.responsable) || '—'}   |   Auxiliares: ${resolveAuxiliares(dept.auxiliares) || '—'}`;
@@ -522,10 +508,8 @@ export class PlantillaExcelService {
       infoCell.alignment = { horizontal: 'left', vertical: 'middle' };
       ws.getRow(2).height = 20;
 
-      // Row 3: empty separator
       ws.getRow(3).height = 8;
 
-      // Row 4: Column headers
       COLS.forEach((col, idx) => {
         const cell = ws.getCell(4, idx + 1);
         cell.value = col.header;
@@ -539,7 +523,6 @@ export class PlantillaExcelService {
       });
       ws.getRow(4).height = 26;
 
-      // Rows 5+: Volunteers sorted by apellido1
       const deptVols = voluntarios
         .filter(v => dept.id != null && (v.departamentoIds ?? []).includes(dept.id))
         .sort((a, b) => (a.apellido1 ?? '').localeCompare(b.apellido1 ?? ''));
@@ -574,15 +557,18 @@ export class PlantillaExcelService {
       });
 
       ws.autoFilter = `A4:${this.colLetter(COLS.length)}4`;
+
+      const buffer = await deptWb.xlsx.writeBuffer();
+      const fileName = `${dept.nombre.replace(/[/\\?%*:|"<>]/g, '_')}_${fecha}.xlsx`;
+      zip.file(fileName, buffer);
     }
 
-    const fecha  = new Date().toISOString().slice(0, 10);
-    const buffer = await wb.xlsx.writeBuffer();
-    const blob   = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const url  = URL.createObjectURL(blob);
+    const zipBuffer = await zip.generateAsync({ type: 'arraybuffer' });
+    const blob = new Blob([zipBuffer], { type: 'application/zip' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href     = url;
-    link.download = `departamentos_${fecha}.xlsx`;
+    link.href = url;
+    link.download = `departamentos_${fecha}.zip`;
     link.click();
     URL.revokeObjectURL(url);
   }

@@ -71,7 +71,7 @@
     "PageTitle": "Gestión de Departamentos",
     "PageSubtitle": "Administra los departamentos de la organización",
     "NewButton": "Nuevo Departamento",
-    "ExportButton": "Exportar Excel",
+    "ExportButton": "Exportar Departamentos",
     "Columns": {
       "Id": "ID",
       "Nombre": "Nombre",
@@ -108,6 +108,7 @@
       "ResponsableHint": "Selecciona el voluntario responsable (opcional)",
       "AuxiliaresHint": "Selecciona uno o varios voluntarios auxiliares (opcional)",
       "SinAsignar": "Sin asignar",
+      "BuscarPlaceholder": "Buscar voluntario...",
       "NombreRequired": "El nombre es obligatorio",
       "NombreMinLength": "El nombre debe tener al menos 3 caracteres",
       "NombreMaxLength": "El nombre no puede exceder 100 caracteres",

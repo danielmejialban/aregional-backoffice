@@ -19,6 +19,11 @@
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>{{ 'EventoVoluntarios.AsignacionMasivaDialog.DepartamentoLabel' | translate }}</mat-label>
       <mat-select formControlName="departamentoId">
+        <mat-option [value]="todosDeptos">
+          <mat-icon style="vertical-align:middle;font-size:18px;margin-right:6px">groups</mat-icon>
+          Todos los departamentos
+        </mat-option>
+        <mat-divider></mat-divider>
         <mat-option *ngFor="let d of data.departamentos" [value]="d.id">{{ d.nombre }}</mat-option>
       </mat-select>
       <mat-error>{{ 'EventoVoluntarios.AsignacionMasivaDialog.DepartamentoRequired' | translate }}</mat-error>

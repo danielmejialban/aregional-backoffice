@@ -9,6 +9,8 @@ import { environment } from '../../environments/environment';
 export interface AsignacionFiltros {
   busqueda?: string;
   eventoId?: number | null;
+  departamentoId?: number | null;
+  preAsamblea?: boolean | null;
 }
 
 @Injectable({
@@ -20,14 +22,17 @@ export class EventoVoluntarioService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<EventoVoluntarioDTO[]> {
-    return this.http.get<EventoVoluntarioDTO[] | PageDTO<EventoVoluntarioDTO>>(this.API_URL).pipe(
+    const params = new HttpParams().set('size', '5000');
+    return this.http.get<EventoVoluntarioDTO[] | PageDTO<EventoVoluntarioDTO>>(this.API_URL, { params }).pipe(
       map(r => Array.isArray(r) ? r : (r.content ?? []))
     );
   }
 
   getAllPaged(page: number, size: number, filtros?: AsignacionFiltros): Observable<PageDTO<EventoVoluntarioDTO>> {
     let params = new HttpParams().set('page', page).set('size', size);
-    if (filtros?.busqueda?.trim()) params = params.set('busqueda', filtros.busqueda.trim());
+    if (filtros?.busqueda?.trim())    params = params.set('busqueda', filtros.busqueda.trim());
+    if (filtros?.departamentoId != null) params = params.set('departamentoId', filtros.departamentoId);
+    if (filtros?.preAsamblea != null) params = params.set('preAsamblea', filtros.preAsamblea);
 
     if (filtros?.eventoId != null) {
       return this.http.get<PageDTO<EventoVoluntarioDTO>>(

@@ -32,6 +32,12 @@ import { AsignacionMasivaDialogComponent } from '../../evento-voluntarios/asigna
 import { QrPreviewDialogComponent } from '../../evento-voluntarios/qr-preview-dialog/qr-preview-dialog.component';
 import { VoluntarioDialogComponent } from '../../voluntarios/voluntarios.component';
 
+interface DiasEvento {
+  iso: string;
+  label: string;
+  esPre: boolean;
+}
+
 @Component({
   selector: 'app-evento-detail',
   standalone: true,
@@ -48,12 +54,14 @@ import { VoluntarioDialogComponent } from '../../voluntarios/voluntarios.compone
 })
 export class EventoDetailComponent implements OnInit {
   @ViewChild('qrCellTpl', { static: false }) qrCellTpl!: TemplateRef<{ $implicit: any }>;
+  @ViewChild(DataTableComponent) dataTable?: DataTableComponent;
 
   evento: EventoDTO | null = null;
   asignaciones: any[] = [];
   voluntarios: VoluntarioDTO[] = [];
   departamentos: DepartamentoDTO[] = [];
   columns: ColumnDef[] = [];
+  eventoDias: DiasEvento[] = [];
 
   loadingEvento = true;
   loadingAsignaciones = false;
@@ -63,7 +71,9 @@ export class EventoDetailComponent implements OnInit {
   totalElements = 0;
   pageSize = 25;
   currentPage = 0;
-  busqueda?: string;
+  private busqueda?: string;
+  private filtradoDepartamentoId?: number | null;
+  private filtradoPreAsamblea?: boolean | null;
 
   private eventoId!: number;
 
@@ -86,15 +96,18 @@ export class EventoDetailComponent implements OnInit {
     this.eventoId = +this.route.snapshot.paramMap.get('id')!;
 
     forkJoin({
-      evento:       this.eventoService.getById(this.eventoId),
-      voluntarios:  this.voluntarioService.getAll(),
+      evento:        this.eventoService.getById(this.eventoId),
+      voluntarios:   this.voluntarioService.getAll(),
       departamentos: this.departamentoService.getAll(),
     }).subscribe({
       next: ({ evento, voluntarios, departamentos }) => {
-        this.evento       = evento;
-        this.voluntarios  = voluntarios;
+        this.evento        = evento;
+        this.voluntarios   = voluntarios;
         this.departamentos = departamentos;
+        this.eventoDias    = this.computeEventoDias(evento);
+        this.columns       = this.buildColumns();
         this.loadingEvento = false;
+        this.cdr.detectChanges();
         this.loadAsignaciones();
       },
       error: () => {
@@ -104,13 +117,47 @@ export class EventoDetailComponent implements OnInit {
     });
   }
 
-  ngAfterViewInit(): void {
-    this.columns = this.buildColumns();
-    this.cdr.detectChanges();
+  private computeEventoDias(evento: EventoDTO): DiasEvento[] {
+    if (!evento.fechaInicioEvento || !evento.fechaFinEvento) return [];
+    const toLocalIso = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    const inicio = new Date(evento.fechaInicioEvento);
+    const fin    = new Date(evento.fechaFinEvento);
+    inicio.setHours(0, 0, 0, 0);
+    fin.setHours(0, 0, 0, 0);
+
+    const diasPre = evento.diasPreEvento ?? 0;
+    const desde   = new Date(inicio);
+    desde.setDate(desde.getDate() - diasPre);
+
+    const dias: DiasEvento[] = [];
+    for (let cur = new Date(desde); cur <= fin; cur.setDate(cur.getDate() + 1)) {
+      const iso   = toLocalIso(cur);
+      const esPre = +cur < +inicio;
+      const dd    = String(cur.getDate()).padStart(2, '0');
+      const mon   = cur.toLocaleString('es', { month: 'short' });
+      dias.push({ iso, label: esPre ? `${dd} ${mon} (Pre)` : `${dd} ${mon}`, esPre });
+    }
+    return dias;
+  }
+
+  private transformRow(a: EventoVoluntarioDTO, vol: VoluntarioDTO | undefined): any {
+    const diasSet = a.diasAcceso ? new Set(a.diasAcceso.split('|')) : null;
+    const row: any = {
+      ...a,
+      voluntarioDni:         vol?.dni       ?? '',
+      voluntarioTelefono:    vol?.telefono  ?? '',
+      voluntarioPreAsamblea: vol?.preAsamblea ? 'SI' : 'NO',
+    };
+    for (const dia of this.eventoDias) {
+      row[`acceso_${dia.iso}`] = diasSet === null ? '✓' : diasSet.has(dia.iso) ? '✓' : '✗';
+    }
+    return row;
   }
 
   private buildColumns(): ColumnDef[] {
-    return [
+    const cols: ColumnDef[] = [
       { key: 'id', header: 'ID', type: 'text', width: '60px' },
       {
         key: 'voluntarioNombre',
@@ -120,33 +167,42 @@ export class EventoDetailComponent implements OnInit {
       {
         key: 'voluntarioDni',
         header: this.translate.instant('EventoDetail.Columns.Dni'),
-        type: 'text',
-        width: '110px',
+        type: 'text', width: '110px', filterType: 'text',
       },
       {
         key: 'voluntarioDepartamentoNombre',
         header: this.translate.instant('EventoDetail.Columns.Departamento'),
         type: 'text',
+        filterType: 'select',
+        filterOptions: this.departamentos.map(d => d.nombre),
       },
       {
         key: 'voluntarioTelefono',
         header: this.translate.instant('EventoDetail.Columns.Telefono'),
-        type: 'text',
-        width: '110px',
+        type: 'text', width: '110px',
       },
       {
         key: 'voluntarioPreAsamblea',
         header: this.translate.instant('EventoDetail.Columns.PreAsamblea'),
-        type: 'badge',
-        width: '110px',
+        type: 'badge', width: '110px',
+        filterType: 'select',
+        filterOptions: ['SI', 'NO'],
         badgeMap: { SI: 'dt-badge--success', NO: 'dt-badge--neutral' },
       },
-      {
-        key: 'diasAccesoCount',
-        header: this.translate.instant('EventoDetail.Columns.DiasAcceso'),
-        type: 'text',
-        width: '110px',
-      },
+    ];
+
+    for (const dia of this.eventoDias) {
+      cols.push({
+        key: `acceso_${dia.iso}`,
+        header: dia.label,
+        type: 'badge',
+        badgeMap: { '✓': 'dt-badge--success', '✗': 'dt-badge--danger' },
+        width: '82px',
+        exportable: true,
+      });
+    }
+
+    cols.push(
       {
         key: 'qr',
         header: this.translate.instant('EventoDetail.Columns.Qr'),
@@ -179,26 +235,24 @@ export class EventoDetailComponent implements OnInit {
           },
         ],
       },
-    ];
+    );
+
+    return cols;
   }
 
   loadAsignaciones(page = this.currentPage): void {
     this.currentPage = page;
     this.loadingAsignaciones = true;
     this.eventoVoluntarioService.getAllPaged(page, this.pageSize, {
-      eventoId: this.eventoId,
-      busqueda: this.busqueda,
+      eventoId:       this.eventoId,
+      busqueda:       this.busqueda,
+      departamentoId: this.filtradoDepartamentoId,
+      preAsamblea:    this.filtradoPreAsamblea,
     }).subscribe({
       next: (data) => {
         this.asignaciones  = data.content.map(a => {
           const vol = this.voluntarios.find(v => v.id === a.voluntarioId);
-          return {
-            ...a,
-            diasAccesoCount:      this.formatDiasAcceso(a.diasAcceso),
-            voluntarioDni:         vol?.dni      ?? '',
-            voluntarioTelefono:    vol?.telefono ?? '',
-            voluntarioPreAsamblea: vol?.preAsamblea ? 'SI' : 'NO',
-          };
+          return this.transformRow(a, vol);
         });
         this.totalElements = data.totalElements;
         this.loadingAsignaciones = false;
@@ -210,16 +264,15 @@ export class EventoDetailComponent implements OnInit {
     });
   }
 
-  private formatDiasAcceso(diasAcceso: string | null | undefined): string {
-    if (!diasAcceso) return this.translate.instant('EventoDetail.DiasAcceso.Todos');
-    const dias = diasAcceso.split('|').filter(Boolean);
-    return dias.length === 1
-      ? dias[0].substring(5).replace('-', '/')
-      : `${dias.length} ${this.translate.instant('EventoDetail.DiasAcceso.Dias')}`;
-  }
-
   onFilterChange(filters: ActiveFilters): void {
-    this.busqueda = (filters['voluntarioNombre'] as string) || undefined;
+    const nombre = (filters['voluntarioNombre'] as string)?.trim() || undefined;
+    const dni    = (filters['voluntarioDni']    as string)?.trim() || undefined;
+    this.busqueda             = dni || nombre || undefined;
+    const deptoNombre         = filters['voluntarioDepartamentoNombre'] as string | null;
+    const preAsambleaLabel    = filters['voluntarioPreAsamblea']        as string | null;
+    const depto = deptoNombre ? this.departamentos.find(d => d.nombre === deptoNombre) : null;
+    this.filtradoDepartamentoId = depto?.id ?? null;
+    this.filtradoPreAsamblea    = preAsambleaLabel === 'SI' ? true : preAsambleaLabel === 'NO' ? false : null;
     this.loadAsignaciones(0);
   }
 
@@ -401,8 +454,12 @@ export class EventoDetailComponent implements OnInit {
     this.exportandoExcel = true;
     this.eventoVoluntarioService.getByEvento(this.eventoId).subscribe({
       next: (asignaciones) => {
+        const rows = asignaciones.map(a => {
+          const vol = this.voluntarios.find(v => v.id === a.voluntarioId);
+          return this.transformRow(a, vol);
+        });
         this.plantillaExcelService
-          .exportarAsignacionesEvento(asignaciones, this.voluntarios, this.evento!)
+          .exportarAsignacionesEvento(rows, this.voluntarios, this.evento!)
           .finally(() => { this.exportandoExcel = false; });
       },
       error: () => {

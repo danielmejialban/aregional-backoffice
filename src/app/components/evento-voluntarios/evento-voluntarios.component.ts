@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, DestroyRef, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +11,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { PageEvent } from '@angular/material/paginator';
-import {  forkJoin } from 'rxjs';
+import { forkJoin } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { EventoVoluntarioService, AsignacionFiltros } from '@app/services/evento-voluntario.service';
 import { EventoService } from '@app/services/evento.service';
@@ -30,6 +30,12 @@ import { DataTableComponent } from '../data-table/data-table/data-table.componen
 import { ColumnDef, TableActionEvent, ActiveFilters } from '@app/@core';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
+interface DiasEvento {
+  iso: string;
+  label: string;
+  esPre: boolean;
+}
+
 @Component({
   selector: 'app-evento-voluntarios',
   standalone: true,
@@ -46,6 +52,7 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
 })
 export class EventoVoluntariosComponent implements OnInit {
   @ViewChild('qrCellTpl', { static: false }) qrCellTpl!: TemplateRef<{ $implicit: any }>;
+  @ViewChild(DataTableComponent) dataTable?: DataTableComponent;
 
   asignaciones: any[] = [];
   voluntarios: VoluntarioDTO[] = [];
@@ -61,6 +68,8 @@ export class EventoVoluntariosComponent implements OnInit {
   currentPage = 0;
 
   eventoActual: EventoDTO | null = null;
+  eventoDias: DiasEvento[] = [];
+
   private eventoIdDeRuta: number | null = null;
   private currentFiltros: AsignacionFiltros = {};
 
@@ -86,6 +95,7 @@ export class EventoVoluntariosComponent implements OnInit {
       this.currentFiltros = { eventoId: this.eventoIdDeRuta };
     }
 
+    this.loading = true;
     forkJoin({
       voluntarios: this.voluntarioService.getAll(),
       eventos: this.eventoService.getAll(),
@@ -97,28 +107,107 @@ export class EventoVoluntariosComponent implements OnInit {
         this.departamentos = departamentos;
         if (this.eventoIdDeRuta) {
           this.eventoActual = eventos.find(e => e.id === this.eventoIdDeRuta) ?? null;
-          this.columns = this.buildColumns();
-          this.cdr.detectChanges();
+          if (this.eventoActual) {
+            this.eventoDias = this.computeEventoDias(this.eventoActual);
+          }
         }
+        this.columns = this.buildColumns();
+        this.cdr.detectChanges();
+        this.loadAsignaciones();
       },
-      error: () => this.showError(this.translate.instant('EventoVoluntarios.Snack.LoadSupportError')),
+      error: () => {
+        this.loading = false;
+        this.showError(this.translate.instant('EventoVoluntarios.Snack.LoadSupportError'));
+      },
     });
-    this.loadAsignaciones();
   }
 
-  ngAfterViewInit(): void {
-    this.columns = this.buildColumns();
-    this.cdr.detectChanges();
+  // ── Date helpers ─────────────────────────────────────────────────────────────
+
+  private computeEventoDias(evento: EventoDTO): DiasEvento[] {
+    if (!evento.fechaInicioEvento || !evento.fechaFinEvento) return [];
+    const inicio = new Date(evento.fechaInicioEvento);
+    const fin    = new Date(evento.fechaFinEvento);
+    inicio.setHours(0, 0, 0, 0);
+    fin.setHours(0, 0, 0, 0);
+    const diasPre = evento.diasPreEvento ?? 0;
+    const desde = new Date(inicio);
+    desde.setDate(desde.getDate() - diasPre);
+
+    const toLocalIso = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    const dias: DiasEvento[] = [];
+    for (let cur = new Date(desde); cur <= fin; cur.setDate(cur.getDate() + 1)) {
+      const iso   = toLocalIso(cur);
+      const esPre = cur < inicio;
+      const dd    = String(cur.getDate()).padStart(2, '0');
+      const mon   = cur.toLocaleString('es', { month: 'short' });
+      const label = esPre ? `${dd} ${mon} (Pre)` : `${dd} ${mon}`;
+      dias.push({ iso, label, esPre });
+    }
+    return dias;
   }
+
+  private transformRow(ev: EventoVoluntarioDTO): any {
+    const diasSet = ev.diasAcceso ? new Set(ev.diasAcceso.split('|')) : null;
+    const row: any = { ...ev };
+    for (const dia of this.eventoDias) {
+      row[`acceso_${dia.iso}`] = diasSet === null ? '✓' : diasSet.has(dia.iso) ? '✓' : '✗';
+    }
+    return row;
+  }
+
+  // ── Columns ──────────────────────────────────────────────────────────────────
 
   private buildColumns(): ColumnDef[] {
+    const deptNames = this.departamentos.map(d => d.nombre).sort();
+
     const cols: ColumnDef[] = [
       { key: 'id', header: this.translate.instant('EventoVoluntarios.Columns.Id'), type: 'text', width: '60px' },
-      { key: 'voluntarioNombre', header: this.translate.instant('EventoVoluntarios.Columns.Voluntario'), type: 'text', filterType: 'text' },
     ];
 
+    if (this.eventoActual) {
+      cols.push({
+        key: 'voluntarioDepartamentoNombre',
+        header: 'Departamento',
+        type: 'text',
+        filterType: 'autocomplete',
+        filterOptions: deptNames,
+        combo: false,
+        width: '160px',
+      });
+    }
+
+    cols.push({
+      key: 'voluntarioNombre',
+      header: this.translate.instant('EventoVoluntarios.Columns.Voluntario'),
+      type: 'text',
+      filterType: 'text',
+    });
+
     if (!this.eventoActual) {
-      cols.push({ key: 'eventoNombre', header: this.translate.instant('EventoVoluntarios.Columns.Evento'), type: 'text', filterType: 'text' });
+      cols.push({
+        key: 'eventoNombre',
+        header: this.translate.instant('EventoVoluntarios.Columns.Evento'),
+        type: 'text',
+        filterType: 'select',
+        filterOptions: this.eventos.map(e => e.nombre),
+      });
+    }
+
+    // Columnas de días del evento (solo en contexto de evento)
+    if (this.eventoActual) {
+      for (const dia of this.eventoDias) {
+        cols.push({
+          key: `acceso_${dia.iso}`,
+          header: dia.label,
+          type: 'badge',
+          badgeMap: { '✓': 'dt-badge--success', '✗': 'dt-badge--danger' },
+          width: '82px',
+          exportable: true,
+        });
+      }
     }
 
     cols.push(
@@ -145,36 +234,60 @@ export class EventoVoluntariosComponent implements OnInit {
     return cols;
   }
 
+  // ── Data loading ─────────────────────────────────────────────────────────────
+
   loadAsignaciones(page = this.currentPage): void {
     this.currentPage = page;
     this.loading = true;
-    this.eventoVoluntarioService.getAllPaged(page, this.pageSize, this.currentFiltros).subscribe({
-      next: (data) => {
-        this.asignaciones = data.content;
-        this.totalElements = data.totalElements;
-        this.loading = false;
-      },
-      error: () => { this.loading = false; this.showError(this.translate.instant('EventoVoluntarios.Snack.LoadError')); },
-    });
-  }
-
-  onFilterChange(filters: ActiveFilters): void {
-    const busqueda = (filters['voluntarioNombre'] as string) || undefined;
 
     if (this.eventoActual) {
-      this.currentFiltros = { busqueda, eventoId: this.eventoActual.id };
+      // Contexto de evento: cargar todo de golpe para filtrado cliente
+      this.eventoVoluntarioService.getAllPaged(0, 5000, { eventoId: this.eventoActual.id }).subscribe({
+        next: (data) => {
+          this.asignaciones  = data.content.map(ev => this.transformRow(ev));
+          this.totalElements = data.totalElements;
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+          this.showError(this.translate.instant('EventoVoluntarios.Snack.LoadError'));
+        },
+      });
     } else {
-      const eventoNom = (filters['eventoNombre'] as string) || undefined;
-      const evento    = eventoNom ? this.eventos.find(e => e.nombre === eventoNom) : null;
-      this.currentFiltros = { busqueda, eventoId: evento?.id ?? null };
+      // Modo normal: paginación servidor
+      this.eventoVoluntarioService.getAllPaged(page, this.pageSize, this.currentFiltros).subscribe({
+        next: (data) => {
+          this.asignaciones  = data.content;
+          this.totalElements = data.totalElements;
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+          this.showError(this.translate.instant('EventoVoluntarios.Snack.LoadError'));
+        },
+      });
     }
+  }
+
+  // ── Filter / page (server-side only) ─────────────────────────────────────────
+
+  onFilterChange(filters: ActiveFilters): void {
+    if (this.eventoActual) return; // client-side: DataTableComponent maneja el filtrado
+
+    const busqueda  = (filters['voluntarioNombre'] as string) || undefined;
+    const eventoNom = (filters['eventoNombre'] as string) || undefined;
+    const evento    = eventoNom ? this.eventos.find(e => e.nombre === eventoNom) : null;
+    this.currentFiltros = { busqueda, eventoId: evento?.id ?? null };
     this.loadAsignaciones(0);
   }
 
   onPageChange(event: PageEvent): void {
+    if (this.eventoActual) return; // client-side: DataTableComponent gestiona la paginación
     this.pageSize = event.pageSize;
     this.loadAsignaciones(event.pageIndex);
   }
+
+  // ── Actions ──────────────────────────────────────────────────────────────────
 
   onActionClick(event: TableActionEvent): void {
     const row = event.row as EventoVoluntarioDTO;
@@ -281,20 +394,29 @@ export class EventoVoluntariosComponent implements OnInit {
 
   exportarExcel(): void {
     this.exportandoExcel = true;
-    this.eventoVoluntarioService.getAllPaged(0, 5000, this.currentFiltros).subscribe({
-      next: (data) => {
-        const evento = this.currentFiltros.eventoId != null
-          ? this.eventos.find(e => e.id === this.currentFiltros.eventoId)
-          : undefined;
-        this.plantillaExcelService
-          .exportarAsignacionesEvento(data.content, this.voluntarios, evento)
-          .finally(() => { this.exportandoExcel = false; });
-      },
-      error: () => {
-        this.exportandoExcel = false;
-        this.showError(this.translate.instant('EventoVoluntarios.Snack.LoadError'));
-      },
-    });
+
+    if (this.eventoActual) {
+      // Exportar los datos filtrados actualmente visibles en la tabla
+      const filteredRows: EventoVoluntarioDTO[] = this.dataTable?.dataSource.filteredData ?? this.asignaciones;
+      this.plantillaExcelService
+        .exportarAsignacionesEvento(filteredRows, this.voluntarios, this.eventoActual)
+        .finally(() => { this.exportandoExcel = false; });
+    } else {
+      this.eventoVoluntarioService.getAllPaged(0, 5000, this.currentFiltros).subscribe({
+        next: (data) => {
+          const evento = this.currentFiltros.eventoId != null
+            ? this.eventos.find(e => e.id === this.currentFiltros.eventoId)
+            : undefined;
+          this.plantillaExcelService
+            .exportarAsignacionesEvento(data.content, this.voluntarios, evento)
+            .finally(() => { this.exportandoExcel = false; });
+        },
+        error: () => {
+          this.exportandoExcel = false;
+          this.showError(this.translate.instant('EventoVoluntarios.Snack.LoadError'));
+        },
+      });
+    }
   }
 
   descargarPdfGlobal(): void {

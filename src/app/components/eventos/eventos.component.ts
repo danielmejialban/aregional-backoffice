@@ -73,11 +73,11 @@ export class EventosComponent implements OnInit {
       },
       {
         key: 'fechaInicioEvento', header: this.translate.instant('Eventos.Columns.Inicio'), type: 'date',
-        dateFormat: 'dd/MM/yyyy HH:mm',
+        dateFormat: 'dd/MM/yyyy HH:mm', filterType: 'dateRange',
       },
       {
         key: 'fechaFinEvento', header: this.translate.instant('Eventos.Columns.Fin'), type: 'date',
-        dateFormat: 'dd/MM/yyyy HH:mm',
+        dateFormat: 'dd/MM/yyyy HH:mm', filterType: 'dateRange',
       },
       { key: 'direccion', header: this.translate.instant('Eventos.Columns.Direccion'), type: 'text', hidden: true },
       {

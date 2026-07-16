@@ -160,5 +160,28 @@
     font-weight: 600;
     color: #1976d2;
   }
+
+  .evento-dias-chips {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-left: 8px;
+  }
+
+  .evento-dia-chip {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: #bbdefb;
+    color: #0d47a1;
+    white-space: nowrap;
+
+    &--pre {
+      background: #ffe0b2;
+      color: #e65100;
+    }
+  }
 }
 

@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -23,6 +23,7 @@ export interface DepartamentoDialogData {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     MatDialogModule,
     MatFormFieldModule,
@@ -39,6 +40,28 @@ export class DepartamentoDialogComponent implements OnInit {
   form!: FormGroup;
   voluntarios: VoluntarioDTO[] = [];
   auxiliaresDisponibles: VoluntarioDTO[] = [];
+
+  responsableFilter = '';
+  auxiliaresFilter  = '';
+
+  get voluntariosFiltradosParaResponsable(): VoluntarioDTO[] {
+    if (!this.responsableFilter.trim()) return this.voluntarios;
+    const q = this.responsableFilter.toLowerCase();
+    return this.voluntarios.filter(v =>
+      this.getVoluntarioNombre(v).toLowerCase().includes(q) || v.dni.toLowerCase().includes(q)
+    );
+  }
+
+  get voluntariosFiltradosParaAuxiliares(): VoluntarioDTO[] {
+    if (!this.auxiliaresFilter.trim()) return this.auxiliaresDisponibles;
+    const q = this.auxiliaresFilter.toLowerCase();
+    return this.auxiliaresDisponibles.filter(v =>
+      this.getVoluntarioNombre(v).toLowerCase().includes(q) || v.dni.toLowerCase().includes(q)
+    );
+  }
+
+  onResponsablePanelOpen(): void  { this.responsableFilter = ''; }
+  onAuxiliaresPanelOpen(): void   { this.auxiliaresFilter  = ''; }
 
   constructor(
     private fb: FormBuilder,
@@ -121,7 +144,8 @@ export class DepartamentoDialogComponent implements OnInit {
       return item.dni === normalizedValue || nombreCompleto === normalizedValue;
     });
 
-    return voluntario?.dni || '';
+    // Si no se encuentra en la lista, preserva el valor original (no lo borra)
+    return voluntario?.dni ?? normalizedValue;
   }
 
   private resolveVoluntarioValues(value?: string): string[] {

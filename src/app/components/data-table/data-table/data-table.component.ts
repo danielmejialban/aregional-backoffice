@@ -453,11 +453,11 @@ export class DataTableComponent implements OnInit, AfterViewInit, OnChanges {
         this.dateRangeControls[col.key] = { start, end };
 
         if (!this.showSearchButton) {
-          end.valueChanges.pipe(takeUntil(this.filterReset$), takeUntilDestroyed(this.destroyRef)).subscribe((v) => {
-            if (v) this.serverSide ? this.emitFilters() : this.triggerClientFilter();
+          end.valueChanges.pipe(takeUntil(this.filterReset$), takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+            this.serverSide ? this.emitFilters() : this.triggerClientFilter();
           });
           start.valueChanges.pipe(takeUntil(this.filterReset$), takeUntilDestroyed(this.destroyRef)).subscribe((v) => {
-            if (!v && !end.value) this.serverSide ? this.emitFilters() : this.triggerClientFilter();
+            if (!v || !end.value) this.serverSide ? this.emitFilters() : this.triggerClientFilter();
           });
         }
       }
@@ -508,15 +508,14 @@ export class DataTableComponent implements OnInit, AfterViewInit, OnChanges {
   private setupClientSideFilterPredicate(): void {
     this.dataSource.filterPredicate = (row: any, _str: string): boolean => {
       for (const col of this.columns ?? []) {
-        if (col.filterType === 'text' || col.filterType === 'autocomplete' || col.filterType === 'select') {
+        if (col.filterType === 'text' || col.filterType === 'autocomplete') {
           const val = this.filterControls[col.key]?.value?.trim().toLowerCase();
-          if (
-            val &&
-            !String(row[col.key] ?? '')
-              .toLowerCase()
-              .includes(val)
-          )
-            return false;
+          if (val && !String(row[col.key] ?? '').toLowerCase().includes(val)) return false;
+        }
+
+        if (col.filterType === 'select') {
+          const val = this.filterControls[col.key]?.value;
+          if (val != null && String(row[col.key] ?? '').toLowerCase() !== val.toLowerCase()) return false;
         }
 
         if (col.filterType === 'dateRange') {

@@ -53,19 +53,22 @@ export interface AsignacionConQr extends EventoVoluntarioDTO {
 export class DescargaQrComponent implements OnInit {
   form!: FormGroup;
 
-  // Datos maestros
-  todasAsignaciones: EventoVoluntarioDTO[] = [];
+  // Datos maestros (carga rápida en mount)
   eventos: EventoDTO[] = [];
   voluntarios: VoluntarioDTO[] = [];
   departamentos: DepartamentoDTO[] = [];
 
-  // Vista previa filtrada
+  // QRs cargados bajo demanda al seleccionar evento
+  todasAsignaciones: EventoVoluntarioDTO[] = [];
   asignacionesFiltradas: AsignacionConQr[] = [];
 
   // Estados
   loadingDatos = true;
+  loadingQrs = false;
   descargando = false;
   progresoDescarga = 0;
+
+  readonly skeletonItems = Array(8).fill(0);
 
   constructor(
     private fb: FormBuilder,
@@ -81,42 +84,84 @@ export class DescargaQrComponent implements OnInit {
   ngOnInit(): void {
     this.form = this.fb.group({
       eventoId: [null],
-      departamentoId: [null],
-      voluntarioId: [null]
+      departamentoId: [{ value: null, disabled: true }],
+      voluntarioId:   [{ value: null, disabled: true }]
     });
 
-    this.form.valueChanges.subscribe(() => this.aplicarFiltros());
+    // Evento seleccionado → habilitar filtros secundarios y cargar QRs
+    this.form.get('eventoId')!.valueChanges.subscribe(id => {
+      if (id) {
+        this.form.get('departamentoId')!.enable({ emitEvent: false });
+        this.form.get('voluntarioId')!.enable({ emitEvent: false });
+        this.cargarQrParaEvento(id);
+      } else {
+        this.form.get('departamentoId')!.disable({ emitEvent: false });
+        this.form.get('voluntarioId')!.disable({ emitEvent: false });
+        this.form.get('departamentoId')!.setValue(null, { emitEvent: false });
+        this.form.get('voluntarioId')!.setValue(null, { emitEvent: false });
+        this.todasAsignaciones = [];
+        this.asignacionesFiltradas = [];
+      }
+    });
 
+    // Filtros secundarios → aplicar client-side sobre los QRs ya cargados
+    this.form.get('departamentoId')!.valueChanges.subscribe(() => this.aplicarFiltros());
+    this.form.get('voluntarioId')!.valueChanges.subscribe(() => this.aplicarFiltros());
+
+    // Carga inicial ligera: solo catálogos (sin imágenes QR)
     forkJoin({
-      asignaciones: this.eventoVoluntarioService.getAll(),
       eventos: this.eventoService.getAll(),
       voluntarios: this.voluntarioService.getAll(),
       departamentos: this.departamentoService.getAll()
     }).subscribe({
-      next: ({ asignaciones, eventos, voluntarios, departamentos }) => {
-        // Solo asignaciones con QR generado
-        this.todasAsignaciones = asignaciones.filter(a => !!a.qrImageBase64);
+      next: ({ eventos, voluntarios, departamentos }) => {
         this.eventos = eventos;
         this.voluntarios = voluntarios;
         this.departamentos = departamentos;
         this.loadingDatos = false;
-        this.aplicarFiltros();
       },
       error: () => {
         this.loadingDatos = false;
-        this.snackBar.open(this.translate.instant('DescargaQr.Snack.LoadError'), this.translate.instant('Common.Close'), { duration: 4000 });
+        this.snackBar.open(
+          this.translate.instant('DescargaQr.Snack.LoadError'),
+          this.translate.instant('Common.Close'),
+          { duration: 4000 }
+        );
+      }
+    });
+  }
+
+  get eventoSeleccionado(): EventoDTO | null {
+    const id = this.form.value.eventoId;
+    return id ? (this.eventos.find(e => e.id === id) ?? null) : null;
+  }
+
+  private cargarQrParaEvento(eventoId: number): void {
+    this.loadingQrs = true;
+    this.todasAsignaciones = [];
+    this.asignacionesFiltradas = [];
+
+    this.eventoVoluntarioService.getByEvento(eventoId).subscribe({
+      next: (asignaciones) => {
+        this.todasAsignaciones = asignaciones.filter(a => !!a.qrImageBase64);
+        this.loadingQrs = false;
+        this.aplicarFiltros();
+      },
+      error: () => {
+        this.loadingQrs = false;
+        this.snackBar.open(
+          this.translate.instant('DescargaQr.Snack.LoadError'),
+          this.translate.instant('Common.Close'),
+          { duration: 4000 }
+        );
       }
     });
   }
 
   aplicarFiltros(): void {
-    const { eventoId, departamentoId, voluntarioId } = this.form.value;
+    const { departamentoId, voluntarioId } = this.form.getRawValue();
 
     let resultado = [...this.todasAsignaciones];
-
-    if (eventoId) {
-      resultado = resultado.filter(a => a.eventoId === eventoId);
-    }
 
     if (voluntarioId) {
       resultado = resultado.filter(a => a.voluntarioId === voluntarioId);
@@ -150,7 +195,7 @@ export class DescargaQrComponent implements OnInit {
   }
 
   limpiarFiltros(): void {
-    this.form.reset();
+    this.form.patchValue({ departamentoId: null, voluntarioId: null });
   }
 
   getVoluntarioDepartamento(voluntarioId: number): string {
@@ -213,7 +258,6 @@ export class DescargaQrComponent implements OnInit {
 
       for (let i = 0; i < lista.length; i++) {
         const a = lista[i];
-        // Convertir base64 a Uint8Array
         const byteString = atob(a.qrImageBase64!);
         const bytes = new Uint8Array(byteString.length);
         for (let j = 0; j < byteString.length; j++) {
@@ -233,15 +277,20 @@ export class DescargaQrComponent implements OnInit {
       link.click();
       URL.revokeObjectURL(url);
 
-      this.snackBar.open(this.translate.instant('DescargaQr.Snack.Downloaded', { count: lista.length }), this.translate.instant('Common.Close'), {
-        duration: 3000, panelClass: ['success-snackbar']
-      });
+      this.snackBar.open(
+        this.translate.instant('DescargaQr.Snack.Downloaded', { count: lista.length }),
+        this.translate.instant('Common.Close'),
+        { duration: 3000, panelClass: ['success-snackbar'] }
+      );
     } catch {
-      this.snackBar.open(this.translate.instant('DescargaQr.Snack.ZipError'), this.translate.instant('Common.Close'), { duration: 4000 });
+      this.snackBar.open(
+        this.translate.instant('DescargaQr.Snack.ZipError'),
+        this.translate.instant('Common.Close'),
+        { duration: 4000 }
+      );
     } finally {
       this.descargando = false;
       this.progresoDescarga = 0;
     }
   }
 }
-

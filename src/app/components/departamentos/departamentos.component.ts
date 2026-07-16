@@ -51,7 +51,7 @@ export class DepartamentosComponent implements OnInit {
     return [
       { key: 'id', header: this.translate.instant('Departamentos.Columns.Id'), type: 'text', width: '60px' },
       { key: 'nombre', header: this.translate.instant('Departamentos.Columns.Nombre'), type: 'text', filterType: 'text', sortable: true },
-      { key: 'responsableDisplay', header: this.translate.instant('Departamentos.Columns.Responsable'), type: 'text' },
+      { key: 'responsableDisplay', header: this.translate.instant('Departamentos.Columns.Responsable'), type: 'text', filterType: 'text' },
       { key: 'auxiliaresDisplay', header: this.translate.instant('Departamentos.Columns.Auxiliares'), type: 'text' },
       {
         key: 'acciones', header: this.translate.instant('Departamentos.Columns.Actions'), type: 'actions', sticky: 'end',

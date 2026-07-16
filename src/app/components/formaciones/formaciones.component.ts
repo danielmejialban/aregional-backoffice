@@ -137,6 +137,8 @@ export class FormacionesComponent implements OnInit {
       { key: 'voluntarioDni', header: this.translate.instant('Formaciones.Columns.Dni'), type: 'text', filterType: 'text' },
       {
         key: 'asistioLabel', header: this.translate.instant('Formaciones.Columns.Asistio'), type: 'badge',
+        filterType: 'select',
+        filterOptions: [this.translate.instant('Formaciones.Badges.Si'), this.translate.instant('Formaciones.Badges.No')],
         badgeMap: { [this.translate.instant('Formaciones.Badges.Si')]: 'dt-badge--success', [this.translate.instant('Formaciones.Badges.No')]: 'dt-badge--neutral' },
       },
       { key: 'aprobada', header: this.translate.instant('Formaciones.Columns.Aprobada'), type: 'custom', cellTemplate: this.aprobadaTpl },

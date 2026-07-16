@@ -20,9 +20,19 @@
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>{{ 'Departamentos.Dialog.ResponsableLabel' | translate }}</mat-label>
       <mat-icon matPrefix>person</mat-icon>
-      <mat-select formControlName="responsable">
+      <mat-select formControlName="responsable" (opened)="onResponsablePanelOpen()">
+        <div class="select-search-wrapper">
+          <mat-icon class="select-search-icon">search</mat-icon>
+          <input class="select-search-input"
+                 [ngModel]="responsableFilter"
+                 (ngModelChange)="responsableFilter = $event"
+                 [ngModelOptions]="{standalone: true}"
+                 autocomplete="off"
+                 placeholder="{{ 'Departamentos.Dialog.BuscarPlaceholder' | translate }}"
+                 (keydown)="$event.stopPropagation()">
+        </div>
         <mat-option value="">{{ 'Departamentos.Dialog.SinAsignar' | translate }}</mat-option>
-        <mat-option *ngFor="let voluntario of voluntarios" [value]="voluntario.dni">
+        <mat-option *ngFor="let voluntario of voluntariosFiltradosParaResponsable" [value]="voluntario.dni">
           {{ getVoluntarioNombre(voluntario) }}
         </mat-option>
       </mat-select>
@@ -32,8 +42,18 @@
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>{{ 'Departamentos.Dialog.AuxiliaresLabel' | translate }}</mat-label>
       <mat-icon matPrefix>people</mat-icon>
-      <mat-select formControlName="auxiliares" multiple>
-        <mat-option *ngFor="let voluntario of auxiliaresDisponibles" [value]="voluntario.dni">
+      <mat-select formControlName="auxiliares" multiple (opened)="onAuxiliaresPanelOpen()">
+        <div class="select-search-wrapper">
+          <mat-icon class="select-search-icon">search</mat-icon>
+          <input class="select-search-input"
+                 [ngModel]="auxiliaresFilter"
+                 (ngModelChange)="auxiliaresFilter = $event"
+                 [ngModelOptions]="{standalone: true}"
+                 autocomplete="off"
+                 placeholder="{{ 'Departamentos.Dialog.BuscarPlaceholder' | translate }}"
+                 (keydown)="$event.stopPropagation()">
+        </div>
+        <mat-option *ngFor="let voluntario of voluntariosFiltradosParaAuxiliares" [value]="voluntario.dni">
           {{ getVoluntarioNombre(voluntario) }}
         </mat-option>
       </mat-select>

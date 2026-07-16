@@ -146,11 +146,16 @@ export class VoluntarioDialogComponent implements OnInit {
 
   ngOnInit(): void {
     const v = this.data.voluntario;
+    const dniEsTemporal = v?.dniTemporal || v?.dniInvalid
+      || v?.dni?.startsWith('TEMP-') || v?.dni?.startsWith('INVD-');
+    const dniValidators = dniEsTemporal
+      ? [Validators.required]
+      : [Validators.required, Validators.pattern(/^[0-9]{8}[A-Z]$|^[XYZ][0-9]{7}[A-Z]$/)];
     this.form = this.fb.group({
       nombre:         [v?.nombre      || '', Validators.required],
       apellido1:      [v?.apellido1   || '', Validators.required],
       apellido2:      [v?.apellido2   || ''],
-      dni:            [v?.dni         || '', [Validators.required, Validators.pattern(/^[0-9]{8}[A-Z]$|^[XYZ][0-9]{7}[A-Z]$/)]],
+      dni:            [v?.dni         || '', dniValidators],
       telefono:       [v?.telefono    || ''],
       email:          [v?.email       || '', Validators.email],
       congregacion:   [v?.congregacion || ''],
@@ -328,11 +333,16 @@ export class VoluntariosComponent implements OnInit {
         filterType: 'select',
         filterOptions: this.departamentos.map(d => d.nombre),
       },
-      { key: 'congregacion', header: this.translate.instant('Voluntarios.Columns.Congregacion'), type: 'text' },
-      { key: 'circuito', header: this.translate.instant('Voluntarios.Columns.Circuito'), type: 'text' },
+      { key: 'congregacion', header: this.translate.instant('Voluntarios.Columns.Congregacion'), type: 'text', filterType: 'text' },
+      { key: 'circuito', header: this.translate.instant('Voluntarios.Columns.Circuito'), type: 'text', filterType: 'text' },
       { key: 'correoJw', header: this.translate.instant('Voluntarios.Columns.CorreoJw'), type: 'text', hidden: true },
       {
         key: 'preAsambleaLabel', header: this.translate.instant('Voluntarios.Columns.PreAsamblea'), type: 'badge',
+        filterType: 'select',
+        filterOptions: [
+          this.translate.instant('Voluntarios.Badges.Si'),
+          this.translate.instant('Voluntarios.Badges.No'),
+        ],
         badgeMap: {
           [this.translate.instant('Voluntarios.Badges.Si')]: 'dt-badge--primary',
           [this.translate.instant('Voluntarios.Badges.No')]: 'dt-badge--neutral',
@@ -407,20 +417,30 @@ export class VoluntariosComponent implements OnInit {
     const nombre = (filters['nombreCompleto'] as string) || undefined;
     const dni    = (filters['dni']            as string) || undefined;
     const email  = (filters['email']          as string) || undefined;
-    const deptoNombre    = filters['departamentoNombre'] as string | null;
-    const activoLabel    = filters['activoLabel']        as string | null;
-    const formacionLabel = filters['formacionLabel']     as string | null;
+    const deptoNombre      = filters['departamentoNombre'] as string | null;
+    const activoLabel      = filters['activoLabel']        as string | null;
+    const formacionLabel   = filters['formacionLabel']     as string | null;
+    const preAsambleaLabel = filters['preAsambleaLabel']   as string | null;
+    const congregacion     = (filters['congregacion']      as string) || undefined;
+    const circuito         = (filters['circuito']          as string) || undefined;
 
+    const activo     = this.translate.instant('Voluntarios.Badges.Activo');
+    const inactivo   = this.translate.instant('Voluntarios.Badges.Inactivo');
     const completada = this.translate.instant('Voluntarios.Badges.Completada');
     const pendiente  = this.translate.instant('Voluntarios.Badges.Pendiente');
+    const si         = this.translate.instant('Voluntarios.Badges.Si');
+    const no         = this.translate.instant('Voluntarios.Badges.No');
     const depto = deptoNombre ? this.departamentos.find(d => d.nombre === deptoNombre) : null;
 
     this.currentFiltros = {
-      busqueda:       nombre || dni || undefined,
+      busqueda:       dni || nombre || undefined,
       email:          email,
       departamentoId: depto?.id ?? null,
-      activo:         activoLabel === 'Activo' ? true : activoLabel === 'Inactivo' ? false : null,
+      activo:         activoLabel === activo ? true : activoLabel === inactivo ? false : null,
       formacion:      formacionLabel === completada ? true : formacionLabel === pendiente ? false : null,
+      preAsamblea:    preAsambleaLabel === si ? true : preAsambleaLabel === no ? false : null,
+      congregacion,
+      circuito,
     };
     this.loadVoluntarios(0);
   }

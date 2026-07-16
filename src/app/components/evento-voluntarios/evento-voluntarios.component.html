@@ -20,6 +20,17 @@
               (click)="descargarPdfGlobal()">
         <mat-icon>picture_as_pdf</mat-icon> {{ 'EventoVoluntarios.Buttons.DescargarPdf' | translate }}
       </button>
+      <button mat-stroked-button color="primary"
+              [disabled]="exportandoExcel"
+              (click)="exportarExcel()"
+              matTooltip="Exportar resultados filtrados a Excel">
+        @if (exportandoExcel) {
+          <mat-spinner diameter="16" style="display:inline-block;vertical-align:middle;margin-right:6px"></mat-spinner>
+        } @else {
+          <mat-icon>table_view</mat-icon>
+        }
+        Excel
+      </button>
       <button mat-raised-button color="primary" (click)="openCreateDialog()">
         <mat-icon>person_add</mat-icon> {{ 'EventoVoluntarios.Buttons.NuevaAsignacion' | translate }}
       </button>
@@ -35,11 +46,23 @@
           &nbsp;—&nbsp;{{ eventoActual.fechaFinEvento | date:'dd/MM/yyyy' }}
         }
       </span>
+      @if (eventoActual.diasPreEvento) {
+        <span class="evento-context-tipo">{{ eventoActual.diasPreEvento }} día(s) pre-evento</span>
+      }
       @if (eventoActual.tipoEvento) {
         <span class="evento-context-tipo">{{ eventoActual.tipoEvento }}</span>
       }
       @if (totalElements >= 0) {
         <span class="evento-context-count">{{ totalElements }} {{ 'EventoVoluntarios.ContextBar.Voluntarios' | translate }}</span>
+      }
+      @if (eventoDias.length > 0) {
+        <span class="evento-dias-chips">
+          @for (dia of eventoDias; track dia.iso) {
+            <span class="evento-dia-chip" [class.evento-dia-chip--pre]="dia.esPre">
+              {{ dia.label }}
+            </span>
+          }
+        </span>
       }
     </div>
   }
@@ -69,19 +92,25 @@
 
   <mat-card>
     <mat-card-content>
-      <app-data-table
-        [columns]="columns"
-        [data]="asignaciones"
-        [isLoading]="loading"
-        [serverSide]="true"
-        [totalItems]="totalElements"
-        [pageSize]="pageSize"
-        [pageIndex]="currentPage"
-        [pageSizeOptions]="[10, 25, 50]"
-        (filterChange)="onFilterChange($event)"
-        (pageChange)="onPageChange($event)"
-        (actionClick)="onActionClick($event)"
-      />
+      @if (columns.length > 0) {
+        <app-data-table
+          [columns]="columns"
+          [data]="asignaciones"
+          [isLoading]="loading"
+          [serverSide]="!eventoActual"
+          [totalItems]="totalElements"
+          [pageSize]="pageSize"
+          [pageIndex]="currentPage"
+          [pageSizeOptions]="[10, 25, 50, 100]"
+          (filterChange)="onFilterChange($event)"
+          (pageChange)="onPageChange($event)"
+          (actionClick)="onActionClick($event)"
+        />
+      } @else {
+        <div style="display:flex;justify-content:center;padding:48px">
+          <mat-spinner diameter="36"></mat-spinner>
+        </div>
+      }
     </mat-card-content>
   </mat-card>
 </div>

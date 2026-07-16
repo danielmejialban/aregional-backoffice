@@ -19,12 +19,6 @@
         {{ (exportandoExcel ? 'Voluntarios.Buttons.Exporting' : 'Voluntarios.Buttons.ExportarExcel') | translate }}
       </button>
 
-      <button mat-stroked-button
-              (click)="descargarPlantillaCsv()"
-              [matTooltip]="'Voluntarios.Tooltips.PlantillaCsv' | translate">
-        <mat-icon>download</mat-icon> {{ 'Voluntarios.Buttons.PlantillaCsv' | translate }}
-      </button>
-
       <button mat-stroked-button color="accent"
               [disabled]="subiendoArchivo"
               (click)="abrirSelectorArchivo()"

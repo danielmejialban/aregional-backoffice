@@ -20,9 +20,10 @@ export class RolService {
     );
   }
 
-  getAllPaged(page: number, size: number, nombre?: string): Observable<PageDTO<RolDTO>> {
+  getAllPaged(page: number, size: number, nombre?: string, descripcion?: string): Observable<PageDTO<RolDTO>> {
     let params = new HttpParams().set('page', page).set('size', size);
-    if (nombre?.trim()) params = params.set('nombre', nombre.trim());
+    if (nombre?.trim())      params = params.set('nombre', nombre.trim());
+    if (descripcion?.trim()) params = params.set('descripcion', descripcion.trim());
     return this.http.get<PageDTO<RolDTO>>(this.API_URL, { params });
   }
 

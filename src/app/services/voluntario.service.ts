@@ -13,6 +13,9 @@ export interface VoluntarioFiltros {
   departamentoId?: number | null;
   activo?: boolean | null;
   formacion?: boolean | null;
+  preAsamblea?: boolean | null;
+  congregacion?: string;
+  circuito?: string;
 }
 
 @Injectable({
@@ -32,10 +35,13 @@ export class VoluntarioService {
 
   getAllPaged(page: number, size: number, filtros?: VoluntarioFiltros): Observable<PageDTO<VoluntarioDTO>> {
     let params = new HttpParams().set('page', page).set('size', size);
-    if (filtros?.busqueda?.trim()) params = params.set('busqueda', filtros.busqueda.trim());
-    if (filtros?.email?.trim())    params = params.set('email', filtros.email.trim());
-    if (filtros?.activo != null)   params = params.set('activo', filtros.activo);
-    if (filtros?.formacion != null) params = params.set('formacion', filtros.formacion);
+    if (filtros?.busqueda?.trim())      params = params.set('busqueda', filtros.busqueda.trim());
+    if (filtros?.email?.trim())         params = params.set('email', filtros.email.trim());
+    if (filtros?.activo != null)        params = params.set('activo', filtros.activo);
+    if (filtros?.formacion != null)     params = params.set('formacion', filtros.formacion);
+    if (filtros?.preAsamblea != null)   params = params.set('preAsamblea', filtros.preAsamblea);
+    if (filtros?.congregacion?.trim())  params = params.set('congregacion', filtros.congregacion.trim());
+    if (filtros?.circuito?.trim())      params = params.set('circuito', filtros.circuito.trim());
 
     if (filtros?.departamentoId != null) {
       return this.http.get<PageDTO<VoluntarioDTO>>(
