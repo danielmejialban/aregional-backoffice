@@ -117,7 +117,6 @@ export interface VoluntarioDialogData {
         </mat-form-field>
         <div class="toggles-row">
           <mat-slide-toggle formControlName="activo" color="primary">{{ 'Voluntarios.Dialog.ActivoLabel' | translate }}</mat-slide-toggle>
-          <mat-slide-toggle formControlName="preAsamblea" color="accent">{{ 'Voluntarios.Dialog.PreAsambleaLabel' | translate }}</mat-slide-toggle>
         </div>
       </form>
     </mat-dialog-content>
@@ -163,7 +162,6 @@ export class VoluntarioDialogComponent implements OnInit {
       correoJw:       [v?.correoJw    || ''],
       departamentoIds: [v?.departamentoIds ?? [], Validators.required],
       activo:         [v?.activo      ?? true],
-      preAsamblea:    [v?.preAsamblea ?? false],
     });
   }
 
@@ -183,7 +181,6 @@ export class VoluntarioDialogComponent implements OnInit {
       correoJw:       val.correoJw?.trim()     || undefined,
       departamentoIds: val.departamentoIds ?? [],
       activo:         val.activo,
-      preAsamblea:    val.preAsamblea,
     };
     this.dialogRef.close(dto);
   }
@@ -337,18 +334,6 @@ export class VoluntariosComponent implements OnInit {
       { key: 'circuito', header: this.translate.instant('Voluntarios.Columns.Circuito'), type: 'text', filterType: 'text' },
       { key: 'correoJw', header: this.translate.instant('Voluntarios.Columns.CorreoJw'), type: 'text', hidden: true },
       {
-        key: 'preAsambleaLabel', header: this.translate.instant('Voluntarios.Columns.PreAsamblea'), type: 'badge',
-        filterType: 'select',
-        filterOptions: [
-          this.translate.instant('Voluntarios.Badges.Si'),
-          this.translate.instant('Voluntarios.Badges.No'),
-        ],
-        badgeMap: {
-          [this.translate.instant('Voluntarios.Badges.Si')]: 'dt-badge--primary',
-          [this.translate.instant('Voluntarios.Badges.No')]: 'dt-badge--neutral',
-        },
-      },
-      {
         key: 'activoLabel', header: this.translate.instant('Voluntarios.Columns.Estado'), type: 'badge',
         filterType: 'select',
         filterOptions: [
@@ -408,7 +393,6 @@ export class VoluntariosComponent implements OnInit {
       nombreCompleto:    [v.nombre, v.apellido1, v.apellido2].filter(Boolean).join(' '),
       departamentoNombre: (v.departamentoNombres ?? []).join(' | '),
       activoLabel:       v.activo      ? this.translate.instant('Voluntarios.Badges.Activo')     : this.translate.instant('Voluntarios.Badges.Inactivo'),
-      preAsambleaLabel:  v.preAsamblea ? this.translate.instant('Voluntarios.Badges.Si')         : this.translate.instant('Voluntarios.Badges.No'),
       formacionLabel:    v.formacion   ? this.translate.instant('Voluntarios.Badges.Completada') : this.translate.instant('Voluntarios.Badges.Pendiente'),
     };
   }
@@ -420,7 +404,6 @@ export class VoluntariosComponent implements OnInit {
     const deptoNombre      = filters['departamentoNombre'] as string | null;
     const activoLabel      = filters['activoLabel']        as string | null;
     const formacionLabel   = filters['formacionLabel']     as string | null;
-    const preAsambleaLabel = filters['preAsambleaLabel']   as string | null;
     const congregacion     = (filters['congregacion']      as string) || undefined;
     const circuito         = (filters['circuito']          as string) || undefined;
 
@@ -428,8 +411,6 @@ export class VoluntariosComponent implements OnInit {
     const inactivo   = this.translate.instant('Voluntarios.Badges.Inactivo');
     const completada = this.translate.instant('Voluntarios.Badges.Completada');
     const pendiente  = this.translate.instant('Voluntarios.Badges.Pendiente');
-    const si         = this.translate.instant('Voluntarios.Badges.Si');
-    const no         = this.translate.instant('Voluntarios.Badges.No');
     const depto = deptoNombre ? this.departamentos.find(d => d.nombre === deptoNombre) : null;
 
     this.currentFiltros = {
@@ -438,7 +419,6 @@ export class VoluntariosComponent implements OnInit {
       departamentoId: depto?.id ?? null,
       activo:         activoLabel === activo ? true : activoLabel === inactivo ? false : null,
       formacion:      formacionLabel === completada ? true : formacionLabel === pendiente ? false : null,
-      preAsamblea:    preAsambleaLabel === si ? true : preAsambleaLabel === no ? false : null,
       congregacion,
       circuito,
     };
@@ -568,9 +548,8 @@ export class VoluntariosComponent implements OnInit {
   }
 
   descargarPlantillaCsv(): void {
-    const cabecera = 'apellido1,apellido2,nombre,dni,congregacion,circuito,departamento,correo_jw,pre_asamblea,email';
-    const ejemplo  = 'García,López,Juan,12345678A,Madrid Norte,Circuito 5,Acomodación,juan@jw.org,false,juan@email.com';
-    const blob = new Blob([`${cabecera}\n${ejemplo}\n`], { type: 'text/csv;charset=utf-8;' });
+    const cabecera = 'apellido1,apellido2,nombre,dni,congregacion,circuito,departamento,correo_jw,email';
+    const blob = new Blob([`${cabecera}\n`], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

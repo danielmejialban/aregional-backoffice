@@ -10,7 +10,6 @@ export interface AsignacionFiltros {
   busqueda?: string;
   eventoId?: number | null;
   departamentoId?: number | null;
-  preAsamblea?: boolean | null;
 }
 
 @Injectable({
@@ -32,7 +31,6 @@ export class EventoVoluntarioService {
     let params = new HttpParams().set('page', page).set('size', size);
     if (filtros?.busqueda?.trim())    params = params.set('busqueda', filtros.busqueda.trim());
     if (filtros?.departamentoId != null) params = params.set('departamentoId', filtros.departamentoId);
-    if (filtros?.preAsamblea != null) params = params.set('preAsamblea', filtros.preAsamblea);
 
     if (filtros?.eventoId != null) {
       return this.http.get<PageDTO<EventoVoluntarioDTO>>(

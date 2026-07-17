@@ -171,7 +171,7 @@ export class QrPdfService {
     doc.roundedRect(x, y, CARD_W, CARD_H, 3, 3, 'FD');
 
     const vol = voluntarios.find(v => v.id === a.voluntarioId);
-    const headerColor = vol?.preAsamblea ? COLOR_HEADER_BG_ORANGE : COLOR_HEADER_BG;
+    const headerColor = this.tieneAccesoPreEvento(a) ? COLOR_HEADER_BG_ORANGE : COLOR_HEADER_BG;
     doc.setFillColor(headerColor);
     doc.roundedRect(x, y, CARD_W, HEADER_H, 3, 3, 'F');
     doc.rect(x, y + 4, CARD_W, HEADER_H - 4, 'F');
@@ -215,6 +215,14 @@ export class QrPdfService {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
+
+  /** El pase incluye acceso a algún día pre-evento (anterior al inicio del evento). */
+  private tieneAccesoPreEvento(a: EventoVoluntarioDTO): boolean {
+    if (!a.diasAcceso || !a.fechaInicioEvento) return false;
+    const inicio = a.fechaInicioEvento.slice(0, 10);
+    return a.diasAcceso.split('|').some(d => d.trim() < inicio);
+  }
+
   private descargarBlob(bytes: Uint8Array, nombreFichero: string): void {
     const blob = new Blob([bytes], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);

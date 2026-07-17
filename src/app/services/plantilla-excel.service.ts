@@ -398,7 +398,6 @@ export class PlantillaExcelService {
       { header: 'Circuito',     color: COLOR_VOL,  width: 14 },
       { header: 'Correo JW',    color: COLOR_VOL,  width: 26 },
       { header: 'Formación',    color: COLOR_ACCESO, width: 12 },
-      { header: 'Pre-Asamblea', color: COLOR_ACCESO, width: 14 },
       { header: 'Activo',       color: COLOR_DEPT, width: 10 },
     ];
 
@@ -467,7 +466,6 @@ export class PlantillaExcelService {
           v.circuito ?? '',
           v.correoJw ?? '',
           v.formacion ? 'Sí' : 'No',
-          v.preAsamblea ? 'Sí' : 'No',
           v.activo !== false ? 'Sí' : 'No',
         ];
         values.forEach((val, idx) => {

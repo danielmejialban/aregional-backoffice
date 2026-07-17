@@ -133,7 +133,6 @@
       "Circuito": "Circuito",
       "CorreoJw": "Correo JW",
       "Email": "Email",
-      "PreAsamblea": "Pre-asamblea",
       "Estado": "Estado",
       "Formacion": "Formación",
       "Actions": "Acciones"
@@ -208,7 +207,6 @@
       "CorreoJwLabel": "Correo JW",
       "DepartamentoLabel": "Departamento",
       "ActivoLabel": "Activo",
-      "PreAsambleaLabel": "Pre-asamblea",
       "Required": "Obligatorio",
       "DniInvalid": "Formato inválido",
       "EmailInvalid": "Email inválido"
@@ -367,7 +365,6 @@
       "Dni": "DNI/NIE",
       "Departamento": "Departamento",
       "Telefono": "Teléfono",
-      "PreAsamblea": "Pre-asamblea",
       "DiasAcceso": "Días de Acceso",
       "Qr": "QR",
       "Actions": "Acciones"

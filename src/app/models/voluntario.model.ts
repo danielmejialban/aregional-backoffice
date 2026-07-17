@@ -13,7 +13,6 @@ export interface VoluntarioDTO {
   circuito?: string;
   correoJw?: string;
   formacion?: boolean;
-  preAsamblea?: boolean;
   dniTemporal?: boolean;
   dniInvalid?: boolean;
 }

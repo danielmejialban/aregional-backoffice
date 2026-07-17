@@ -73,7 +73,6 @@ export class EventoDetailComponent implements OnInit {
   currentPage = 0;
   private busqueda?: string;
   private filtradoDepartamentoId?: number | null;
-  private filtradoPreAsamblea?: boolean | null;
 
   private eventoId!: number;
 
@@ -148,7 +147,6 @@ export class EventoDetailComponent implements OnInit {
       ...a,
       voluntarioDni:         vol?.dni       ?? '',
       voluntarioTelefono:    vol?.telefono  ?? '',
-      voluntarioPreAsamblea: vol?.preAsamblea ? 'SI' : 'NO',
     };
     for (const dia of this.eventoDias) {
       row[`acceso_${dia.iso}`] = diasSet === null ? '✓' : diasSet.has(dia.iso) ? '✓' : '✗';
@@ -180,14 +178,6 @@ export class EventoDetailComponent implements OnInit {
         key: 'voluntarioTelefono',
         header: this.translate.instant('EventoDetail.Columns.Telefono'),
         type: 'text', width: '110px',
-      },
-      {
-        key: 'voluntarioPreAsamblea',
-        header: this.translate.instant('EventoDetail.Columns.PreAsamblea'),
-        type: 'badge', width: '110px',
-        filterType: 'select',
-        filterOptions: ['SI', 'NO'],
-        badgeMap: { SI: 'dt-badge--success', NO: 'dt-badge--neutral' },
       },
     ];
 
@@ -247,7 +237,6 @@ export class EventoDetailComponent implements OnInit {
       eventoId:       this.eventoId,
       busqueda:       this.busqueda,
       departamentoId: this.filtradoDepartamentoId,
-      preAsamblea:    this.filtradoPreAsamblea,
     }).subscribe({
       next: (data) => {
         this.asignaciones  = data.content.map(a => {
@@ -269,10 +258,8 @@ export class EventoDetailComponent implements OnInit {
     const dni    = (filters['voluntarioDni']    as string)?.trim() || undefined;
     this.busqueda             = dni || nombre || undefined;
     const deptoNombre         = filters['voluntarioDepartamentoNombre'] as string | null;
-    const preAsambleaLabel    = filters['voluntarioPreAsamblea']        as string | null;
     const depto = deptoNombre ? this.departamentos.find(d => d.nombre === deptoNombre) : null;
     this.filtradoDepartamentoId = depto?.id ?? null;
-    this.filtradoPreAsamblea    = preAsambleaLabel === 'SI' ? true : preAsambleaLabel === 'NO' ? false : null;
     this.loadAsignaciones(0);
   }
 

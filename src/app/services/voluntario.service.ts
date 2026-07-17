@@ -13,7 +13,6 @@ export interface VoluntarioFiltros {
   departamentoId?: number | null;
   activo?: boolean | null;
   formacion?: boolean | null;
-  preAsamblea?: boolean | null;
   congregacion?: string;
   circuito?: string;
 }
@@ -39,7 +38,6 @@ export class VoluntarioService {
     if (filtros?.email?.trim())         params = params.set('email', filtros.email.trim());
     if (filtros?.activo != null)        params = params.set('activo', filtros.activo);
     if (filtros?.formacion != null)     params = params.set('formacion', filtros.formacion);
-    if (filtros?.preAsamblea != null)   params = params.set('preAsamblea', filtros.preAsamblea);
     if (filtros?.congregacion?.trim())  params = params.set('congregacion', filtros.congregacion.trim());
     if (filtros?.circuito?.trim())      params = params.set('circuito', filtros.circuito.trim());
 
