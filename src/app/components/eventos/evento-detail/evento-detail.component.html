@@ -53,20 +53,20 @@
             </div>
           </div>
 
-          @if (evento.fechaInicioConvocatoria) {
-            <div class="info-item">
-              <mat-icon>how_to_reg</mat-icon>
-              <div class="info-content">
-                <span class="info-label">{{ 'EventoDetail.Info.Convocatoria' | translate }}</span>
-                <span class="info-value">
-                  {{ evento.fechaInicioConvocatoria | date:'dd/MM/yyyy' }}
-                  @if (evento.fechaFinConvocatoria) {
-                    &nbsp;→&nbsp;{{ evento.fechaFinConvocatoria | date:'dd/MM/yyyy' }}
-                  }
-                </span>
-              </div>
-            </div>
-          }
+<!--          @if (evento.fechaInicioConvocatoria) {-->
+<!--            <div class="info-item">-->
+<!--              <mat-icon>how_to_reg</mat-icon>-->
+<!--              <div class="info-content">-->
+<!--                <span class="info-label">{{ 'EventoDetail.Info.Convocatoria' | translate }}</span>-->
+<!--                <span class="info-value">-->
+<!--                  {{ evento.fechaInicioConvocatoria | date:'dd/MM/yyyy' }}-->
+<!--                  @if (evento.fechaFinConvocatoria) {-->
+<!--                    &nbsp;→&nbsp;{{ evento.fechaFinConvocatoria | date:'dd/MM/yyyy' }}-->
+<!--                  }-->
+<!--                </span>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--          }-->
 
           @if (evento.sesion) {
             <div class="info-item">

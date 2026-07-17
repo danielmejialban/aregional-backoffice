@@ -68,21 +68,7 @@
     </mat-form-field>
 
     <p class="section-label">{{ 'Eventos.Dialog.ConvocatoriaTitle' | translate }}</p>
-    <div class="row-2">
-      <mat-form-field appearance="outline">
-        <mat-label>{{ 'Eventos.Dialog.InicioConvLabel' | translate }}</mat-label>
-        <input matInput [matDatepicker]="pickerInicioConv" formControlName="fechaInicioConvocatoria" [placeholder]="'Eventos.Dialog.DatePlaceholder' | translate">
-        <mat-datepicker-toggle matSuffix [for]="pickerInicioConv"></mat-datepicker-toggle>
-        <mat-datepicker #pickerInicioConv></mat-datepicker>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>{{ 'Eventos.Dialog.FinConvLabel' | translate }}</mat-label>
-        <input matInput [matDatepicker]="pickerFinConv" formControlName="fechaFinConvocatoria" [placeholder]="'Eventos.Dialog.DatePlaceholder' | translate">
-        <mat-datepicker-toggle matSuffix [for]="pickerFinConv"></mat-datepicker-toggle>
-        <mat-datepicker #pickerFinConv></mat-datepicker>
-      </mat-form-field>
-    </div>
+<!--   /-->
     <p class="date-range-error" *ngIf="form.hasError('finConvAnterior') && form.get('fechaFinConvocatoria')?.touched">
       {{ 'Eventos.Dialog.FinConvAnteriorError' | translate }}
     </p>
