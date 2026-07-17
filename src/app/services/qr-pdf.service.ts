@@ -36,6 +36,9 @@ const DEPT_TEMPLATES: Record<string, string> = {
   'Transporte y Materiales':           '/docs/Transporte y Materiales.pdf',
 };
 
+// Plantilla alternativa LBD para voluntarios con specialFunctionalities (trabajo en altura)
+const LBD_TRABAJO_ALTURA_TEMPLATE = '/docs/LBD Trabajo en altura.pdf';
+
 // ── Posición del overlay sobre el template (puntos desde esquina inf-izq) ───
 // El template es landscape: el rectángulo libre está aprox. en y=270-470, x=20-400
 // QR a la izquierda del recuadro; nombre/dept/fecha a la derecha del QR
@@ -56,6 +59,9 @@ const OV = {
   fechaX:    194,
   fechaY:    350,  // 18pt bajo dept
   fechaSize: 8,
+  diasX:     194,
+  diasY:     336,  // 14pt bajo fecha (2ª línea a 326, por encima de la franja EPI y≈313)
+  diasSize:  7,
 };
 
 @Injectable({ providedIn: 'root' })
@@ -73,15 +79,14 @@ export class QrPdfService {
     const sinTemplate: EventoVoluntarioDTO[] = [];
 
     for (const a of conQr) {
-      const dept = a.voluntarioDepartamentoNombre ?? '';
-      (DEPT_TEMPLATES[dept] ? conTemplate : sinTemplate).push(a);
+      (this.getTemplateUrl(a, voluntarios) ? conTemplate : sinTemplate).push(a);
     }
 
     const finalDoc = await PDFDocument.create();
 
     // 1. Pases con plantilla PDF de departamento
     for (const a of conTemplate) {
-      const templateUrl = DEPT_TEMPLATES[a.voluntarioDepartamentoNombre!];
+      const templateUrl = this.getTemplateUrl(a, voluntarios)!;
       const templateBytes = await fetch(templateUrl).then(r => r.arrayBuffer());
       const templateDoc = await PDFDocument.load(templateBytes);
       const [page] = await finalDoc.copyPages(templateDoc, [0]);
@@ -110,6 +115,21 @@ export class QrPdfService {
     }
 
     this.descargarBlob(await finalDoc.save(), nombreFichero);
+  }
+
+  /**
+   * Plantilla PDF del pase según departamento.
+   * En LBD, los voluntarios con specialFunctionalities usan la variante "Trabajo en altura".
+   */
+  private getTemplateUrl(a: EventoVoluntarioDTO, voluntarios: VoluntarioDTO[]): string | undefined {
+    const dept = a.voluntarioDepartamentoNombre ?? '';
+    const base = DEPT_TEMPLATES[dept];
+    if (!base) return undefined;
+    if (dept.toUpperCase().includes('LBD')) {
+      const vol = voluntarios.find(v => v.id === a.voluntarioId);
+      if (vol?.specialFunctionalities) return LBD_TRABAJO_ALTURA_TEMPLATE;
+    }
+    return base;
   }
 
   // ── Overlay sobre una página de plantilla ────────────────────────────────
@@ -147,6 +167,13 @@ export class QrPdfService {
 
     page.drawText(fecha, {
       x: OV.fechaX, y: OV.fechaY, size: OV.fechaSize, font: normal, color: muted,
+    });
+
+    // Días a los que tiene acceso el voluntario (máx. 2 líneas)
+    this.lineasDiasAcceso(a, 46).forEach((linea, i) => {
+      page.drawText(linea, {
+        x: OV.diasX, y: OV.diasY - i * 10, size: OV.diasSize, font: normal, color: muted,
+      });
     });
   }
 
@@ -207,6 +234,12 @@ export class QrPdfService {
     const fecha = a.fechaInicioEvento ? this.formatearFecha(a.fechaInicioEvento) : '-';
     doc.text(fecha, x + 4, y + HEADER_H + 22);
 
+    // Días a los que tiene acceso el voluntario (máx. 2 líneas)
+    doc.setFontSize(5.8);
+    this.lineasDiasAcceso(a, 42).forEach((linea, i) => {
+      doc.text(linea, x + 4, y + HEADER_H + 27 + i * 3.2);
+    });
+
     if (a.qrImageBase64) {
       doc.setFillColor('#F5F5F5');
       doc.setDrawColor(COLOR_BORDER);
@@ -217,6 +250,42 @@ export class QrPdfService {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
+
+  /**
+   * Texto con todos los días de acceso del voluntario, troceado en líneas
+   * (máx. 2; la última se trunca con "…"). Sin diasAcceso = acceso completo.
+   */
+  private lineasDiasAcceso(a: EventoVoluntarioDTO, maxChars: number): string[] {
+    if (!a.diasAcceso?.trim()) {
+      return ['Acceso: todos los días del evento'];
+    }
+    const dias = a.diasAcceso.split('|')
+      .map(d => d.trim())
+      .filter(Boolean)
+      .sort()
+      .map(d => {
+        const [, m, dd] = d.split('-');
+        return `${dd}/${m}`;
+      });
+
+    const palabras = ('Acceso: ' + dias.join(' · ')).split(' ');
+    const lineas: string[] = [];
+    let actual = '';
+    for (const p of palabras) {
+      if ((actual + ' ' + p).trim().length > maxChars) {
+        lineas.push(actual.trim());
+        actual = p;
+      } else {
+        actual = (actual + ' ' + p).trim();
+      }
+    }
+    if (actual) lineas.push(actual);
+
+    if (lineas.length > 2) {
+      return [lineas[0], this.truncar(lineas[1] + ' ' + lineas.slice(2).join(' '), maxChars)];
+    }
+    return lineas;
+  }
 
   /** El pase incluye acceso a algún día pre-evento (anterior al inicio del evento). */
   private tieneAccesoPreEvento(a: EventoVoluntarioDTO): boolean {

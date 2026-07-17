@@ -207,6 +207,7 @@
       "CorreoJwLabel": "Correo JW",
       "DepartamentoLabel": "Departamento",
       "ActivoLabel": "Activo",
+      "SpecialFunctionalitiesLabel": "Trabajo en altura (LBD)",
       "Required": "Obligatorio",
       "DniInvalid": "Formato inválido",
       "EmailInvalid": "Email inválido"
@@ -490,12 +491,32 @@
   "CheckIn": {
     "PageTitle": "Check-Ins",
     "ScanButton": "Escanear QR",
+    "Empty": "No hay check-ins que coincidan con los filtros",
     "Columns": {
       "Id": "ID",
       "Voluntario": "Voluntario",
       "Evento": "Evento",
-      "FechaHora": "Fecha/Hora",
+      "FechaCheckIn": "Check-in",
+      "FechaCheckOut": "Check-out",
+      "Estado": "Estado",
       "Observaciones": "Observaciones"
+    },
+    "Filters": {
+      "Search": "Buscar",
+      "SearchPlaceholder": "Voluntario, evento u observaciones...",
+      "Evento": "Evento",
+      "Estado": "Estado",
+      "Fecha": "Fecha",
+      "Todos": "Todos",
+      "Clear": "Limpiar filtros"
+    },
+    "Estados": {
+      "PRESENTE": "Presente",
+      "AUSENTE": "Ausente",
+      "EN_PROGRESO": "En progreso",
+      "COMPLETADO": "Completado",
+      "RECHAZADO": "Rechazado",
+      "Desconocido": "—"
     },
     "Snack": {
       "Success": "Check-in registrado: {{volunteer}} — {{event}} a las {{date}}"
@@ -592,12 +613,12 @@
     "DangerZoneTitle": "Zona de Peligro",
     "DangerZoneSubtitle": "Acciones irreversibles. Úsalas con precaución.",
     "LimpiarTitle": "Limpiar base de datos",
-    "LimpiarDescription": "Elimina todos los voluntarios, departamentos, eventos, asignaciones y check-ins. El super-usuario admin y los roles del sistema se conservan.",
+    "LimpiarDescription": "Elimina todos los voluntarios, departamentos, eventos, asignaciones, check-ins y usuarios. Se recrea el super-usuario dedicado 'superadmin' (no ligado a ningún voluntario real) y se conservan los roles del sistema. Tendrás que volver a iniciar sesión.",
     "LimpiarButton": "Limpiar base de datos",
     "LimpiarButtonLoading": "Limpiando...",
     "ConfirmLimpiar": {
       "Title": "Limpiar base de datos",
-      "Message": "Se eliminarán TODOS los voluntarios, eventos, asignaciones, check-ins y departamentos. Solo se conservará el super-usuario admin. Esta acción es irreversible.",
+      "Message": "Se eliminarán TODOS los voluntarios, eventos, asignaciones, check-ins, departamentos y usuarios. Solo quedará el super-usuario dedicado 'superadmin' y deberás volver a iniciar sesión con él. Esta acción es irreversible.",
       "Confirm": "Sí, limpiar todo"
     },
     "CreateUserTitle": "Crear Nuevo Usuario",
@@ -641,9 +662,25 @@
   "Estadisticas": {
     "PageTitle": "Estadísticas",
     "Voluntarios": "Voluntarios",
+    "VoluntariosAsignados": "Voluntarios asignados",
     "Eventos": "Eventos",
     "CheckIns": "Check-Ins",
-    "Departamentos": "Departamentos"
+    "Departamentos": "Departamentos",
+    "FiltroEvento": "Filtrar por evento",
+    "TodosEventos": "Todos los eventos",
+    "MostrandoEvento": "Mostrando estadísticas de:",
+    "SinDatos": "Sin datos para mostrar",
+    "Charts": {
+      "CheckInsDepartamento": "Check-Ins por Departamento",
+      "CheckInsDepartamentoSub": "Total de check-ins registrados por cada departamento",
+      "VoluntariosDepartamento": "Voluntarios por Departamento",
+      "VoluntariosDepartamentoSub": "Distribución de voluntarios entre departamentos",
+      "CheckInsEvento": "Check-Ins por Evento",
+      "CheckInsEventoSub": "Comparativa de asistencia entre eventos",
+      "CheckInsDia": "Evolución diaria de Check-Ins",
+      "CheckInsDiaSub": "Últimos 14 días",
+      "TablaDias": "Check-Ins por Día"
+    }
   },
   "DataTable": {
     "Results": "Resultados",

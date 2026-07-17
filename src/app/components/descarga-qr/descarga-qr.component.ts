@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -40,6 +42,8 @@ export interface AsignacionConQr extends EventoVoluntarioDTO {
     MatIconModule,
     MatSelectModule,
     MatFormFieldModule,
+    MatInputModule,
+    MatAutocompleteModule,
     MatProgressSpinnerModule,
     MatProgressBarModule,
     MatCheckboxModule,
@@ -52,6 +56,10 @@ export interface AsignacionConQr extends EventoVoluntarioDTO {
 })
 export class DescargaQrComponent implements OnInit {
   form!: FormGroup;
+
+  /** Control del autocomplete de voluntario (texto de búsqueda o voluntario seleccionado) */
+  voluntarioCtrl = new FormControl<string | VoluntarioDTO | null>({ value: null, disabled: true });
+  voluntariosFiltrados: VoluntarioDTO[] = [];
 
   // Datos maestros (carga rápida en mount)
   eventos: EventoDTO[] = [];
@@ -93,14 +101,29 @@ export class DescargaQrComponent implements OnInit {
       if (id) {
         this.form.get('departamentoId')!.enable({ emitEvent: false });
         this.form.get('voluntarioId')!.enable({ emitEvent: false });
+        this.voluntarioCtrl.enable({ emitEvent: false });
         this.cargarQrParaEvento(id);
       } else {
         this.form.get('departamentoId')!.disable({ emitEvent: false });
         this.form.get('voluntarioId')!.disable({ emitEvent: false });
         this.form.get('departamentoId')!.setValue(null, { emitEvent: false });
         this.form.get('voluntarioId')!.setValue(null, { emitEvent: false });
+        this.voluntarioCtrl.disable({ emitEvent: false });
+        this.voluntarioCtrl.setValue(null, { emitEvent: false });
         this.todasAsignaciones = [];
         this.asignacionesFiltradas = [];
+      }
+    });
+
+    // Autocomplete de voluntario: filtra opciones al teclear y fija voluntarioId al seleccionar
+    this.voluntarioCtrl.valueChanges.subscribe(val => {
+      if (val && typeof val === 'object') {
+        this.form.get('voluntarioId')!.setValue(val.id);
+      } else {
+        this.voluntariosFiltrados = this.filtrarVoluntarios(val ?? '');
+        if (this.form.getRawValue().voluntarioId != null) {
+          this.form.get('voluntarioId')!.setValue(null);
+        }
       }
     });
 
@@ -118,6 +141,7 @@ export class DescargaQrComponent implements OnInit {
         this.eventos = eventos;
         this.voluntarios = voluntarios;
         this.departamentos = departamentos;
+        this.voluntariosFiltrados = this.filtrarVoluntarios('');
         this.loadingDatos = false;
       },
       error: () => {
@@ -196,11 +220,43 @@ export class DescargaQrComponent implements OnInit {
 
   limpiarFiltros(): void {
     this.form.patchValue({ departamentoId: null, voluntarioId: null });
+    this.voluntarioCtrl.setValue(null, { emitEvent: false });
+    this.voluntariosFiltrados = this.filtrarVoluntarios('');
   }
+
+  /** Búsqueda por nombre, apellidos o DNI (máx. 50 resultados). */
+  private filtrarVoluntarios(query: string): VoluntarioDTO[] {
+    const q = query.trim().toLowerCase();
+    const base = q
+      ? this.voluntarios.filter(v =>
+          `${v.nombre} ${v.apellido1} ${v.apellido2 ?? ''} ${v.dni}`.toLowerCase().includes(q))
+      : this.voluntarios;
+    return base.slice(0, 50);
+  }
+
+  displayVoluntario = (v: VoluntarioDTO | string | null): string => {
+    if (!v) return '';
+    if (typeof v === 'string') return v;
+    return [v.nombre, v.apellido1, v.apellido2].filter(Boolean).join(' ');
+  };
 
   getVoluntarioDepartamento(voluntarioId: number): string {
     const v = this.voluntarios.find(vol => vol.id === voluntarioId);
     return (v?.departamentoNombres ?? []).join(' | ') || '—';
+  }
+
+  /** Días a los que tiene acceso el voluntario. Sin diasAcceso = acceso completo al evento. */
+  formatearDiasAcceso(a: EventoVoluntarioDTO): string {
+    if (!a.diasAcceso?.trim()) return 'Todos los días del evento';
+    return a.diasAcceso.split('|')
+      .map(d => d.trim())
+      .filter(Boolean)
+      .sort()
+      .map(d => {
+        const [, m, dd] = d.split('-');
+        return `${dd}/${m}`;
+      })
+      .join(' · ');
   }
 
   getQrSrc(base64: string): string {

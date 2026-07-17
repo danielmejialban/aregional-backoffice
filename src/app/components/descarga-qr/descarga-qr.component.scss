@@ -337,3 +337,27 @@ $shimmer-gradient: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%)
   &--md { width: 65%; animation-delay: 0.1s; }
   &--sm { width: 45%; animation-delay: 0.2s; }
 }
+
+.option-dni {
+  color: #90A4AE;
+  font-size: 12px;
+}
+
+.qr-card__dias {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #607D8B;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  .dias-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+}

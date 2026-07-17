@@ -44,7 +44,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   currentUser$;
 
   menuItems = [
-    { icon: 'dashboard', label: 'Layout.Nav.Dashboard', route: '/dashboard', roles: ['ADMIN', 'COORDINADOR', 'VOLUNTARIO', 'CHECK_IN'] },
+    { icon: 'dashboard', label: 'Layout.Nav.Dashboard', route: '/dashboard', roles: ['ADMIN', 'COORDINADOR', 'VOLUNTARIO'] },
     { icon: 'business', label: 'Layout.Nav.Departamentos', route: '/departamentos', roles: ['ADMIN'] },
     { icon: 'admin_panel_settings', label: 'Layout.Nav.Roles', route: '/roles', roles: ['ADMIN'] },
     { icon: 'people', label: 'Layout.Nav.Voluntarios', route: '/voluntarios', roles: ['ADMIN', 'COORDINADOR'] },

@@ -117,6 +117,11 @@ export interface VoluntarioDialogData {
         </mat-form-field>
         <div class="toggles-row">
           <mat-slide-toggle formControlName="activo" color="primary">{{ 'Voluntarios.Dialog.ActivoLabel' | translate }}</mat-slide-toggle>
+          @if (mostrarSpecialFunctionalities) {
+            <mat-slide-toggle formControlName="specialFunctionalities" color="warn">
+              {{ 'Voluntarios.Dialog.SpecialFunctionalitiesLabel' | translate }}
+            </mat-slide-toggle>
+          }
         </div>
       </form>
     </mat-dialog-content>
@@ -162,7 +167,16 @@ export class VoluntarioDialogComponent implements OnInit {
       correoJw:       [v?.correoJw    || ''],
       departamentoIds: [v?.departamentoIds ?? [], Validators.required],
       activo:         [v?.activo      ?? true],
+      specialFunctionalities: [v?.specialFunctionalities ?? false],
     });
+  }
+
+  /** Solo visible en edición y si el voluntario tiene asignado el departamento LBD. */
+  get mostrarSpecialFunctionalities(): boolean {
+    if (!this.data.voluntario?.id) return false;
+    const ids: number[] = this.form?.value.departamentoIds ?? [];
+    return this.data.departamentos.some(d =>
+      ids.includes(d.id!) && (d.nombre ?? '').toUpperCase().includes('LBD'));
   }
 
   onSave(): void {
@@ -181,6 +195,7 @@ export class VoluntarioDialogComponent implements OnInit {
       correoJw:       val.correoJw?.trim()     || undefined,
       departamentoIds: val.departamentoIds ?? [],
       activo:         val.activo,
+      specialFunctionalities: this.mostrarSpecialFunctionalities ? val.specialFunctionalities : false,
     };
     this.dialogRef.close(dto);
   }

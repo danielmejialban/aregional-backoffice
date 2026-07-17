@@ -28,7 +28,8 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
       return true;
     }
 
-    router.navigate(['/']);
+    // CHECK_IN solo tiene acceso a la página de check-in
+    router.navigate([authService.hasAnyRole(['CHECK_IN']) ? '/check-in' : '/']);
     return false;
   };
 };

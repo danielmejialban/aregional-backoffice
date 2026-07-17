@@ -16,7 +16,9 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { forkJoin } from 'rxjs';
+import { Router } from '@angular/router';
 import { UsuarioService } from '@app/services/usuario.service';
+import { AuthService } from '@app/services/auth.service';
 import { RolService } from '@app/services/rol.service';
 import { VoluntarioService } from '@app/services/voluntario.service';
 import { AdminService } from '@app/services/admin.service';
@@ -109,6 +111,8 @@ export class AdminPanelComponent implements OnInit {
     private rolService: RolService,
     private voluntarioService: VoluntarioService,
     private adminService: AdminService,
+    private authService: AuthService,
+    private router: Router,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private translate: TranslateService
@@ -238,9 +242,11 @@ export class AdminPanelComponent implements OnInit {
       next: () => {
         this.limpiando = false;
         this.snackBar.open(this.translate.instant('Admin.Snack.DbCleaned'), this.translate.instant('Common.Close'), {
-          duration: 5000, panelClass: ['success-snackbar']
+          duration: 8000, panelClass: ['success-snackbar']
         });
-        this.cargarDatos();
+        // El backend recrea el super-usuario dedicado: la sesión actual deja de ser válida
+        this.authService.logout();
+        this.router.navigate(['/login']);
       },
       error: () => {
         this.limpiando = false;

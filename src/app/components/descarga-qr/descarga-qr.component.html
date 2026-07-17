@@ -46,13 +46,19 @@
 
           <mat-form-field appearance="outline">
             <mat-label>Voluntario</mat-label>
-            <mat-select formControlName="voluntarioId">
-              <mat-option [value]="null">— Todos los voluntarios —</mat-option>
-              <mat-option *ngFor="let v of voluntarios" [value]="v.id">
-                {{ v.nombre }} {{ v.apellido1 }} {{ v.apellido2 }}
+            <input matInput type="text"
+                   [formControl]="voluntarioCtrl"
+                   [matAutocomplete]="autoVoluntario"
+                   placeholder="Buscar por nombre, apellidos o DNI...">
+            <mat-autocomplete #autoVoluntario="matAutocomplete" [displayWith]="displayVoluntario">
+              <mat-option *ngFor="let v of voluntariosFiltrados" [value]="v">
+                {{ v.nombre }} {{ v.apellido1 }} {{ v.apellido2 || '' }} <span class="option-dni">— {{ v.dni }}</span>
               </mat-option>
-            </mat-select>
-            <mat-icon matSuffix>person</mat-icon>
+              <mat-option *ngIf="voluntariosFiltrados.length === 0" [value]="null" disabled>
+                Sin resultados
+              </mat-option>
+            </mat-autocomplete>
+            <mat-icon matSuffix>person_search</mat-icon>
           </mat-form-field>
 
           <button mat-stroked-button type="button" (click)="limpiarFiltros()" class="clear-btn"
@@ -155,6 +161,9 @@
                 <p class="qr-card__nombre">{{ a.voluntarioNombre }}</p>
                 <p class="qr-card__evento">{{ a.eventoNombre }}</p>
                 <p class="qr-card__depto">{{ getVoluntarioDepartamento(a.voluntarioId) }}</p>
+                <p class="qr-card__dias" [matTooltip]="formatearDiasAcceso(a)">
+                  <mat-icon class="dias-icon">event_repeat</mat-icon>{{ formatearDiasAcceso(a) }}
+                </p>
               </div>
 
               <div class="qr-card__actions" (click)="$event.stopPropagation()">

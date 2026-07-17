@@ -100,6 +100,20 @@ export class MisPasesComponent implements OnInit {
     return `data:image/png;base64,${base64}`;
   }
 
+  /** Días a los que tiene acceso el voluntario. Sin diasAcceso = acceso completo al evento. */
+  formatearDiasAcceso(asignacion: EventoVoluntarioDTO): string {
+    if (!asignacion.diasAcceso?.trim()) return 'Todos los días del evento';
+    return asignacion.diasAcceso.split('|')
+      .map(d => d.trim())
+      .filter(Boolean)
+      .sort()
+      .map(d => {
+        const [, m, dd] = d.split('-');
+        return `${dd}/${m}`;
+      })
+      .join(' · ');
+  }
+
   downloadQr(pase: PaseConEvento): void {
     const link = document.createElement('a');
     link.href = this.getQrSrc(pase.asignacion.qrImageBase64!);

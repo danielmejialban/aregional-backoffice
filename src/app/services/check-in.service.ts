@@ -29,6 +29,10 @@ export class CheckInService {
     return this.http.get<CheckInDTO>(`${this.API_URL}/${id}`);
   }
 
+  getByEvento(eventoId: number): Observable<CheckInDTO[]> {
+    return this.http.get<CheckInDTO[]>(`${this.API_URL}/evento/${eventoId}`);
+  }
+
   scanQr(request: ScanQrRequest): Observable<CheckInDTO> {
     return this.http.post<CheckInDTO>(`${this.API_URL}/scan`, request);
   }

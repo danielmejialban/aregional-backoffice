@@ -73,6 +73,13 @@
             <mat-icon class="detail-icon">place</mat-icon>
             <span>{{ pase.evento.direccion }}</span>
           </div>
+          <div class="detail-row">
+            <mat-icon class="detail-icon">event_repeat</mat-icon>
+            <span>
+              <strong>Días de acceso:</strong>
+              {{ formatearDiasAcceso(pase.asignacion) }}
+            </span>
+          </div>
         </div>
 
         <!-- QR Code -->

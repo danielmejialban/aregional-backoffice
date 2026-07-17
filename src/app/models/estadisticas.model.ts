@@ -11,4 +11,5 @@ export interface EstadisticasResumenDTO {
   checkInsPorEvento: ItemConteoDTO[];
   voluntariosPorDepartamento: ItemConteoDTO[];
   checkInsPorDia: ItemConteoDTO[];
+  checkInsPorDepartamento: ItemConteoDTO[];
 }

@@ -15,5 +15,7 @@ export interface VoluntarioDTO {
   formacion?: boolean;
   dniTemporal?: boolean;
   dniInvalid?: boolean;
+  /** Funcionalidades especiales (p.ej. trabajo en altura). Solo aplica a voluntarios del departamento LBD. */
+  specialFunctionalities?: boolean;
 }
 

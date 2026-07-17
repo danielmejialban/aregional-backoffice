@@ -17,6 +17,31 @@
   white-space: nowrap;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.evento-filter {
+  min-width: 260px;
+}
+
+.filtro-activo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #E3F2FD;
+  color: #1565C0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+
 .loading-container {
   display: flex;
   justify-content: center;
@@ -81,9 +106,52 @@
   &.wide { flex: 2; }
   &.full { flex: 1 1 100%; }
 
+  mat-card-header {
+    padding: 16px 16px 0;
+
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.05rem;
+
+      mat-icon { color: #1565C0; }
+    }
+
+    mat-card-subtitle {
+      margin-top: 2px;
+      font-size: 0.8rem;
+    }
+  }
+
   mat-card-content {
     padding: 16px;
   }
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+
+  &.tall { height: 340px; }
+}
+
+.empty-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 220px;
+  color: #B0BEC5;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 8px;
+  }
+
+  p { margin: 0; font-size: 0.9rem; }
 }
 
 .dias-card {

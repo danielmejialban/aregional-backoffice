@@ -1,11 +1,31 @@
 <div class="page-container">
   <div class="page-header">
     <h1><mat-icon>bar_chart</mat-icon> {{ 'Estadisticas.PageTitle' | translate }}</h1>
-    <button mat-raised-button color="primary" class="export-btn"
-            (click)="exportarXls()" [disabled]="loading || exportando">
-      <mat-icon>download</mat-icon>
-      {{ exportando ? 'Exportando...' : 'Exportar XLS' }}
-    </button>
+
+    <div class="header-actions">
+      <mat-form-field appearance="outline" class="evento-filter" subscriptSizing="dynamic">
+        <mat-label>{{ 'Estadisticas.FiltroEvento' | translate }}</mat-label>
+        <mat-select [(ngModel)]="eventoSeleccionadoId" (ngModelChange)="onEventoChange()">
+          <mat-option [value]="null">{{ 'Estadisticas.TodosEventos' | translate }}</mat-option>
+          @for (e of eventos; track e.id) {
+            <mat-option [value]="e.id">{{ e.nombre }}</mat-option>
+          }
+        </mat-select>
+        <mat-icon matSuffix>event</mat-icon>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" class="export-btn"
+              (click)="exportarXls()" [disabled]="loading || exportando">
+        <mat-icon>download</mat-icon>
+        {{ exportando ? 'Exportando...' : 'Exportar XLS' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Contexto del filtro activo -->
+  <div class="filtro-activo" *ngIf="nombreEventoSeleccionado">
+    <mat-icon>filter_alt</mat-icon>
+    <span>{{ 'Estadisticas.MostrandoEvento' | translate }} <strong>{{ nombreEventoSeleccionado }}</strong></span>
   </div>
 
   <div *ngIf="loading" class="loading-container">
@@ -20,7 +40,7 @@
           <mat-icon class="stat-icon volunteers">people</mat-icon>
           <div class="stat-info">
             <span class="stat-value">{{ totalVoluntarios }}</span>
-            <span class="stat-label">{{ 'Estadisticas.Voluntarios' | translate }}</span>
+            <span class="stat-label">{{ (nombreEventoSeleccionado ? 'Estadisticas.VoluntariosAsignados' : 'Estadisticas.Voluntarios') | translate }}</span>
           </div>
         </mat-card-content>
       </mat-card>
@@ -56,38 +76,83 @@
       </mat-card>
     </div>
 
-    <!-- Charts row 1 -->
+    <!-- Charts row 1: check-ins por departamento + voluntarios por departamento -->
     <div class="charts-row">
       <mat-card class="chart-card wide">
+        <mat-card-header>
+          <mat-card-title><mat-icon>domain</mat-icon> {{ 'Estadisticas.Charts.CheckInsDepartamento' | translate }}</mat-card-title>
+          <mat-card-subtitle>{{ 'Estadisticas.Charts.CheckInsDepartamentoSub' | translate }}</mat-card-subtitle>
+        </mat-card-header>
         <mat-card-content>
-          <canvas baseChart
-            [data]="barChartData"
-            [options]="barChartOptions"
-            type="bar">
-          </canvas>
+          <div class="chart-container tall" *ngIf="hayCheckInsDepartamento; else emptyChart1">
+            <canvas baseChart [data]="deptBarChartData" [options]="deptBarChartOptions" type="bar"></canvas>
+          </div>
+          <ng-template #emptyChart1>
+            <div class="empty-chart">
+              <mat-icon>insights</mat-icon>
+              <p>{{ 'Estadisticas.SinDatos' | translate }}</p>
+            </div>
+          </ng-template>
         </mat-card-content>
       </mat-card>
 
       <mat-card class="chart-card">
+        <mat-card-header>
+          <mat-card-title><mat-icon>groups</mat-icon> {{ 'Estadisticas.Charts.VoluntariosDepartamento' | translate }}</mat-card-title>
+          <mat-card-subtitle>{{ 'Estadisticas.Charts.VoluntariosDepartamentoSub' | translate }}</mat-card-subtitle>
+        </mat-card-header>
         <mat-card-content>
-          <canvas baseChart
-            [data]="doughnutChartData"
-            [options]="doughnutChartOptions"
-            type="doughnut">
-          </canvas>
+          <div class="chart-container tall" *ngIf="hayVoluntariosDepartamento; else emptyChart2">
+            <canvas baseChart [data]="doughnutChartData" [options]="doughnutChartOptions" type="doughnut"></canvas>
+          </div>
+          <ng-template #emptyChart2>
+            <div class="empty-chart">
+              <mat-icon>donut_large</mat-icon>
+              <p>{{ 'Estadisticas.SinDatos' | translate }}</p>
+            </div>
+          </ng-template>
         </mat-card-content>
       </mat-card>
     </div>
 
-    <!-- Charts row 2 -->
+    <!-- Charts row 2: check-ins por evento (solo vista global) -->
+    <div class="charts-row" *ngIf="!nombreEventoSeleccionado">
+      <mat-card class="chart-card full">
+        <mat-card-header>
+          <mat-card-title><mat-icon>event_available</mat-icon> {{ 'Estadisticas.Charts.CheckInsEvento' | translate }}</mat-card-title>
+          <mat-card-subtitle>{{ 'Estadisticas.Charts.CheckInsEventoSub' | translate }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container" *ngIf="hayCheckInsEvento; else emptyChart3">
+            <canvas baseChart [data]="barChartData" [options]="barChartOptions" type="bar"></canvas>
+          </div>
+          <ng-template #emptyChart3>
+            <div class="empty-chart">
+              <mat-icon>bar_chart</mat-icon>
+              <p>{{ 'Estadisticas.SinDatos' | translate }}</p>
+            </div>
+          </ng-template>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Charts row 3: evolución diaria -->
     <div class="charts-row">
       <mat-card class="chart-card full">
+        <mat-card-header>
+          <mat-card-title><mat-icon>show_chart</mat-icon> {{ 'Estadisticas.Charts.CheckInsDia' | translate }}</mat-card-title>
+          <mat-card-subtitle>{{ 'Estadisticas.Charts.CheckInsDiaSub' | translate }}</mat-card-subtitle>
+        </mat-card-header>
         <mat-card-content>
-          <canvas baseChart
-            [data]="lineChartData"
-            [options]="lineChartOptions"
-            type="line">
-          </canvas>
+          <div class="chart-container" *ngIf="hayCheckInsDia; else emptyChart4">
+            <canvas baseChart [data]="lineChartData" [options]="lineChartOptions" type="line"></canvas>
+          </div>
+          <ng-template #emptyChart4>
+            <div class="empty-chart">
+              <mat-icon>show_chart</mat-icon>
+              <p>{{ 'Estadisticas.SinDatos' | translate }}</p>
+            </div>
+          </ng-template>
         </mat-card-content>
       </mat-card>
     </div>
@@ -97,7 +162,7 @@
       <mat-card-header>
         <mat-card-title>
           <mat-icon>calendar_today</mat-icon>
-          Check-Ins por Día
+          {{ 'Estadisticas.Charts.TablaDias' | translate }}
         </mat-card-title>
       </mat-card-header>
       <mat-card-content>

@@ -1,6 +1,8 @@
 export interface CheckInDTO {
   id?: number;
-  fechaHora?: string;
+  fechaCheckIn?: string;
+  fechaCheckOut?: string;
+  estado?: string;
   observaciones?: string;
   eventoVoluntarioId?: number;
   voluntarioId?: number;
@@ -13,4 +15,3 @@ export interface ScanQrRequest {
   qrToken: string;
   observaciones?: string;
 }
-

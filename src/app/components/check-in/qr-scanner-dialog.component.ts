@@ -68,7 +68,7 @@ export interface QrScannerDialogData {
         <h3>{{ 'CheckIn.ScannerDialog.SuccessTitle' | translate }}</h3>
         <p><strong>{{ 'CheckIn.ScannerDialog.VolunteerLabel' | translate }}</strong> {{scanResult.voluntarioNombre}}</p>
         <p><strong>{{ 'CheckIn.ScannerDialog.EventLabel' | translate }}</strong> {{scanResult.eventoNombre}}</p>
-        <p><strong>{{ 'CheckIn.ScannerDialog.DateLabel' | translate }}</strong> {{scanResult.fechaHora | date:'dd/MM/yyyy HH:mm'}}</p>
+        <p><strong>{{ 'CheckIn.ScannerDialog.DateLabel' | translate }}</strong> {{scanResult.fechaCheckIn | date:'dd/MM/yyyy HH:mm'}}</p>
       </div>
 
       <!-- Error -->
@@ -184,7 +184,7 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
       .subscribe({
         next: (result) => {
           this.processing = false;
-          this.scanResult = { ...result, fechaHora: result.fechaHora ?? scanTime };
+          this.scanResult = { ...result, fechaCheckIn: result.fechaCheckIn ?? scanTime };
           this.playBeep('ok');
           this.stopCamera();
         },

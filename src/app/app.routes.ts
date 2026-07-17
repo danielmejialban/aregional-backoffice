@@ -28,12 +28,12 @@ export const routes: Routes = [
         redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard',
         loadComponent: () => import('./components/dashboard/dashboard.component')
-          .then(m => m.DashboardComponent)
-        },
+          .then(m => m.DashboardComponent),
+        canActivate: [roleGuard(['ADMIN', 'COORDINADOR', 'VOLUNTARIO'])] },
       { path: 'departamentos',
         loadComponent: () => import('./components/departamentos/departamentos.component')
           .then(m => m.DepartamentosComponent)
-        , canActivate: [roleGuard(['ADMIN'])] },
+        , canActivate: [roleGuard(['ADMIN','COORDINADOR'])] },
       { path: 'roles',
         loadComponent: () => import('./components/roles/roles.component')
           .then( m => m.RolesComponent),
@@ -61,7 +61,7 @@ export const routes: Routes = [
       { path: 'check-in',
         loadComponent: () => import('./components/check-in/check-in.component')
           .then( m => m.CheckInComponent),
-       canActivate: [roleGuard(['ADMIN', 'CHECK_IN'])] },
+       canActivate: [roleGuard(['ADMIN', 'CHECK_IN','COORDINADOR'])] },
       { path: 'estadisticas',
         loadComponent: () => import('./components/estadisticas/estadisticas.component')
           .then(m => m.EstadisticasComponent),
