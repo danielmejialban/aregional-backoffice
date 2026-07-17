@@ -28,6 +28,8 @@ const COLOR_TEXT_MUTED       = '#546E7A';
 const DEPT_TEMPLATES: Record<string, string> = {
   'Audio y Vídeo':                     '/docs/Audio y Vídeo.pdf',
   'Auxiliar del Coordinador del CAR':  '/docs/Auxiliar del Coordinador del CAR.pdf',
+  'CAR':  '/docs/Auxiliar del Coordinador del CAR.pdf',
+  'Negociador de Contratos':  '/docs/Auxiliar del Coordinador del CAR.pdf',
   'Información y Servicio Voluntario': '/docs/Información y Servicio Voluntario.pdf',
   'Instalación':                       '/docs/Instalación.pdf',
   'Local Broadcasting (LBD)':          '/docs/Local Broadcasting (LBD).pdf',

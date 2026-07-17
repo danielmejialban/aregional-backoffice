@@ -67,12 +67,6 @@
       <mat-error *ngIf="form.get('diasPreEvento')?.hasError('max')">{{ 'Eventos.Dialog.DiasMax' | translate }}</mat-error>
     </mat-form-field>
 
-    <p class="section-label">{{ 'Eventos.Dialog.ConvocatoriaTitle' | translate }}</p>
-<!--   /-->
-    <p class="date-range-error" *ngIf="form.hasError('finConvAnterior') && form.get('fechaFinConvocatoria')?.touched">
-      {{ 'Eventos.Dialog.FinConvAnteriorError' | translate }}
-    </p>
-
   </form>
 </mat-dialog-content>
 
