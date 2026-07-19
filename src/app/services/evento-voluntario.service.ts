@@ -48,8 +48,16 @@ export class EventoVoluntarioService {
     return this.http.get<EventoVoluntarioDTO[]>(`${this.API_URL}/voluntario/${voluntarioId}`);
   }
 
-  getByEvento(eventoId: number): Observable<EventoVoluntarioDTO[]> {
-    const params = new HttpParams().set('size', '5000');
+  /**
+   * `includeQrImage=false` devuelve solo el qrToken (sin PNG Base64): imprescindible
+   * para listados masivos donde la imagen se genera en el cliente.
+   */
+  getByEvento(eventoId: number, filtros?: Omit<AsignacionFiltros, 'eventoId'>, includeQrImage = true): Observable<EventoVoluntarioDTO[]> {
+    let params = new HttpParams().set('size', '5000');
+    if (filtros?.busqueda?.trim())       params = params.set('busqueda', filtros.busqueda.trim());
+    if (filtros?.departamentoId != null) params = params.set('departamentoId', filtros.departamentoId);
+    filtros?.accesoDias?.forEach(f => params = params.append('accesoDia', f));
+    if (!includeQrImage) params = params.set('includeQrImage', 'false');
     return this.http.get<EventoVoluntarioDTO[] | PageDTO<EventoVoluntarioDTO>>(
       `${this.API_URL}/evento/${eventoId}`, { params }
     ).pipe(map(r => Array.isArray(r) ? r : (r.content ?? [])));

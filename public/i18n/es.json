@@ -366,6 +366,7 @@
       "Dni": "DNI/NIE",
       "Departamento": "Departamento",
       "Telefono": "Teléfono",
+      "Matricula": "Matrícula",
       "DiasAcceso": "Días de Acceso",
       "Qr": "QR",
       "Actions": "Acciones"
@@ -414,6 +415,7 @@
       "Id": "ID",
       "Voluntario": "Voluntario",
       "Evento": "Evento",
+      "Matricula": "Matrícula",
       "Qr": "QR",
       "Actions": "Acciones"
     },
@@ -532,6 +534,7 @@
       "VolunteerLabel": "Voluntario:",
       "EventLabel": "Evento:",
       "DateLabel": "Fecha:",
+      "MatriculaLabel": "Matrícula:",
       "ErrorTitle": "Error al registrar",
       "CameraErrorTitle": "Sin acceso a la cámara",
       "CameraErrorNoVideo": "No se encontró el elemento de vídeo. Intenta reabrir el diálogo.",

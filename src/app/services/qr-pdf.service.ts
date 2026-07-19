@@ -170,11 +170,19 @@ export class QrPdfService {
     });
 
     // Días a los que tiene acceso el voluntario (máx. 2 líneas)
-    this.lineasDiasAcceso(a, 46).forEach((linea, i) => {
+    const lineasDias = this.lineasDiasAcceso(a, 46);
+    lineasDias.forEach((linea, i) => {
       page.drawText(linea, {
         x: OV.diasX, y: OV.diasY - i * 10, size: OV.diasSize, font: normal, color: muted,
       });
     });
+
+    // Matrícula del vehículo (solo si existe y no está vacía)
+    if (a.matricula?.trim()) {
+      page.drawText(`Matrícula: ${a.matricula.trim()}`, {
+        x: OV.diasX, y: OV.diasY - lineasDias.length * 10, size: OV.diasSize, font: bold, color: dark,
+      });
+    }
   }
 
   // ── Tarjeta estándar (jsPDF) ─────────────────────────────────────────────
@@ -236,9 +244,18 @@ export class QrPdfService {
 
     // Días a los que tiene acceso el voluntario (máx. 2 líneas)
     doc.setFontSize(5.8);
-    this.lineasDiasAcceso(a, 42).forEach((linea, i) => {
+    const lineasDias = this.lineasDiasAcceso(a, 42);
+    lineasDias.forEach((linea, i) => {
       doc.text(linea, x + 4, y + HEADER_H + 27 + i * 3.2);
     });
+
+    // Matrícula del vehículo (solo si existe y no está vacía)
+    if (a.matricula?.trim()) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(6);
+      doc.setTextColor(COLOR_TEXT_DARK);
+      doc.text(`Matrícula: ${a.matricula.trim()}`, x + 4, y + HEADER_H + 27 + lineasDias.length * 3.2);
+    }
 
     if (a.qrImageBase64) {
       doc.setFillColor('#F5F5F5');

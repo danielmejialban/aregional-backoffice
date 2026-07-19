@@ -9,6 +9,8 @@ export interface CheckInDTO {
   eventoId?: number;
   voluntarioNombre?: string;
   eventoNombre?: string;
+  /** Matrícula de vehículo de la asignación (null/ausente si no informada) */
+  matricula?: string;
 }
 
 export interface ScanQrRequest {

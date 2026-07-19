@@ -20,7 +20,7 @@
     <mat-card class="filtros-card">
       <mat-card-header>
         <mat-card-title><mat-icon>filter_list</mat-icon> Filtros</mat-card-title>
-        <mat-card-subtitle>Selecciona un evento para cargar los pases. Los filtros de departamento y voluntario se aplican sobre los resultados.</mat-card-subtitle>
+        <mat-card-subtitle>Selecciona un evento para cargar los pases. Ajusta departamento y voluntario y pulsa "Buscar" para aplicar los filtros.</mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
         <form [formGroup]="form" class="filtros-form">
@@ -39,7 +39,7 @@
             <mat-label>Departamento</mat-label>
             <mat-select formControlName="departamentoId">
               <mat-option [value]="null">— Todos los departamentos —</mat-option>
-              <mat-option *ngFor="let d of departamentos" [value]="d.id">{{ d.nombre }}</mat-option>
+              <mat-option *ngFor="let d of departamentosFiltrados" [value]="d.id">{{ d.nombre }}</mat-option>
             </mat-select>
             <mat-icon matSuffix>business</mat-icon>
           </mat-form-field>
@@ -60,6 +60,11 @@
             </mat-autocomplete>
             <mat-icon matSuffix>person_search</mat-icon>
           </mat-form-field>
+
+          <button mat-raised-button color="primary" type="button" (click)="buscar()" class="search-btn"
+            [disabled]="!form.value.eventoId || loadingQrs">
+            <mat-icon>search</mat-icon> Buscar
+          </button>
 
           <button mat-stroked-button type="button" (click)="limpiarFiltros()" class="clear-btn"
             [disabled]="!form.getRawValue().departamentoId && !form.getRawValue().voluntarioId">
@@ -155,7 +160,10 @@
                 <mat-checkbox [(ngModel)]="a.seleccionada"></mat-checkbox>
               </div>
 
-              <img [src]="getQrSrc(a.qrImageBase64!)" [alt]="a.voluntarioNombre" class="qr-img" loading="lazy" />
+              <img *ngIf="a.qrImageBase64" [src]="getQrSrc(a.qrImageBase64!)" [alt]="a.voluntarioNombre" class="qr-img" loading="lazy" />
+              <div *ngIf="!a.qrImageBase64" class="qr-img qr-img--placeholder">
+                <mat-spinner diameter="28"></mat-spinner>
+              </div>
 
               <div class="qr-card__info">
                 <p class="qr-card__nombre">{{ a.voluntarioNombre }}</p>

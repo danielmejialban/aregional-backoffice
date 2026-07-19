@@ -9,6 +9,8 @@ export interface EventoVoluntarioDTO {
   fechaFinEvento?: string;
   /** Fechas de acceso permitidas separadas por "|". null = acceso total al evento */
   diasAcceso?: string;
+  /** Matrícula de vehículo para esta asignación (opcional) */
+  matricula?: string;
   qrToken?: string;
   qrImageBase64?: string;
 }

@@ -196,6 +196,12 @@ export class EventoVoluntariosComponent implements OnInit {
       });
     }
 
+    cols.push({
+      key: 'matricula',
+      header: this.translate.instant('EventoVoluntarios.Columns.Matricula'),
+      type: 'text', width: '110px',
+    });
+
     // Columnas de días del evento (solo en contexto de evento)
     if (this.eventoActual) {
       for (const dia of this.eventoDias) {

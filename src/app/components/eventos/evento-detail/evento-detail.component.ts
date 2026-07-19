@@ -180,6 +180,11 @@ export class EventoDetailComponent implements OnInit {
         header: this.translate.instant('EventoDetail.Columns.Telefono'),
         type: 'text', width: '110px',
       },
+      {
+        key: 'matricula',
+        header: this.translate.instant('EventoDetail.Columns.Matricula'),
+        type: 'text', width: '110px',
+      },
     ];
 
     for (const dia of this.eventoDias) {
@@ -451,7 +456,11 @@ export class EventoDetailComponent implements OnInit {
   exportarExcel(): void {
     if (!this.evento) return;
     this.exportandoExcel = true;
-    this.eventoVoluntarioService.getByEvento(this.eventoId).subscribe({
+    this.eventoVoluntarioService.getByEvento(this.eventoId, {
+      busqueda:       this.busqueda,
+      departamentoId: this.filtradoDepartamentoId,
+      accesoDias:     this.filtradoAccesoDias,
+    }).subscribe({
       next: (asignaciones) => {
         const rows = asignaciones.map(a => {
           const vol = this.voluntarios.find(v => v.id === a.voluntarioId);

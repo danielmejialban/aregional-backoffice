@@ -37,6 +37,8 @@ export class PlantillaExcelService {
       { header: 'congregación',  color: COLOR_VOL,   width: 20 },
       { header: 'circuito',      color: COLOR_VOL,   width: 14 },
       { header: 'formación',     color: COLOR_VOL,   width: 12 },
+      // matricula SIEMPRE al final: no altera las posiciones existentes
+      { header: 'matricula',     color: COLOR_VOL,   width: 14 },
     ];
 
     // ── Cabecera: fila 1 ────────────────────────────────────────────────────
@@ -124,8 +126,13 @@ export class PlantillaExcelService {
       width: 14,
     }));
 
-    const allCols = [...fixedCols, ...dateCols];
-    const totalCols = allCols.length;
+    // matricula SIEMPRE al final: no altera las posiciones existentes
+    const allCols = [
+      ...fixedCols,
+      ...dateCols,
+      { header: 'matricula', color: COLOR_VOL, width: 14 },
+    ];
+    const totalCols = fixedCols.length + dateCols.length;
 
     // ── Cabecera fila 1 ────────────────────────────────────────────────────
     allCols.forEach((col, idx) => {
@@ -305,7 +312,8 @@ export class PlantillaExcelService {
       fixedCols.push({ header: 'evento', color: 'FF1565C0', width: 28 });
     }
 
-    const allCols = [...fixedCols, ...dateCols];
+    // matricula SIEMPRE al final: no altera las posiciones existentes
+    const allCols = [...fixedCols, ...dateCols, { header: 'matricula', color: COLOR_VOL, width: 14 }];
 
     // ── Cabecera: fila 1 ─────────────────────────────────────────────────────
     allCols.forEach((col, idx) => {
@@ -344,7 +352,7 @@ export class PlantillaExcelService {
 
       const dateValues = dateCols.map(dc => acceso === null ? 'Sí' : acceso?.has(dc.isoDate) ? 'Sí' : 'No');
       const eventoCol  = !conFechas ? [ev.eventoNombre ?? ''] : [];
-      const rowValues  = [...fixedValues, ...eventoCol, ...dateValues];
+      const rowValues  = [...fixedValues, ...eventoCol, ...dateValues, ev.matricula ?? ''];
 
       const row = ws.getRow(2 + i);
       rowValues.forEach((val, idx) => {

@@ -69,6 +69,7 @@ export interface QrScannerDialogData {
         <p><strong>{{ 'CheckIn.ScannerDialog.VolunteerLabel' | translate }}</strong> {{scanResult.voluntarioNombre}}</p>
         <p><strong>{{ 'CheckIn.ScannerDialog.EventLabel' | translate }}</strong> {{scanResult.eventoNombre}}</p>
         <p><strong>{{ 'CheckIn.ScannerDialog.DateLabel' | translate }}</strong> {{scanResult.fechaCheckIn | date:'dd/MM/yyyy HH:mm'}}</p>
+        <p *ngIf="scanResult.matricula"><strong>{{ 'CheckIn.ScannerDialog.MatriculaLabel' | translate }}</strong> {{scanResult.matricula}}</p>
       </div>
 
       <!-- Error -->
