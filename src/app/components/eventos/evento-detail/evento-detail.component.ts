@@ -73,6 +73,7 @@ export class EventoDetailComponent implements OnInit {
   currentPage = 0;
   private busqueda?: string;
   private filtradoDepartamentoId?: number | null;
+  private filtradoAccesoDias?: string[];
 
   private eventoId!: number;
 
@@ -187,6 +188,8 @@ export class EventoDetailComponent implements OnInit {
         header: dia.label,
         type: 'badge',
         badgeMap: { '✓': 'dt-badge--success', '✗': 'dt-badge--danger' },
+        filterType: 'select',
+        filterOptions: ['SI', 'NO'],
         width: '82px',
         exportable: true,
       });
@@ -237,6 +240,7 @@ export class EventoDetailComponent implements OnInit {
       eventoId:       this.eventoId,
       busqueda:       this.busqueda,
       departamentoId: this.filtradoDepartamentoId,
+      accesoDias:     this.filtradoAccesoDias,
     }).subscribe({
       next: (data) => {
         this.asignaciones  = data.content.map(a => {
@@ -260,6 +264,14 @@ export class EventoDetailComponent implements OnInit {
     const deptoNombre         = filters['voluntarioDepartamentoNombre'] as string | null;
     const depto = deptoNombre ? this.departamentos.find(d => d.nombre === deptoNombre) : null;
     this.filtradoDepartamentoId = depto?.id ?? null;
+
+    const accesoDias: string[] = [];
+    for (const dia of this.eventoDias) {
+      const valor = filters[`acceso_${dia.iso}`] as string | null;
+      if (valor === 'SI' || valor === 'NO') accesoDias.push(`${dia.iso}:${valor}`);
+    }
+    this.filtradoAccesoDias = accesoDias.length ? accesoDias : undefined;
+
     this.loadAsignaciones(0);
   }
 

@@ -10,6 +10,8 @@ export interface AsignacionFiltros {
   busqueda?: string;
   eventoId?: number | null;
   departamentoId?: number | null;
+  /** Entradas con formato `yyyy-MM-dd:SI` o `yyyy-MM-dd:NO`. */
+  accesoDias?: string[];
 }
 
 @Injectable({
@@ -31,6 +33,7 @@ export class EventoVoluntarioService {
     let params = new HttpParams().set('page', page).set('size', size);
     if (filtros?.busqueda?.trim())    params = params.set('busqueda', filtros.busqueda.trim());
     if (filtros?.departamentoId != null) params = params.set('departamentoId', filtros.departamentoId);
+    filtros?.accesoDias?.forEach(f => params = params.append('accesoDia', f));
 
     if (filtros?.eventoId != null) {
       return this.http.get<PageDTO<EventoVoluntarioDTO>>(
