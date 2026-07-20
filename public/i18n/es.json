@@ -205,6 +205,7 @@
       "CongregacionLabel": "Congregación",
       "CircuitoLabel": "Circuito",
       "CorreoJwLabel": "Correo JW",
+      "MatriculaLabel": "Matrícula",
       "DepartamentoLabel": "Departamento",
       "ActivoLabel": "Activo",
       "SpecialFunctionalitiesLabel": "Trabajo en altura (LBD)",
@@ -503,7 +504,8 @@
       "FechaCheckIn": "Check-in",
       "FechaCheckOut": "Check-out",
       "Estado": "Estado",
-      "Observaciones": "Observaciones"
+      "Observaciones": "Observaciones",
+      "RealizadoPor": "Realizado por"
     },
     "Filters": {
       "Search": "Buscar",
@@ -685,6 +687,15 @@
       "CheckInsDia": "Evolución diaria de Check-Ins",
       "CheckInsDiaSub": "Últimos 14 días",
       "TablaDias": "Check-Ins por Día"
+    },
+    "Tracking": {
+      "Title": "Seguimiento de Asistencia por Departamento",
+      "Subtitle": "Voluntarios que han realizado check-in vs total asignados al evento",
+      "Departamento": "Departamento",
+      "Asignados": "Asignados",
+      "ConCheckIn": "Con Check-In",
+      "SinCheckIn": "Sin Check-In",
+      "Progreso": "Progreso"
     }
   },
   "DataTable": {

@@ -12,12 +12,15 @@ import { TranslateModule } from '@ngx-translate/core';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions } from 'chart.js';
 import { Workbook } from 'exceljs';
+import { forkJoin } from 'rxjs';
 import { CheckInService } from '@app/services/check-in.service';
 import { EstadisticasService } from '@app/services/estadisticas.service';
 import { EventoService } from '@app/services/evento.service';
-import { ItemConteoDTO } from '@app/models/estadisticas.model';
+import { EventoVoluntarioService } from '@app/services/evento-voluntario.service';
+import { ItemConteoDTO, DepartamentoTrackingDTO } from '@app/models/estadisticas.model';
 import { CheckInDTO } from '@app/models/check-in.model';
 import { EventoDTO } from '@app/models/evento.model';
+import { EventoVoluntarioDTO } from '@app/models/evento-voluntario.model';
 
 export interface DiaRow {
   fecha: string;
@@ -71,6 +74,9 @@ export class EstadisticasComponent implements OnInit {
   hayCheckInsDepartamento = false;
   hayVoluntariosDepartamento = false;
   hayCheckInsDia = false;
+
+  trackingRows: DepartamentoTrackingDTO[] = [];
+  readonly trackingColumns = ['departamento', 'totalAsignados', 'conCheckIn', 'sinCheckIn', 'porcentaje'];
 
   // ── Check-ins por evento (barras verticales) ────────────────────────────
   barChartData: ChartData<'bar'> = { labels: [], datasets: [] };
@@ -142,6 +148,7 @@ export class EstadisticasComponent implements OnInit {
     private estadisticasService: EstadisticasService,
     private checkInService: CheckInService,
     private eventoService: EventoService,
+    private eventoVoluntarioService: EventoVoluntarioService,
   ) {}
 
   ngOnInit(): void {
@@ -165,6 +172,7 @@ export class EstadisticasComponent implements OnInit {
         this.buildDoughnutChart(resumen.voluntariosPorDepartamento);
         this.buildLineChart(resumen.checkInsPorDia);
         this.buildDiasTable(resumen.checkInsPorDia);
+        this.trackingRows = resumen.trackingPorDepartamento ?? [];
         this.loading = false;
       },
       error: () => { this.loading = false; }
@@ -256,18 +264,32 @@ export class EstadisticasComponent implements OnInit {
 
   exportarXls(): void {
     this.exportando = true;
-    const checkIns$ = this.eventoSeleccionadoId != null
-      ? this.checkInService.getByEvento(this.eventoSeleccionadoId)
+    const eventoId = this.eventoSeleccionadoId;
+
+    const checkIns$ = eventoId != null
+      ? this.checkInService.getByEvento(eventoId)
       : this.checkInService.getAll();
-    checkIns$.subscribe({
-      next: (checkIns: CheckInDTO[]) => this.generarExcel(checkIns),
-      error: () => { this.exportando = false; }
-    });
+
+    if (eventoId != null) {
+      forkJoin({
+        checkIns: checkIns$,
+        asignaciones: this.eventoVoluntarioService.getByEvento(eventoId, {}, false),
+      }).subscribe({
+        next: ({ checkIns, asignaciones }) => this.generarExcel(checkIns, asignaciones, eventoId),
+        error: () => { this.exportando = false; },
+      });
+    } else {
+      checkIns$.subscribe({
+        next: (checkIns: CheckInDTO[]) => this.generarExcel(checkIns, [], null),
+        error: () => { this.exportando = false; },
+      });
+    }
   }
 
-  private generarExcel(checkIns: CheckInDTO[]): void {
+  private generarExcel(checkIns: CheckInDTO[], asignaciones: EventoVoluntarioDTO[], eventoId: number | null): void {
     const wb = new Workbook();
 
+    // ── Hoja 1: Resumen por Día ────────────────────────────────────────────
     const wsSummary = wb.addWorksheet('Resumen por Día');
     wsSummary.columns = [
       { header: 'Fecha', key: 'fecha', width: 14 },
@@ -276,6 +298,7 @@ export class EstadisticasComponent implements OnInit {
     wsSummary.getRow(1).font = { bold: true };
     this.diasRows.forEach(r => wsSummary.addRow(r));
 
+    // ── Hoja 2: Detalle Check-Ins ─────────────────────────────────────────
     const wsDetail = wb.addWorksheet('Detalle Check-Ins');
     wsDetail.columns = [
       { header: 'ID', key: 'id', width: 8 },
@@ -285,6 +308,7 @@ export class EstadisticasComponent implements OnInit {
       { header: 'Voluntario', key: 'voluntarioNombre', width: 30 },
       { header: 'Evento', key: 'eventoNombre', width: 30 },
       { header: 'Observaciones', key: 'observaciones', width: 40 },
+      { header: 'Realizado Por', key: 'realizadoPor', width: 20 },
     ];
     wsDetail.getRow(1).font = { bold: true };
     checkIns.forEach(c => wsDetail.addRow({
@@ -292,20 +316,118 @@ export class EstadisticasComponent implements OnInit {
       fechaCheckIn: c.fechaCheckIn?.replace('T', ' ') ?? '',
       fechaCheckOut: c.fechaCheckOut?.replace('T', ' ') ?? '',
       estado: c.estado ?? '',
-      voluntarioNombre: c.voluntarioNombre,
-      eventoNombre: c.eventoNombre,
+      voluntarioNombre: c.voluntarioNombre ?? '',
+      eventoNombre: c.eventoNombre ?? '',
       observaciones: c.observaciones ?? '',
+      realizadoPor: c.realizadoPor ?? '',
     }));
+
+    // ── Hoja 3: Tracking por Departamento (solo si hay evento) ────────────
+    if (eventoId != null && this.trackingRows.length > 0) {
+      const wsTracking = wb.addWorksheet('Tracking Departamentos');
+      wsTracking.columns = [
+        { header: 'Departamento',  key: 'departamento',   width: 28 },
+        { header: 'Asignados',     key: 'totalAsignados', width: 12 },
+        { header: 'Con Check-In',  key: 'conCheckIn',     width: 14 },
+        { header: 'Sin Check-In',  key: 'sinCheckIn',     width: 14 },
+        { header: '% Completado',  key: 'porcentaje',     width: 14 },
+      ];
+      wsTracking.getRow(1).font = { bold: true };
+      this.trackingRows.forEach(r => wsTracking.addRow({
+        departamento:   r.departamento,
+        totalAsignados: r.totalAsignados,
+        conCheckIn:     r.conCheckIn,
+        sinCheckIn:     r.sinCheckIn,
+        porcentaje:     r.totalAsignados > 0
+          ? `${Math.round((r.conCheckIn / r.totalAsignados) * 100)}%`
+          : '0%',
+      }));
+    }
+
+    // ── Hoja 4: Seguimiento por Día (solo si hay evento con asignaciones) ─
+    if (eventoId != null && asignaciones.length > 0) {
+      const evento = this.eventos.find(e => e.id === eventoId);
+      const dias = this.calcularDiasEvento(evento);
+
+      if (dias.length > 0) {
+        // Mapa: eventoVoluntarioId → array de check-ins ese día
+        const checkInPorEvVolYDia = new Map<string, CheckInDTO>();
+        checkIns.forEach(c => {
+          if (c.eventoVoluntarioId && c.fechaCheckIn) {
+            const dia = c.fechaCheckIn.slice(0, 10);
+            const clave = `${c.eventoVoluntarioId}_${dia}`;
+            if (!checkInPorEvVolYDia.has(clave)) checkInPorEvVolYDia.set(clave, c);
+          }
+        });
+
+        const wsDias = wb.addWorksheet('Seguimiento por Día');
+        wsDias.columns = [
+          { header: 'Fecha',         key: 'fecha',       width: 14 },
+          { header: 'Voluntario',    key: 'voluntario',  width: 30 },
+          { header: 'Departamento',  key: 'departamento',width: 26 },
+          { header: 'Check-In',      key: 'checkin',     width: 10 },
+          { header: 'Hora',          key: 'hora',        width: 10 },
+          { header: 'Realizado Por', key: 'realizadoPor',width: 20 },
+          { header: 'Observaciones', key: 'obs',         width: 36 },
+        ];
+        wsDias.getRow(1).font = { bold: true };
+
+        dias.forEach(dia => {
+          // Voluntarios con acceso ese día
+          const asignadosEseDia = asignaciones.filter(ev => {
+            if (!ev.diasAcceso) return true; // acceso total
+            return ev.diasAcceso.split('|').map(d => d.trim()).includes(dia);
+          });
+
+          asignadosEseDia.forEach(ev => {
+            const clave = `${ev.id}_${dia}`;
+            const ci = checkInPorEvVolYDia.get(clave);
+            wsDias.addRow({
+              fecha:       dia,
+              voluntario:  ev.voluntarioNombre ?? '',
+              departamento: ev.voluntarioDepartamentoNombre ?? '',
+              checkin:     ci ? 'Sí' : 'No',
+              hora:        ci?.fechaCheckIn ? ci.fechaCheckIn.slice(11, 16) : '',
+              realizadoPor: ci?.realizadoPor ?? '',
+              obs:         ci?.observaciones ?? '',
+            });
+          });
+        });
+      }
+    }
+
+    const fileName = eventoId != null
+      ? `seguimiento_${this.nombreEventoSeleccionado?.replace(/\s+/g, '_') ?? eventoId}_${new Date().toISOString().slice(0, 10)}.xlsx`
+      : `estadisticas_${new Date().toISOString().slice(0, 10)}.xlsx`;
 
     wb.xlsx.writeBuffer().then(buffer => {
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `estadisticas_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.download = fileName;
       a.click();
       URL.revokeObjectURL(url);
       this.exportando = false;
     });
+  }
+
+  private calcularDiasEvento(evento: EventoDTO | undefined): string[] {
+    if (!evento?.fechaInicioEvento || !evento?.fechaFinEvento) return [];
+    const diasPre = evento.diasPreEvento ?? 0;
+    const inicio = new Date(evento.fechaInicioEvento);
+    inicio.setDate(inicio.getDate() - diasPre);
+    const fin = new Date(evento.fechaFinEvento);
+    const dias: string[] = [];
+    const cur = new Date(inicio);
+    while (cur <= fin) {
+      dias.push(cur.toISOString().slice(0, 10));
+      cur.setDate(cur.getDate() + 1);
+    }
+    return dias;
+  }
+
+  pct(row: DepartamentoTrackingDTO): number {
+    return row.totalAsignados > 0 ? Math.round((row.conCheckIn / row.totalAsignados) * 100) : 0;
   }
 }

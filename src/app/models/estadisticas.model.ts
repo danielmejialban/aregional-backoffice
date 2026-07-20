@@ -3,6 +3,13 @@ export interface ItemConteoDTO {
   cantidad: number;
 }
 
+export interface DepartamentoTrackingDTO {
+  departamento: string;
+  totalAsignados: number;
+  conCheckIn: number;
+  sinCheckIn: number;
+}
+
 export interface EstadisticasResumenDTO {
   totalVoluntarios: number;
   totalEventos: number;
@@ -12,4 +19,5 @@ export interface EstadisticasResumenDTO {
   voluntariosPorDepartamento: ItemConteoDTO[];
   checkInsPorDia: ItemConteoDTO[];
   checkInsPorDepartamento: ItemConteoDTO[];
+  trackingPorDepartamento: DepartamentoTrackingDTO[];
 }

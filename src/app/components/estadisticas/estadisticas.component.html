@@ -157,6 +157,54 @@
       </mat-card>
     </div>
 
+    <!-- Tracking por departamento (solo con evento seleccionado) -->
+    <mat-card class="tracking-card" *ngIf="trackingRows.length > 0">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>track_changes</mat-icon>
+          {{ 'Estadisticas.Tracking.Title' | translate }}
+        </mat-card-title>
+        <mat-card-subtitle>{{ 'Estadisticas.Tracking.Subtitle' | translate }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <table mat-table [dataSource]="trackingRows" class="tracking-table">
+          <ng-container matColumnDef="departamento">
+            <th mat-header-cell *matHeaderCellDef>{{ 'Estadisticas.Tracking.Departamento' | translate }}</th>
+            <td mat-cell *matCellDef="let row"><strong>{{ row.departamento }}</strong></td>
+          </ng-container>
+          <ng-container matColumnDef="totalAsignados">
+            <th mat-header-cell *matHeaderCellDef style="text-align:center">{{ 'Estadisticas.Tracking.Asignados' | translate }}</th>
+            <td mat-cell *matCellDef="let row" style="text-align:center">{{ row.totalAsignados }}</td>
+          </ng-container>
+          <ng-container matColumnDef="conCheckIn">
+            <th mat-header-cell *matHeaderCellDef style="text-align:center">{{ 'Estadisticas.Tracking.ConCheckIn' | translate }}</th>
+            <td mat-cell *matCellDef="let row" style="text-align:center">
+              <span class="badge badge-ok">{{ row.conCheckIn }}</span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="sinCheckIn">
+            <th mat-header-cell *matHeaderCellDef style="text-align:center">{{ 'Estadisticas.Tracking.SinCheckIn' | translate }}</th>
+            <td mat-cell *matCellDef="let row" style="text-align:center">
+              <span class="badge" [class.badge-warn]="row.sinCheckIn > 0">{{ row.sinCheckIn }}</span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="porcentaje">
+            <th mat-header-cell *matHeaderCellDef>{{ 'Estadisticas.Tracking.Progreso' | translate }}</th>
+            <td mat-cell *matCellDef="let row">
+              <div class="progress-wrap">
+                <div class="progress-bar" [style.width.%]="pct(row)"
+                     [class.progress-full]="pct(row) === 100"
+                     [class.progress-low]="pct(row) < 50"></div>
+                <span class="progress-label">{{ pct(row) }}%</span>
+              </div>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="trackingColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: trackingColumns;"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+
     <!-- Daily breakdown table -->
     <mat-card class="dias-card" *ngIf="diasRows.length > 0">
       <mat-card-header>

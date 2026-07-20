@@ -24,45 +24,48 @@ const COLOR_BORDER           = '#BBDEFB';
 const COLOR_TEXT_DARK        = '#212121';
 const COLOR_TEXT_MUTED       = '#546E7A';
 
-// ── Mapeo departamento → ruta PDF en /public/docs/ ──────────────────────────
-// Clave: valor exacto de voluntarioDepartamentoNombre devuelto por el backend
-const DEPT_TEMPLATES: Record<string, string> = {
-  'Audio y Vídeo':                     '/docs/Audio y Vídeo.pdf',
-  'Auxiliar del Coordinador del CAR':  '/docs/Auxiliar del Coordinador del CAR.pdf',
-  'CAR':  '/docs/Auxiliar del Coordinador del CAR.pdf',
-  'Negociador de Contratos':  '/docs/Auxiliar del Coordinador del CAR.pdf',
-  'Información y Servicio Voluntario': '/docs/Información y Servicio Voluntario.pdf',
-  'Instalación':                       '/docs/Instalación.pdf',
-  'Local Broadcasting (LBD)':          '/docs/Local Broadcasting (LBD).pdf',
-  'Transporte y Materiales':           '/docs/Transporte y Materiales.pdf',
+// ── Templates PDF de departamento ────────────────────────────────────────────
+// Página: 481.89 × 311.81 pt (170 × 110 mm), diseñada para doblar en 4.
+// El QR placeholder está en el panel portada (cuadrante inferior-derecho en pantalla,
+// inferior-derecho en contenido del PDF).
+// CTM del PDF: scale 0.75 + y-flip → [0.75 0 0 -0.75 0 311.811]
+// Placeholder en coords content: x=570.598 y=234.063 size=45.354
+// En coords pdf-lib: x=570.598×0.75=427.948, y=311.811−(234.063+45.354)×0.75=102.248, size=34.016
+interface TemplateConfig { url: string; }
+
+const DEPT_TEMPLATES: Record<string, TemplateConfig> = {
+  'Audio y Vídeo':                     { url: '/docs/Audio y Vídeo.pdf'                     },
+  'Auxiliar del Coordinador del CAR':  { url: '/docs/Auxiliar del Coordinador del CAR.pdf'  },
+  'CAR':                               { url: '/docs/Auxiliar del Coordinador del CAR.pdf'  },
+  'Negociador de Contratos':           { url: '/docs/Auxiliar del Coordinador del CAR.pdf'  },
+  'Información y Servicio Voluntario': { url: '/docs/Información y Servicio Voluntario.pdf' },
+  'Instalación':                       { url: '/docs/Instalación.pdf'                       },
+  'Local Broadcasting (LBD)':          { url: '/docs/Local Broadcasting (LBD).pdf'          },
+  'Transporte y Materiales':           { url: '/docs/Transporte y Materiales.pdf'           },
 };
 
-// Plantilla alternativa LBD para voluntarios con specialFunctionalities (trabajo en altura)
-const LBD_TRABAJO_ALTURA_TEMPLATE = '/docs/LBD Trabajo en altura.pdf';
+const LBD_TRABAJO_ALTURA_CONFIG: TemplateConfig = {
+  url: '/docs/LBD Trabajo en altura.pdf',
+};
 
-// ── Posición del overlay sobre el template (puntos desde esquina inf-izq) ───
-// El template es landscape: el rectángulo libre está aprox. en y=270-470, x=20-400
-// QR a la izquierda del recuadro; nombre/dept/fecha a la derecha del QR
-// AJUSTAR si tras prueba el contenido sigue desalineado
-// Rectángulo libre del template (A4 landscape 842x595, origen inf-izq):
-// x≈80-360 (borde izq. de la tarjeta ≈78), y≈302-410 (franja amarilla abajo, cabecera arriba)
-// QR ocupa el lado izquierdo del recuadro; nombre/dept/fecha apilados a la derecha
+// ── Posición del QR en el placeholder (idéntica en todos los templates) ──────
+// Placeholder medido: content-stream x=570.598, y=234.063, size=45.354
+// En pdf-lib: x=427.948, y=102.248, size=34.016
+// QR ampliado (size=60) anclado al mismo borde superior del placeholder
+// (top original = 136.264; nuevo top = 77 + 60 = 137 → cubre el marco azul completo).
+// El quiet-zone blanco del PNG de ZXing tapa el marco azul del template.
+const QR_BOX = { x: 416, y: 77, size: 60 };
+
+// ── Texto de overlay junto al QR (en la portada del desplegable) ─────────────
+// La portada ocupa x=240.975–481.95, y=0–155.886 en pdf-lib.
+// El QR ocupa x=416–476, y=77–137 (columna derecha de la portada).
+// El texto va en la columna izquierda (x≈244–412) bajo el título del departamento.
+// padding-top ≈ 24pt adicionales respecto al borde inferior de "INSTALACIONES".
 const OV = {
-  qrX:       86,   // dentro del borde izquierdo de la tarjeta
-  qrY:       316,  // sobre la franja amarilla EPI (en "Instalación" llega hasta y≈313)
-  qrSize:    90,   // qrTop = 316+90 = 406 → margen bajo la cabecera (y≈410)
-  nameX:     194,  // a la derecha del QR (86+96+12)
-  nameY:     390,  // parte alta del recuadro
-  nameSize:  12,
-  deptX:     194,
-  deptY:     368,  // 22pt bajo nombre
-  deptSize:  9,
-  fechaX:    194,
-  fechaY:    350,  // 18pt bajo dept
-  fechaSize: 8,
-  diasX:     194,
-  diasY:     336,  // 14pt bajo fecha (2ª línea a 326, por encima de la franja EPI y≈313)
-  diasSize:  7,
+  nameX: 256,  nameY: 78,  nameSize: 11,
+  deptX: 256,  deptY: 63,  deptSize: 9,
+  fechaX: 256, fechaY: 51, fechaSize: 8,
+  diasX: 256,  diasY: 40,  diasSize: 7,
 };
 
 @Injectable({ providedIn: 'root' })
@@ -119,19 +122,24 @@ export class QrPdfService {
     const sinTemplate: EventoVoluntarioDTO[] = [];
 
     for (const a of conQr) {
-      (this.getTemplateUrl(a, voluntarios) ? conTemplate : sinTemplate).push(a);
+      (this.getTemplateConfig(a, voluntarios) ? conTemplate : sinTemplate).push(a);
     }
 
     const finalDoc = await PDFDocument.create();
 
     // 1. Pases con plantilla PDF de departamento
     for (const a of conTemplate) {
-      const templateUrl = this.getTemplateUrl(a, voluntarios)!;
-      const templateBytes = await fetch(templateUrl).then(r => r.arrayBuffer());
+      const config = this.getTemplateConfig(a, voluntarios)!;
+      const templateBytes = await fetch(config.url).then(r => r.arrayBuffer());
       const templateDoc = await PDFDocument.load(templateBytes);
       const [page] = await finalDoc.copyPages(templateDoc, [0]);
       finalDoc.addPage(page);
-      await this.overlayPase(finalDoc, finalDoc.getPage(finalDoc.getPageCount() - 1), a, voluntarios);
+      await this.overlayPase(
+        finalDoc,
+        finalDoc.getPage(finalDoc.getPageCount() - 1),
+        a,
+        voluntarios,
+      );
     }
 
     // 2. Pases sin plantilla → layout estándar (jsPDF fusionado en el mismo PDF)
@@ -158,26 +166,41 @@ export class QrPdfService {
   }
 
   /**
-   * Plantilla PDF del pase según departamento.
+   * Config de template para el pase según departamento.
+   * Comprueba primero el departamento de la asignación del evento y luego
+   * TODOS los departamentos del voluntario, por si tiene más de uno y alguno
+   * de ellos tiene template especial (p.ej. "Instalación | Acomodadores").
    * En LBD, los voluntarios con specialFunctionalities usan la variante "Trabajo en altura".
    */
-  private getTemplateUrl(a: EventoVoluntarioDTO, voluntarios: VoluntarioDTO[]): string | undefined {
-    const dept = a.voluntarioDepartamentoNombre ?? '';
-    const base = DEPT_TEMPLATES[dept];
-    if (!base) return undefined;
-    if (dept.toUpperCase().includes('LBD')) {
-      const vol = voluntarios.find(v => v.id === a.voluntarioId);
-      if (vol?.specialFunctionalities) return LBD_TRABAJO_ALTURA_TEMPLATE;
+  private getTemplateConfig(a: EventoVoluntarioDTO, voluntarios: VoluntarioDTO[]): TemplateConfig | undefined {
+    const vol = voluntarios.find(v => v.id === a.voluntarioId);
+
+    // Candidatos: departamento del evento primero, luego el resto de departamentos del voluntario
+    const candidatos: string[] = [];
+    if (a.voluntarioDepartamentoNombre) candidatos.push(a.voluntarioDepartamentoNombre);
+    for (const d of vol?.departamentoNombres ?? []) {
+      if (!candidatos.includes(d)) candidatos.push(d);
     }
-    return base;
+
+    for (const dept of candidatos) {
+      const config = DEPT_TEMPLATES[dept];
+      if (!config) continue;
+      if (dept.toUpperCase().includes('LBD') && vol?.specialFunctionalities) {
+        return LBD_TRABAJO_ALTURA_CONFIG;
+      }
+      return config;
+    }
+    return undefined;
   }
 
   // ── Overlay sobre una página de plantilla ────────────────────────────────
+  // La plantilla ya incorpora su CTM (scale 0.75 + y-flip). El overlay se dibuja
+  // en coordenadas absolutas de la página pdf-lib sin ningún translateContent.
   private async overlayPase(
     pdfDoc: PDFDocument,
     page: ReturnType<PDFDocument['getPage']>,
     a: EventoVoluntarioDTO,
-    voluntarios: VoluntarioDTO[]
+    voluntarios: VoluntarioDTO[],
   ): Promise<void> {
     const vol = voluntarios.find(v => v.id === a.voluntarioId);
     const nombre = vol
@@ -191,17 +214,21 @@ export class QrPdfService {
     const dark   = rgb(0.13, 0.13, 0.13);
     const muted  = rgb(0.33, 0.43, 0.48);
 
+    // QR más grande sobre el placeholder; el quiet-zone blanco del PNG tapa el marco azul
     if (a.qrImageBase64) {
       const qrBytes = Uint8Array.from(atob(a.qrImageBase64), c => c.charCodeAt(0));
       const qrImage = await pdfDoc.embedPng(qrBytes);
-      page.drawImage(qrImage, { x: OV.qrX, y: OV.qrY, width: OV.qrSize, height: OV.qrSize });
+      page.drawImage(qrImage, {
+        x: QR_BOX.x, y: QR_BOX.y, width: QR_BOX.size, height: QR_BOX.size,
+      });
     }
 
-    page.drawText(this.truncar(nombre, 35), {
+    // Nombre, departamento y fecha en la columna izquierda de la portada
+    page.drawText(this.truncar(nombre, 24), {
       x: OV.nameX, y: OV.nameY, size: OV.nameSize, font: bold, color: dark,
     });
 
-    page.drawText(this.truncar(dept, 42), {
+    page.drawText(this.truncar(dept, 30), {
       x: OV.deptX, y: OV.deptY, size: OV.deptSize, font: normal, color: muted,
     });
 
@@ -209,18 +236,22 @@ export class QrPdfService {
       x: OV.fechaX, y: OV.fechaY, size: OV.fechaSize, font: normal, color: muted,
     });
 
-    // Días a los que tiene acceso el voluntario (máx. 2 líneas)
-    const lineasDias = this.lineasDiasAcceso(a, 46);
+    // Días de acceso (máx. 2 líneas)
+    const lineasDias = this.lineasDiasAcceso(a, 36);
     lineasDias.forEach((linea, i) => {
       page.drawText(linea, {
-        x: OV.diasX, y: OV.diasY - i * 10, size: OV.diasSize, font: normal, color: muted,
+        x: OV.diasX, y: OV.diasY - i * 11, size: OV.diasSize, font: normal, color: muted,
       });
     });
 
-    // Matrícula del vehículo (solo si existe y no está vacía)
+    // Matrícula (solo si existe)
     if (a.matricula?.trim()) {
-      page.drawText(`Matrícula: ${a.matricula.trim()}`, {
-        x: OV.diasX, y: OV.diasY - lineasDias.length * 10, size: OV.diasSize, font: bold, color: dark,
+      page.drawText(`Matr.: ${a.matricula.trim()}`, {
+        x: OV.diasX,
+        y: OV.diasY - lineasDias.length * 11,
+        size: OV.diasSize,
+        font: bold,
+        color: dark,
       });
     }
   }
@@ -282,14 +313,12 @@ export class QrPdfService {
     const fecha = a.fechaInicioEvento ? this.formatearFecha(a.fechaInicioEvento) : '-';
     doc.text(fecha, x + 4, y + HEADER_H + 22);
 
-    // Días a los que tiene acceso el voluntario (máx. 2 líneas)
     doc.setFontSize(5.8);
     const lineasDias = this.lineasDiasAcceso(a, 42);
     lineasDias.forEach((linea, i) => {
       doc.text(linea, x + 4, y + HEADER_H + 27 + i * 3.2);
     });
 
-    // Matrícula del vehículo (solo si existe y no está vacía)
     if (a.matricula?.trim()) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(6);
@@ -308,10 +337,6 @@ export class QrPdfService {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
-  /**
-   * Texto con todos los días de acceso del voluntario, troceado en líneas
-   * (máx. 2; la última se trunca con "…"). Sin diasAcceso = acceso completo.
-   */
   private lineasDiasAcceso(a: EventoVoluntarioDTO, maxChars: number): string[] {
     if (!a.diasAcceso?.trim()) {
       return ['Acceso: todos los días del evento'];
@@ -344,19 +369,17 @@ export class QrPdfService {
     return lineas;
   }
 
-  /** El pase incluye acceso a algún día pre-evento (anterior al inicio del evento). */
   private tieneAccesoPreEvento(a: EventoVoluntarioDTO): boolean {
     if (!a.diasAcceso || !a.fechaInicioEvento) return false;
     const inicio = a.fechaInicioEvento.slice(0, 10);
     return a.diasAcceso.split('|').some(d => d.trim() < inicio);
   }
 
-  /** Elimina caracteres no válidos en nombres de archivo y reemplaza espacios por guión bajo. */
   private sanitizarNombreArchivo(nombre: string): string {
     return nombre
-      .normalize('NFD').replace(/[̀-ͯ]/g, '') // quitar acentos
-      .replace(/[^a-zA-Z0-9._\-]/g, '_')               // solo caracteres seguros
-      .replace(/_+/g, '_');                              // colapsar guiones consecutivos
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-zA-Z0-9._\-]/g, '_')
+      .replace(/_+/g, '_');
   }
 
   private descargarBlob(bytes: Uint8Array, nombreFichero: string): void {

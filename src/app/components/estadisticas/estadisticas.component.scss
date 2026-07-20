@@ -154,6 +154,50 @@
   p { margin: 0; font-size: 0.9rem; }
 }
 
+.tracking-card {
+  margin-bottom: 24px;
+
+  mat-card-header mat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.tracking-table {
+  width: 100%;
+}
+
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: #43A047;
+  min-width: 2px;
+  max-width: 100px;
+  flex: 1;
+  transition: width 0.3s;
+
+  &.progress-full { background: #2E7D32; }
+  &.progress-low  { background: #EF6C00; }
+}
+
+.progress-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #546E7A;
+  min-width: 36px;
+}
+
+.badge-ok   { background: #2E7D32; }
+.badge-warn { background: #E65100; }
+
 .dias-card {
   margin-bottom: 24px;
 

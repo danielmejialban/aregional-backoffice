@@ -125,6 +125,15 @@ import { QrScannerDialogComponent } from './qr-scanner-dialog.component';
                 </span>
               </td>
             </ng-container>
+            <ng-container matColumnDef="realizadoPor">
+              <th mat-header-cell *matHeaderCellDef>{{ 'CheckIn.Columns.RealizadoPor' | translate }}</th>
+              <td mat-cell *matCellDef="let element">
+                <span *ngIf="element.realizadoPor" class="realizado-por-badge">
+                  <mat-icon class="rp-icon">person</mat-icon>{{ element.realizadoPor }}
+                </span>
+                <span *ngIf="!element.realizadoPor">—</span>
+              </td>
+            </ng-container>
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             <tr class="mat-row" *matNoDataRow>
@@ -164,13 +173,15 @@ import { QrScannerDialogComponent } from './qr-scanner-dialog.component';
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .obs-alerta { color: #E65100; font-weight: 500; }
     .obs-icon { font-size: 17px; width: 17px; height: 17px; }
+    .realizado-por-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 13px; color: #546E7A; }
+    .rp-icon { font-size: 15px; width: 15px; height: 15px; }
     .empty-row { text-align: center; padding: 24px; color: #90A4AE; }
   `]
 })
 export class CheckInComponent implements OnInit {
   checkIns: CheckInDTO[] = [];
   checkInsFiltrados: CheckInDTO[] = [];
-  displayedColumns = ['id', 'voluntario', 'evento', 'fechaCheckIn', 'fechaCheckOut', 'estado', 'observaciones'];
+  displayedColumns = ['id', 'voluntario', 'evento', 'fechaCheckIn', 'fechaCheckOut', 'estado', 'observaciones', 'realizadoPor'];
   loading = true;
 
   filtroTexto = '';

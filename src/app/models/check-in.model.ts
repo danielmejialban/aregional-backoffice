@@ -11,6 +11,7 @@ export interface CheckInDTO {
   eventoNombre?: string;
   /** Matrícula de vehículo de la asignación (null/ausente si no informada) */
   matricula?: string;
+  realizadoPor?: string;
 }
 
 export interface ScanQrRequest {

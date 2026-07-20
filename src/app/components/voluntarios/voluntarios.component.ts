@@ -100,10 +100,16 @@ export interface VoluntarioDialogData {
             <input matInput formControlName="circuito">
           </mat-form-field>
         </div>
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>{{ 'Voluntarios.Dialog.CorreoJwLabel' | translate }}</mat-label>
-          <input matInput formControlName="correoJw">
-        </mat-form-field>
+        <div class="row-2">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'Voluntarios.Dialog.CorreoJwLabel' | translate }}</mat-label>
+            <input matInput formControlName="correoJw">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'Voluntarios.Dialog.MatriculaLabel' | translate }}</mat-label>
+            <input matInput formControlName="matricula">
+          </mat-form-field>
+        </div>
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>{{ 'Voluntarios.Dialog.DepartamentoLabel' | translate }}</mat-label>
           <mat-select formControlName="departamentoIds" [multiple]="true" required>
@@ -165,6 +171,7 @@ export class VoluntarioDialogComponent implements OnInit {
       congregacion:   [v?.congregacion || ''],
       circuito:       [v?.circuito    || ''],
       correoJw:       [v?.correoJw    || ''],
+      matricula:      [v?.matricula   || ''],
       departamentoIds: [v?.departamentoIds ?? [], Validators.required],
       activo:         [v?.activo      ?? true],
       specialFunctionalities: [v?.specialFunctionalities ?? false],
@@ -193,6 +200,7 @@ export class VoluntarioDialogComponent implements OnInit {
       congregacion:   val.congregacion?.trim() || undefined,
       circuito:       val.circuito?.trim()     || undefined,
       correoJw:       val.correoJw?.trim()     || undefined,
+      matricula:      val.matricula?.trim()    || undefined,
       departamentoIds: val.departamentoIds ?? [],
       activo:         val.activo,
       specialFunctionalities: this.mostrarSpecialFunctionalities ? val.specialFunctionalities : false,
