@@ -65,11 +65,13 @@ const QR_BOX = { x: 416, y: 77, size: 60 };
 // El QR ocupa x=416–476, y=77–137 (columna derecha de la portada).
 // El texto va en la columna izquierda (x≈244–412) bajo el título del departamento.
 // padding-top ≈ 24pt adicionales respecto al borde inferior de "INSTALACIONES".
+// padding-left  = 1rem = 12pt  → x base 244 + 12 = 256
+// padding-top   = 2rem = 24pt  → nombre 24pt por debajo del borde inferior de "INSTALACIONES" (≈y 93)
 const OV = {
-  nameX: 256,  nameY: 78,  nameSize: 11,
-  deptX: 256,  deptY: 63,  deptSize: 9,
-  fechaX: 256, fechaY: 51, fechaSize: 8,
-  diasX: 256,  diasY: 40,  diasSize: 7,
+  nameX: 256,  nameY: 69,  nameSize: 11,
+  deptX: 256,  deptY: 54,  deptSize: 9,
+  fechaX: 256, fechaY: 42, fechaSize: 8,
+  diasX: 256,  diasY: 31,  diasSize: 7,
 };
 
 @Injectable({ providedIn: 'root' })
