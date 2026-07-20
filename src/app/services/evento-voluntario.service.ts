@@ -10,6 +10,7 @@ export interface AsignacionFiltros {
   busqueda?: string;
   eventoId?: number | null;
   departamentoId?: number | null;
+  matricula?: string;
   /** Entradas con formato `yyyy-MM-dd:SI` o `yyyy-MM-dd:NO`. */
   accesoDias?: string[];
 }
@@ -33,6 +34,7 @@ export class EventoVoluntarioService {
     let params = new HttpParams().set('page', page).set('size', size);
     if (filtros?.busqueda?.trim())    params = params.set('busqueda', filtros.busqueda.trim());
     if (filtros?.departamentoId != null) params = params.set('departamentoId', filtros.departamentoId);
+    if (filtros?.matricula?.trim())   params = params.set('matricula', filtros.matricula.trim());
     filtros?.accesoDias?.forEach(f => params = params.append('accesoDia', f));
 
     if (filtros?.eventoId != null) {
@@ -56,6 +58,7 @@ export class EventoVoluntarioService {
     let params = new HttpParams().set('size', '5000');
     if (filtros?.busqueda?.trim())       params = params.set('busqueda', filtros.busqueda.trim());
     if (filtros?.departamentoId != null) params = params.set('departamentoId', filtros.departamentoId);
+    if (filtros?.matricula?.trim())      params = params.set('matricula', filtros.matricula.trim());
     filtros?.accesoDias?.forEach(f => params = params.append('accesoDia', f));
     if (!includeQrImage) params = params.set('includeQrImage', 'false');
     return this.http.get<EventoVoluntarioDTO[] | PageDTO<EventoVoluntarioDTO>>(

@@ -186,14 +186,14 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
         next: (result) => {
           this.processing = false;
           this.scanResult = { ...result, fechaCheckIn: result.fechaCheckIn ?? scanTime };
-          this.playBeep('ok');
           this.stopCamera();
+          this.playBeep('ok');
         },
         error: (err) => {
           this.processing = false;
           this.scanError = err?.error?.message || this.translate.instant('CheckIn.ScannerDialog.CheckInError');
-          this.playBeep('ko');
           this.stopCamera();
+          this.playBeep('ko');
         }
       });
   }
@@ -204,11 +204,19 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
         this.audioCtx = new AudioContext();
       }
       const ctx = this.audioCtx;
-      if (type === 'ok') {
-        this.tone(ctx, 1046, 0, 0.18);
+      const doPlay = () => {
+        if (type === 'ok') {
+          this.tone(ctx, 1046, 0, 0.18);
+        } else {
+          this.tone(ctx, 440, 0, 0.15);
+          this.tone(ctx, 330, 0.2, 0.15);
+        }
+      };
+      // iOS Safari suspende el AudioContext hasta que hay un gesto del usuario
+      if (ctx.state === 'suspended') {
+        ctx.resume().then(doPlay).catch(() => {});
       } else {
-        this.tone(ctx, 440, 0, 0.15);
-        this.tone(ctx, 330, 0.2, 0.15);
+        doPlay();
       }
     } catch { /* AudioContext not available */ }
   }
@@ -233,14 +241,22 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
     this.cameraError = null;
     this.observaciones = '';
     this.loadingCamera = true;
-    // Defer until Angular re-renders the video element into the DOM
-    setTimeout(() => this.startCamera());
+    // Esperar a que Angular re-renderice el <video> y, sobre todo,
+    // a que iOS Safari libere el hardware de cámara antes de reabrir el stream.
+    setTimeout(() => this.startCamera(), 300);
   }
 
   private stopCamera(): void {
     if (this.scannerControls) {
       this.scannerControls.stop();
       this.scannerControls = null;
+    }
+    // iOS Safari no libera el hardware de cámara con scannerControls.stop() solo;
+    // hay que parar explícitamente todas las pistas del MediaStream y limpiar srcObject.
+    const video = this.videoElement?.nativeElement;
+    if (video?.srcObject) {
+      (video.srcObject as MediaStream).getTracks().forEach(t => t.stop());
+      video.srcObject = null;
     }
   }
 

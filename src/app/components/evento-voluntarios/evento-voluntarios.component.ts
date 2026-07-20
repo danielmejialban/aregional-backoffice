@@ -61,6 +61,7 @@ export class EventoVoluntariosComponent implements OnInit {
   columns: ColumnDef[] = [];
   loading = false;
   exportandoExcel = false;
+  descargandoZip = false;
   generandoQrIds = new Set<number>();
 
   totalElements = 0;
@@ -200,6 +201,9 @@ export class EventoVoluntariosComponent implements OnInit {
       key: 'matricula',
       header: this.translate.instant('EventoVoluntarios.Columns.Matricula'),
       type: 'text', width: '110px',
+      // En contexto de evento el filtrado es client-side; en el listado global
+      // (server-side) el backend no filtra por matrícula, así que no se ofrece
+      ...(this.eventoActual ? { filterType: 'text' as const } : {}),
     });
 
     // Columnas de días del evento (solo en contexto de evento)
@@ -432,6 +436,25 @@ export class EventoVoluntariosComponent implements OnInit {
       return;
     }
     await this.qrPdfService.generarPdf(conQr, this.voluntarios, 'pases_todos.pdf');
+  }
+
+  async descargarZipPorVoluntario(): Promise<void> {
+    const conQr = this.asignaciones.filter(a => !!a.qrImageBase64);
+    if (!conQr.length) {
+      this.showError(this.translate.instant('EventoVoluntarios.Snack.NoQr'));
+      return;
+    }
+    this.descargandoZip = true;
+    try {
+      const dept  = this.currentFiltros.departamentoId != null
+        ? (this.departamentos.find(d => d.id === this.currentFiltros.departamentoId)?.nombre ?? 'departamento')
+        : 'todos';
+      const ev    = (this.eventoActual?.nombre ?? 'evento').replace(/\s+/g, '_');
+      const deptS = dept.replace(/\s+/g, '_');
+      await this.qrPdfService.generarZipPorVoluntario(conQr, this.voluntarios, `pases_${deptS}_${ev}.zip`);
+    } finally {
+      this.descargandoZip = false;
+    }
   }
 
   private showSuccess(msg: string): void {

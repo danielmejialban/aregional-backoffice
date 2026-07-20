@@ -424,6 +424,7 @@
       "ExportarExcel": "Exportar Excel",
       "Exporting": "Exportando...",
       "DescargarPdf": "Descargar PDF",
+      "DescargarZip": "ZIP por voluntario",
       "NuevaAsignacion": "Nueva Asignación",
       "GenerarQr": "Generar QR",
       "Generando": "Generando...",
@@ -435,6 +436,7 @@
     "Tooltips": {
       "ExportarExcel": "Exporta los voluntarios del evento en formato Excel (con días de acceso si hay evento filtrado)",
       "DescargarPdf": "Descargar PDF con todas las tarjetas QR generadas de esta página",
+      "DescargarZip": "Descargar un ZIP con 1 PDF por voluntario (requiere que tengan QR generado)",
       "GenerarQr": "Generar código QR"
     },
     "Actions": {

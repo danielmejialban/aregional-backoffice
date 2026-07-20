@@ -73,6 +73,7 @@ export class EventoDetailComponent implements OnInit {
   currentPage = 0;
   private busqueda?: string;
   private filtradoDepartamentoId?: number | null;
+  private filtradoMatricula?: string;
   private filtradoAccesoDias?: string[];
 
   private eventoId!: number;
@@ -183,7 +184,7 @@ export class EventoDetailComponent implements OnInit {
       {
         key: 'matricula',
         header: this.translate.instant('EventoDetail.Columns.Matricula'),
-        type: 'text', width: '110px',
+        type: 'text', width: '110px', filterType: 'text',
       },
     ];
 
@@ -245,6 +246,7 @@ export class EventoDetailComponent implements OnInit {
       eventoId:       this.eventoId,
       busqueda:       this.busqueda,
       departamentoId: this.filtradoDepartamentoId,
+      matricula:      this.filtradoMatricula,
       accesoDias:     this.filtradoAccesoDias,
     }).subscribe({
       next: (data) => {
@@ -269,6 +271,7 @@ export class EventoDetailComponent implements OnInit {
     const deptoNombre         = filters['voluntarioDepartamentoNombre'] as string | null;
     const depto = deptoNombre ? this.departamentos.find(d => d.nombre === deptoNombre) : null;
     this.filtradoDepartamentoId = depto?.id ?? null;
+    this.filtradoMatricula    = (filters['matricula'] as string)?.trim() || undefined;
 
     const accesoDias: string[] = [];
     for (const dia of this.eventoDias) {
@@ -459,6 +462,7 @@ export class EventoDetailComponent implements OnInit {
     this.eventoVoluntarioService.getByEvento(this.eventoId, {
       busqueda:       this.busqueda,
       departamentoId: this.filtradoDepartamentoId,
+      matricula:      this.filtradoMatricula,
       accesoDias:     this.filtradoAccesoDias,
     }).subscribe({
       next: (asignaciones) => {

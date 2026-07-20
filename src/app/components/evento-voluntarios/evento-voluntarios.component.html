@@ -20,6 +20,17 @@
               (click)="descargarPdfGlobal()">
         <mat-icon>picture_as_pdf</mat-icon> {{ 'EventoVoluntarios.Buttons.DescargarPdf' | translate }}
       </button>
+      <button mat-stroked-button color="accent"
+              [disabled]="descargandoZip"
+              [matTooltip]="'EventoVoluntarios.Tooltips.DescargarZip' | translate"
+              (click)="descargarZipPorVoluntario()">
+        @if (descargandoZip) {
+          <mat-spinner diameter="16" style="display:inline-block;vertical-align:middle;margin-right:6px"></mat-spinner>
+        } @else {
+          <mat-icon>folder_zip</mat-icon>
+        }
+        {{ 'EventoVoluntarios.Buttons.DescargarZip' | translate }}
+      </button>
       <button mat-stroked-button color="primary"
               [disabled]="exportandoExcel"
               (click)="exportarExcel()"

@@ -77,6 +77,7 @@ export class DescargaQrComponent implements OnInit {
   loadingDatos = true;
   loadingQrs = false;
   descargando = false;
+  generandoPdf = false;
   progresoDescarga = 0;
 
   readonly skeletonItems = Array(8).fill(0);
@@ -389,12 +390,40 @@ export class DescargaQrComponent implements OnInit {
   async descargarPasesPdf(): Promise<void> {
     const lista = this.seleccionadas;
     if (lista.length === 0) return;
+
     await this.asegurarImagenesQr(lista);
-    await this.qrPdfService.generarPdf(
-      lista,
-      this.voluntarios,
-      `Pases_${new Date().toISOString().slice(0, 10)}.pdf`
-    );
+
+    // Un solo pase → PDF directo sin ZIP
+    if (lista.length === 1) {
+      await this.descargarPasePdf(lista[0]);
+      return;
+    }
+
+    this.generandoPdf = true;
+    try {
+      const evento = this.eventoSeleccionado;
+      const deptId  = this.form.getRawValue().departamentoId;
+      const dept    = deptId
+        ? (this.departamentos.find(d => d.id === deptId)?.nombre ?? 'todos')
+        : 'todos';
+      const nombreZip = `Pases_${(evento?.nombre ?? 'evento').replace(/\s+/g, '_')}_${dept.replace(/\s+/g, '_')}.zip`;
+
+      await this.qrPdfService.generarZipPorVoluntario(lista, this.voluntarios, nombreZip);
+
+      this.snackBar.open(
+        this.translate.instant('DescargaQr.Snack.Downloaded', { count: lista.length }),
+        this.translate.instant('Common.Close'),
+        { duration: 3000, panelClass: ['success-snackbar'] }
+      );
+    } catch {
+      this.snackBar.open(
+        this.translate.instant('DescargaQr.Snack.ZipError'),
+        this.translate.instant('Common.Close'),
+        { duration: 4000 }
+      );
+    } finally {
+      this.generandoPdf = false;
+    }
   }
 
   async descargarZip(): Promise<void> {

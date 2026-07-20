@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
+import JSZip from 'jszip';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { EventoVoluntarioDTO } from '../models/evento-voluntario.model';
 import { VoluntarioDTO } from '../models/voluntario.model';
@@ -72,8 +73,47 @@ export class QrPdfService {
     voluntarios: VoluntarioDTO[],
     nombreFichero = 'pases.pdf'
   ): Promise<void> {
+    const bytes = await this.buildPdfBytes(asignaciones, voluntarios);
+    if (bytes) this.descargarBlob(bytes, nombreFichero);
+  }
+
+  /**
+   * Genera un ZIP con un PDF individual por cada voluntario que tenga QR.
+   * El nombre de cada archivo es "{apellido1}_{nombre}_{evento}.pdf" (sin caracteres especiales).
+   */
+  async generarZipPorVoluntario(
+    asignaciones: EventoVoluntarioDTO[],
+    voluntarios: VoluntarioDTO[],
+    nombreZip = 'pases_individuales.zip'
+  ): Promise<void> {
     const conQr = asignaciones.filter(a => !!a.qrImageBase64);
     if (!conQr.length) return;
+
+    const zip = new JSZip();
+
+    for (const a of conQr) {
+      const bytes = await this.buildPdfBytes([a], voluntarios);
+      if (!bytes) continue;
+
+      const vol = voluntarios.find(v => v.id === a.voluntarioId);
+      const apellido = vol?.apellido1 ?? 'voluntario';
+      const nombre   = vol?.nombre    ?? String(a.voluntarioId);
+      const evento   = a.eventoNombre ?? 'evento';
+      const nombreArchivo = this.sanitizarNombreArchivo(`${apellido}_${nombre}_${evento}.pdf`);
+      zip.file(nombreArchivo, bytes);
+    }
+
+    const zipBytes = await zip.generateAsync({ type: 'uint8array' });
+    this.descargarBlobConMime(zipBytes, nombreZip, 'application/zip');
+  }
+
+  /** Construye el PDF en memoria y devuelve los bytes, sin descargarlo. */
+  private async buildPdfBytes(
+    asignaciones: EventoVoluntarioDTO[],
+    voluntarios: VoluntarioDTO[]
+  ): Promise<Uint8Array | null> {
+    const conQr = asignaciones.filter(a => !!a.qrImageBase64);
+    if (!conQr.length) return null;
 
     const conTemplate: EventoVoluntarioDTO[] = [];
     const sinTemplate: EventoVoluntarioDTO[] = [];
@@ -114,7 +154,7 @@ export class QrPdfService {
       copied.forEach(p => finalDoc.addPage(p));
     }
 
-    this.descargarBlob(await finalDoc.save(), nombreFichero);
+    return finalDoc.save();
   }
 
   /**
@@ -311,8 +351,20 @@ export class QrPdfService {
     return a.diasAcceso.split('|').some(d => d.trim() < inicio);
   }
 
+  /** Elimina caracteres no válidos en nombres de archivo y reemplaza espacios por guión bajo. */
+  private sanitizarNombreArchivo(nombre: string): string {
+    return nombre
+      .normalize('NFD').replace(/[̀-ͯ]/g, '') // quitar acentos
+      .replace(/[^a-zA-Z0-9._\-]/g, '_')               // solo caracteres seguros
+      .replace(/_+/g, '_');                              // colapsar guiones consecutivos
+  }
+
   private descargarBlob(bytes: Uint8Array, nombreFichero: string): void {
-    const blob = new Blob([bytes], { type: 'application/pdf' });
+    this.descargarBlobConMime(bytes, nombreFichero, 'application/pdf');
+  }
+
+  private descargarBlobConMime(bytes: Uint8Array, nombreFichero: string, mimeType: string): void {
+    const blob = new Blob([bytes], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;

@@ -75,8 +75,10 @@
       </mat-card-content>
     </mat-card>
 
-    <!-- Barra de progreso descarga -->
+    <!-- Barra de progreso descarga PNG -->
     <mat-progress-bar *ngIf="descargando" mode="determinate" [value]="progresoDescarga" class="progress-bar"></mat-progress-bar>
+    <!-- Barra de progreso generación PDFs individuales -->
+    <mat-progress-bar *ngIf="generandoPdf" mode="indeterminate" class="progress-bar"></mat-progress-bar>
 
     <!-- Placeholder: ningún evento seleccionado -->
     <div class="select-evento-placeholder" *ngIf="!form.value.eventoId && !loadingQrs">
@@ -134,18 +136,20 @@
 
             <div class="acciones-right">
               <button mat-stroked-button color="primary"
-                [disabled]="seleccionadas.length === 0"
+                [disabled]="seleccionadas.length === 0 || generandoPdf"
                 (click)="descargarPasesPdf()"
-                matTooltip="Descargar pases en PDF">
-                <mat-icon>picture_as_pdf</mat-icon>
-                Descargar {{ seleccionadas.length }} Pase{{ seleccionadas.length !== 1 ? 's' : '' }} PDF
+                [matTooltip]="seleccionadas.length === 1 ? 'Descargar pase en PDF' : 'Descargar un PDF por pase, empaquetados en un ZIP'">
+                <mat-spinner diameter="16" *ngIf="generandoPdf" style="display:inline-block;vertical-align:middle;margin-right:6px"></mat-spinner>
+                <mat-icon *ngIf="!generandoPdf">picture_as_pdf</mat-icon>
+                {{ generandoPdf ? 'Generando PDFs...' : (seleccionadas.length === 1 ? 'Descargar Pase PDF' : 'Descargar ' + seleccionadas.length + ' PDFs (1 por pase)') }}
               </button>
               <button mat-raised-button color="primary"
                 [disabled]="seleccionadas.length === 0 || descargando"
-                (click)="descargarZip()">
+                (click)="descargarZip()"
+                matTooltip="Descargar imágenes QR en formato ZIP">
                 <mat-spinner diameter="18" *ngIf="descargando"></mat-spinner>
                 <mat-icon *ngIf="!descargando">download</mat-icon>
-                {{ descargando ? 'Generando ZIP...' : 'Descargar ' + seleccionadas.length + ' QR' + (seleccionadas.length !== 1 ? 's' : '') }}
+                {{ descargando ? 'Generando ZIP...' : 'Descargar ' + seleccionadas.length + ' QR' + (seleccionadas.length !== 1 ? 's' : '') + ' (imágenes)' }}
               </button>
             </div>
           </div>
