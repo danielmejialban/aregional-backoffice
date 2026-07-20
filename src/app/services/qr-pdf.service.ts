@@ -48,6 +48,10 @@ const LBD_TRABAJO_ALTURA_CONFIG: TemplateConfig = {
   url: '/docs/LBD Trabajo en altura.pdf',
 };
 
+// Pase genérico: usado para cualquier departamento sin template específico
+// cuando el voluntario tiene acceso a días de pre-evento.
+const GENERICO_CONFIG: TemplateConfig = { url: '/docs/Generico.pdf' };
+
 // ── Posición del QR en el placeholder (idéntica en todos los templates) ──────
 // Placeholder medido: content-stream x=570.598, y=234.063, size=45.354
 // En pdf-lib: x=427.948, y=102.248, size=34.016
@@ -171,6 +175,8 @@ export class QrPdfService {
    * TODOS los departamentos del voluntario, por si tiene más de uno y alguno
    * de ellos tiene template especial (p.ej. "Instalación | Acomodadores").
    * En LBD, los voluntarios con specialFunctionalities usan la variante "Trabajo en altura".
+   * Fallback: si ningún departamento tiene template pero el voluntario tiene días
+   * de pre-evento, se usa Generico.pdf.
    */
   private getTemplateConfig(a: EventoVoluntarioDTO, voluntarios: VoluntarioDTO[]): TemplateConfig | undefined {
     const vol = voluntarios.find(v => v.id === a.voluntarioId);
@@ -190,6 +196,12 @@ export class QrPdfService {
       }
       return config;
     }
+
+    // Sin template de departamento: usar Generico.pdf solo si tiene días de pre-evento
+    if (this.tieneAccesoPreEvento(a)) {
+      return GENERICO_CONFIG;
+    }
+
     return undefined;
   }
 
