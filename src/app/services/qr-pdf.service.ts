@@ -64,14 +64,21 @@ const QR_BOX = { x: 416, y: 77, size: 60 };
 // La portada ocupa x=240.975–481.95, y=0–155.886 en pdf-lib.
 // El QR ocupa x=416–476, y=77–137 (columna derecha de la portada).
 // El texto va en la columna izquierda (x≈244–412) bajo el título del departamento.
-// padding-top ≈ 24pt adicionales respecto al borde inferior de "INSTALACIONES".
 // padding-left  = 1rem = 12pt  → x base 244 + 12 = 256
-// padding-top   = 2rem = 24pt  → nombre 24pt por debajo del borde inferior de "INSTALACIONES" (≈y 93)
+// padding-top   = 2rem = 24pt  → nombre 24pt por debajo del borde inferior del título (≈y 93) → nameY 69
 const OV = {
   nameX: 256,  nameY: 69,  nameSize: 11,
   deptX: 256,  deptY: 54,  deptSize: 9,
   fechaX: 256, fechaY: 42, fechaSize: 8,
   diasX: 256,  diasY: 31,  diasSize: 7,
+};
+
+// GENERICO: misma columna izquierda, pero padding-top = 1rem = 12pt (título más bajo)
+const OV_GENERICO = {
+  nameX: 256,  nameY: 81,  nameSize: 11,
+  deptX: 256,  deptY: 66,  deptSize: 9,
+  fechaX: 256, fechaY: 54, fechaSize: 8,
+  diasX: 256,  diasY: 43,  diasSize: 7,
 };
 
 @Injectable({ providedIn: 'root' })
@@ -145,6 +152,7 @@ export class QrPdfService {
         finalDoc.getPage(finalDoc.getPageCount() - 1),
         a,
         voluntarios,
+        config.url === GENERICO_CONFIG.url ? OV_GENERICO : OV,
       );
     }
 
@@ -199,12 +207,7 @@ export class QrPdfService {
       return config;
     }
 
-    // Sin template de departamento: usar Generico.pdf solo si tiene días de pre-evento
-    if (this.tieneAccesoPreEvento(a)) {
-      return GENERICO_CONFIG;
-    }
-
-    return undefined;
+    return GENERICO_CONFIG;
   }
 
   // ── Overlay sobre una página de plantilla ────────────────────────────────
@@ -215,6 +218,7 @@ export class QrPdfService {
     page: ReturnType<PDFDocument['getPage']>,
     a: EventoVoluntarioDTO,
     voluntarios: VoluntarioDTO[],
+    ov = OV,
   ): Promise<void> {
     const vol = voluntarios.find(v => v.id === a.voluntarioId);
     const nombre = vol
@@ -239,31 +243,31 @@ export class QrPdfService {
 
     // Nombre, departamento y fecha en la columna izquierda de la portada
     page.drawText(this.truncar(nombre, 24), {
-      x: OV.nameX, y: OV.nameY, size: OV.nameSize, font: bold, color: dark,
+      x: ov.nameX, y: ov.nameY, size: ov.nameSize, font: bold, color: dark,
     });
 
     page.drawText(this.truncar(dept, 30), {
-      x: OV.deptX, y: OV.deptY, size: OV.deptSize, font: normal, color: muted,
+      x: ov.deptX, y: ov.deptY, size: ov.deptSize, font: normal, color: muted,
     });
 
     page.drawText(fecha, {
-      x: OV.fechaX, y: OV.fechaY, size: OV.fechaSize, font: normal, color: muted,
+      x: ov.fechaX, y: ov.fechaY, size: ov.fechaSize, font: normal, color: muted,
     });
 
     // Días de acceso (máx. 2 líneas)
     const lineasDias = this.lineasDiasAcceso(a, 36);
     lineasDias.forEach((linea, i) => {
       page.drawText(linea, {
-        x: OV.diasX, y: OV.diasY - i * 11, size: OV.diasSize, font: normal, color: muted,
+        x: ov.diasX, y: ov.diasY - i * 11, size: ov.diasSize, font: normal, color: muted,
       });
     });
 
     // Matrícula (solo si existe)
     if (a.matricula?.trim()) {
       page.drawText(`Matr.: ${a.matricula.trim()}`, {
-        x: OV.diasX,
-        y: OV.diasY - lineasDias.length * 11,
-        size: OV.diasSize,
+        x: ov.diasX,
+        y: ov.diasY - lineasDias.length * 11,
+        size: ov.diasSize,
         font: bold,
         color: dark,
       });
