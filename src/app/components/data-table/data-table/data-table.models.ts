@@ -135,6 +135,12 @@ export interface ColumnDef {
 
   /** Action buttons rendered when `type === 'actions'`. */
   actions?: ActionDef[];
+
+  /**
+   * Optional click handler for `badge` cells. When set, the badge renders with
+   * `cursor: pointer` and calls this function with the row on click.
+   */
+  click?: (row: any) => void;
 }
 
 // ─── Event payloads ─────────────────────────────────────────────────────────

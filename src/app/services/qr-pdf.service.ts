@@ -81,6 +81,12 @@ const OV_GENERICO = {
   diasX: 256,  diasY: 43,  diasSize: 7,
 };
 
+// Overlay de título para template Genérico: cubre "Generico" y pone el nombre real del dept.
+// Posición medida en el content-stream del PDF: Tm x=340.267 y=279.272, size=20.666pt
+// → pdf-lib (CTM [0.75,0,0,-0.75,0,311.811]): x≈255, y≈102, size-efectivo≈15.5pt
+const GENERICO_TITLE_RECT = { x: 241, y: 95, w: 175, h: 26 };
+const GENERICO_TITLE_POS  = { x: 248, y: 102, size: 14 };
+
 @Injectable({ providedIn: 'root' })
 export class QrPdfService {
 
@@ -147,12 +153,14 @@ export class QrPdfService {
       const templateDoc = await PDFDocument.load(templateBytes);
       const [page] = await finalDoc.copyPages(templateDoc, [0]);
       finalDoc.addPage(page);
+      const isGenerico = config.url === GENERICO_CONFIG.url;
       await this.overlayPase(
         finalDoc,
         finalDoc.getPage(finalDoc.getPageCount() - 1),
         a,
         voluntarios,
-        config.url === GENERICO_CONFIG.url ? OV_GENERICO : OV,
+        isGenerico ? OV_GENERICO : OV,
+        isGenerico,
       );
     }
 
@@ -219,6 +227,7 @@ export class QrPdfService {
     a: EventoVoluntarioDTO,
     voluntarios: VoluntarioDTO[],
     ov = OV,
+    esGenerico = false,
   ): Promise<void> {
     const vol = voluntarios.find(v => v.id === a.voluntarioId);
     const nombre = vol
@@ -231,6 +240,19 @@ export class QrPdfService {
     const normal = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const dark   = rgb(0.13, 0.13, 0.13);
     const muted  = rgb(0.33, 0.43, 0.48);
+
+    // Template Genérico: cubrir "Generico" con un rect blanco y dibujar el nombre real del dept
+    if (esGenerico && dept !== '-') {
+      page.drawRectangle({
+        x: GENERICO_TITLE_RECT.x, y: GENERICO_TITLE_RECT.y,
+        width: GENERICO_TITLE_RECT.w, height: GENERICO_TITLE_RECT.h,
+        color: rgb(1, 1, 1),
+      });
+      page.drawText(this.truncar(dept, 26), {
+        x: GENERICO_TITLE_POS.x, y: GENERICO_TITLE_POS.y,
+        size: GENERICO_TITLE_POS.size, font: bold, color: rgb(0.08, 0.40, 0.75),
+      });
+    }
 
     // QR más grande sobre el placeholder; el quiet-zone blanco del PNG tapa el marco azul
     if (a.qrImageBase64) {

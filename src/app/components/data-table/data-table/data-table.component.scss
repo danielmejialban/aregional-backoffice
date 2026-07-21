@@ -431,6 +431,12 @@
     background: #e2e8f0;
     color: #475569;
   }
+
+  &--clickable {
+    cursor: pointer;
+    transition: filter 0.15s;
+    &:hover { filter: brightness(0.92); }
+  }
 }
 
 // ─── Empty state ──────────────────────────────────────────────────────────────

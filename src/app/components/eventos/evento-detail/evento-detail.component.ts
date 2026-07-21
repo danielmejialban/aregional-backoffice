@@ -198,6 +198,7 @@ export class EventoDetailComponent implements OnInit {
         filterOptions: ['SI', 'NO'],
         width: '82px',
         exportable: true,
+        ...(dia.esPre ? { click: (row: any) => this.toggleDiaPreAcceso(row, dia.iso) } : {}),
       });
     }
 
@@ -496,6 +497,37 @@ export class EventoDetailComponent implements OnInit {
         this.exportandoExcel = false;
         this.showError(this.translate.instant('EventoDetail.Snack.ExportError'));
       },
+    });
+  }
+
+  toggleDiaPreAcceso(row: any, diaIso: string): void {
+    const allIsos = this.eventoDias.map(d => d.iso);
+    // null diasAcceso = acceso sin restricción = todos los días activos
+    const currentStr: string | null = row.diasAcceso ?? null;
+    const currentSet = new Set<string>(
+      currentStr ? currentStr.split('|') : allIsos
+    );
+
+    if (currentSet.has(diaIso)) {
+      currentSet.delete(diaIso);
+    } else {
+      currentSet.add(diaIso);
+    }
+
+    const newDias = allIsos.filter(iso => currentSet.has(iso));
+    // Si están todos los días activos → guardar vacío (sin restricción)
+    const diasToSend = newDias.length === allIsos.length ? [] : newDias;
+
+    this.eventoVoluntarioService.updateDiasAcceso(row.id!, diasToSend).subscribe({
+      next: (updated) => {
+        const idx = this.asignaciones.findIndex(a => a.id === row.id);
+        if (idx !== -1) {
+          const vol = this.voluntarios.find(v => v.id === updated.voluntarioId);
+          this.asignaciones[idx] = this.transformRow(updated, vol);
+          this.asignaciones = [...this.asignaciones];
+        }
+      },
+      error: () => this.showError(this.translate.instant('EventoDetail.Snack.DiasAccesoError')),
     });
   }
 

@@ -286,7 +286,9 @@
             } @case ('number') {
             {{ row[col.key] | number }}
             } @case ('badge') {
-            <span class="dt-badge" [class]="'dt-badge ' + (col.badgeMap?.[row[col.key]] ?? 'dt-badge--neutral')">
+            <span class="dt-badge"
+                  [class]="'dt-badge ' + (col.badgeMap?.[row[col.key]] ?? 'dt-badge--neutral') + (col.click ? ' dt-badge--clickable' : '')"
+                  (click)="col.click && col.click(row)">
               {{ row[col.key] | translate }}
             </span>
             } @case ('actions') {
