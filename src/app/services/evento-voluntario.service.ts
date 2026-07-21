@@ -85,4 +85,8 @@ export class EventoVoluntarioService {
   asignacionMasiva(request: AsignacionMasivaRequestDTO): Observable<AsignacionMasivaResultadoDTO> {
     return this.http.post<AsignacionMasivaResultadoDTO>(`${this.API_URL}/asignacion-masiva`, request);
   }
+
+  updateDiasAcceso(id: number, diasAcceso: string[]): Observable<EventoVoluntarioDTO> {
+    return this.http.patch<EventoVoluntarioDTO>(`${this.API_URL}/${id}/dias-acceso`, diasAcceso);
+  }
 }

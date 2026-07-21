@@ -27,9 +27,17 @@ import { DataTableComponent } from '../data-table/data-table/data-table.componen
 import { ColumnDef, TableActionEvent, ActiveFilters } from '@app/@core';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
+export interface DiasEventoAcceso {
+  iso: string;
+  label: string;
+}
+
 export interface VoluntarioDialogData {
   voluntario?: VoluntarioDTO;
   departamentos: DepartamentoDTO[];
+  eventoVoluntarioId?: number;
+  diasEventoAcceso?: DiasEventoAcceso[];
+  diasAcceso?: string | null;
 }
 
 // ── Diálogo create/edit voluntario ─────────────────────────────────────────
@@ -129,6 +137,18 @@ export interface VoluntarioDialogData {
             </mat-slide-toggle>
           }
         </div>
+        @if (data.diasEventoAcceso?.length) {
+          <div class="dias-section">
+            <p class="dias-label">Días de acceso al evento</p>
+            <div class="dias-grid">
+              @for (dia of data.diasEventoAcceso; track dia.iso) {
+                <mat-slide-toggle [formControlName]="diaControlName(dia.iso)" color="primary">
+                  {{ dia.label }}
+                </mat-slide-toggle>
+              }
+            </div>
+          </div>
+        }
       </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
@@ -143,6 +163,9 @@ export interface VoluntarioDialogData {
     .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .full-width { width: 100%; }
     .toggles-row { display: flex; gap: 24px; padding: 8px 0 12px; }
+    .dias-section { border-top: 1px solid #e0e0e0; padding-top: 12px; margin-top: 4px; }
+    .dias-label { font-size: 13px; font-weight: 600; color: #555; margin: 0 0 10px; }
+    .dias-grid { display: flex; flex-wrap: wrap; gap: 12px 24px; }
   `]
 })
 export class VoluntarioDialogComponent implements OnInit {
@@ -176,6 +199,16 @@ export class VoluntarioDialogComponent implements OnInit {
       activo:         [v?.activo      ?? true],
       specialFunctionalities: [v?.specialFunctionalities ?? false],
     });
+
+    if (this.data.diasEventoAcceso?.length) {
+      const diasAccesoValue = this.data.diasAcceso;
+      const activeDias = diasAccesoValue
+        ? new Set(diasAccesoValue.split('|').filter(Boolean))
+        : new Set(this.data.diasEventoAcceso.map(d => d.iso)); // null = unrestricted = all on
+      for (const dia of this.data.diasEventoAcceso) {
+        this.form.addControl(this.diaControlName(dia.iso), this.fb.control(activeDias.has(dia.iso)));
+      }
+    }
   }
 
   /** Solo visible en edición y si el voluntario tiene asignado el departamento LBD. */
@@ -184,6 +217,22 @@ export class VoluntarioDialogComponent implements OnInit {
     const ids: number[] = this.form?.value.departamentoIds ?? [];
     return this.data.departamentos.some(d =>
       ids.includes(d.id!) && (d.nombre ?? '').toUpperCase().includes('LBD'));
+  }
+
+  diaControlName(iso: string): string {
+    return 'd_' + iso.replace(/-/g, '_');
+  }
+
+  /** Returns active day ISOs to send to the backend, or undefined when there is no event context.
+   *  Empty array means "all days" (unrestricted, backend stores null). */
+  private computeDiasAccesoList(): string[] | undefined {
+    const dias = this.data.diasEventoAcceso;
+    if (!dias?.length) return undefined;
+    const allIsos = dias.map(d => d.iso);
+    const activeDias = allIsos.filter(iso => !!this.form.get(this.diaControlName(iso))?.value);
+    // All days selected → unrestricted (backend stores null); send empty array as signal
+    if (activeDias.length === allIsos.length) return [];
+    return activeDias;
   }
 
   onSave(): void {
@@ -205,7 +254,9 @@ export class VoluntarioDialogComponent implements OnInit {
       activo:         val.activo,
       specialFunctionalities: this.mostrarSpecialFunctionalities ? val.specialFunctionalities : false,
     };
-    this.dialogRef.close(dto);
+    const diasAccesoList = this.computeDiasAccesoList();
+    // _diasAccesoList is only present when editing from event context
+    this.dialogRef.close(diasAccesoList !== undefined ? { ...dto, _diasAccesoList: diasAccesoList } : dto);
   }
 }
 

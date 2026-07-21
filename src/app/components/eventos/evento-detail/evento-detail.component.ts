@@ -30,7 +30,7 @@ import { EventoDialogComponent } from '../evento-dialog/evento-dialog.component'
 import { AsignacionDialogComponent } from '../../evento-voluntarios/asignacion-dialog/asignacion-dialog.component';
 import { AsignacionMasivaDialogComponent } from '../../evento-voluntarios/asignacion-masiva-dialog/asignacion-masiva-dialog.component';
 import { QrPreviewDialogComponent } from '../../evento-voluntarios/qr-preview-dialog/qr-preview-dialog.component';
-import { VoluntarioDialogComponent } from '../../voluntarios/voluntarios.component';
+import { DiasEventoAcceso, VoluntarioDialogComponent } from '../../voluntarios/voluntarios.component';
 
 interface DiasEvento {
   iso: string;
@@ -304,18 +304,36 @@ export class EventoDetailComponent implements OnInit {
       this.showError(this.translate.instant('EventoDetail.Snack.VoluntarioNoEncontrado'));
       return;
     }
+    const diasEventoAcceso: DiasEventoAcceso[] = this.eventoDias.map(d => ({ iso: d.iso, label: d.label }));
     const ref = this.dialog.open(VoluntarioDialogComponent, {
       width: '580px', disableClose: true,
-      data: { voluntario, departamentos: this.departamentos },
+      data: {
+        voluntario,
+        departamentos: this.departamentos,
+        eventoVoluntarioId: row.id,
+        diasEventoAcceso,
+        diasAcceso: row.diasAcceso ?? null,
+      },
     });
     ref.afterClosed().subscribe((result: any) => {
       if (!result) return;
-      this.voluntarioService.update(voluntario.id!, result).subscribe({
+      const { _diasAccesoList, ...voluntarioData } = result;
+      this.voluntarioService.update(voluntario.id!, voluntarioData).subscribe({
         next: (updated) => {
           const idx = this.voluntarios.findIndex(v => v.id === updated.id);
           if (idx !== -1) this.voluntarios[idx] = updated;
           this.showSuccess(this.translate.instant('EventoDetail.Snack.VoluntarioActualizado'));
-          this.loadAsignaciones();
+          if (_diasAccesoList !== undefined && row.id != null) {
+            this.eventoVoluntarioService.updateDiasAcceso(row.id, _diasAccesoList).subscribe({
+              next: () => this.loadAsignaciones(),
+              error: () => {
+                this.loadAsignaciones();
+                this.showError(this.translate.instant('EventoDetail.Snack.DiasAccesoError'));
+              },
+            });
+          } else {
+            this.loadAsignaciones();
+          }
         },
         error: (err) => {
           const msg = err?.error?.message ?? this.translate.instant('EventoDetail.Snack.VoluntarioError');
