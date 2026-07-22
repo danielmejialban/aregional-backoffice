@@ -37,10 +37,18 @@
 
           <mat-form-field appearance="outline">
             <mat-label>Departamento</mat-label>
-            <mat-select formControlName="departamentoId">
-              <mat-option [value]="null">— Todos los departamentos —</mat-option>
-              <mat-option *ngFor="let d of departamentosFiltrados" [value]="d.id">{{ d.nombre }}</mat-option>
-            </mat-select>
+            <input matInput type="text"
+                   [formControl]="departamentoCtrl"
+                   [matAutocomplete]="autoDepartamento"
+                   placeholder="Buscar departamento...">
+            <mat-autocomplete #autoDepartamento="matAutocomplete" [displayWith]="displayDepartamento">
+              <mat-option *ngFor="let d of departamentosAutocompletados" [value]="d">
+                {{ d.nombre }}
+              </mat-option>
+              <mat-option *ngIf="departamentosAutocompletados.length === 0" [value]="null" disabled>
+                Sin resultados
+              </mat-option>
+            </mat-autocomplete>
             <mat-icon matSuffix>business</mat-icon>
           </mat-form-field>
 

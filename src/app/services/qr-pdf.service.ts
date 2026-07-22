@@ -129,6 +129,43 @@ export class QrPdfService {
     this.descargarBlobConMime(zipBytes, nombreZip, 'application/zip');
   }
 
+  /**
+   * Genera un ZIP organizado por departamento: una carpeta por departamento,
+   * con un PDF individual por voluntario dentro de cada carpeta.
+   */
+  async generarZipPorDepartamento(
+    asignaciones: EventoVoluntarioDTO[],
+    voluntarios: VoluntarioDTO[],
+    nombreZip = 'pases_por_departamento.zip'
+  ): Promise<void> {
+    const conQr = asignaciones.filter(a => !!a.qrImageBase64);
+    if (!conQr.length) return;
+
+    const porDepto = new Map<string, EventoVoluntarioDTO[]>();
+    for (const a of conQr) {
+      const dept = a.voluntarioDepartamentoNombre?.trim() || 'Sin_Departamento';
+      if (!porDepto.has(dept)) porDepto.set(dept, []);
+      porDepto.get(dept)!.push(a);
+    }
+
+    const zip = new JSZip();
+
+    for (const [dept, grupo] of porDepto) {
+      const carpeta = zip.folder(this.sanitizarNombreArchivo(dept))!;
+      for (const a of grupo) {
+        const bytes = await this.buildPdfBytes([a], voluntarios);
+        if (!bytes) continue;
+        const vol = voluntarios.find(v => v.id === a.voluntarioId);
+        const apellido = vol?.apellido1 ?? 'voluntario';
+        const nombre   = vol?.nombre    ?? String(a.voluntarioId);
+        carpeta.file(this.sanitizarNombreArchivo(`${apellido}_${nombre}.pdf`), bytes);
+      }
+    }
+
+    const zipBytes = await zip.generateAsync({ type: 'uint8array' });
+    this.descargarBlobConMime(zipBytes, nombreZip, 'application/zip');
+  }
+
   /** Construye el PDF en memoria y devuelve los bytes, sin descargarlo. */
   private async buildPdfBytes(
     asignaciones: EventoVoluntarioDTO[],

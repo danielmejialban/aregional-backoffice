@@ -58,6 +58,10 @@ export interface AsignacionConQr extends EventoVoluntarioDTO {
 export class DescargaQrComponent implements OnInit {
   form!: FormGroup;
 
+  /** Control del autocomplete de departamento (texto de búsqueda o departamento seleccionado) */
+  departamentoCtrl = new FormControl<string | DepartamentoDTO | null>({ value: null, disabled: true });
+  departamentosAutocompletados: DepartamentoDTO[] = [];
+
   /** Control del autocomplete de voluntario (texto de búsqueda o voluntario seleccionado) */
   voluntarioCtrl = new FormControl<string | VoluntarioDTO | null>({ value: null, disabled: true });
   voluntariosFiltrados: VoluntarioDTO[] = [];
@@ -105,21 +109,37 @@ export class DescargaQrComponent implements OnInit {
       // Al cambiar de evento se resetea la cascada de filtros
       this.form.get('departamentoId')!.setValue(null, { emitEvent: false });
       this.form.get('voluntarioId')!.setValue(null, { emitEvent: false });
+      this.departamentoCtrl.setValue(null, { emitEvent: false });
       this.voluntarioCtrl.setValue(null, { emitEvent: false });
       if (id) {
         this.form.get('departamentoId')!.enable({ emitEvent: false });
         this.form.get('voluntarioId')!.enable({ emitEvent: false });
+        this.departamentoCtrl.enable({ emitEvent: false });
         this.voluntarioCtrl.enable({ emitEvent: false });
         this.cargarQrParaEvento(id);
       } else {
         this.form.get('departamentoId')!.disable({ emitEvent: false });
         this.form.get('voluntarioId')!.disable({ emitEvent: false });
+        this.departamentoCtrl.disable({ emitEvent: false });
         this.voluntarioCtrl.disable({ emitEvent: false });
         this.generacionQrId++; // aborta la generación de QRs en curso
         this.todasAsignaciones = [];
         this.asignacionesFiltradas = [];
         this.departamentosFiltrados = this.departamentos;
+        this.departamentosAutocompletados = this.departamentos;
         this.voluntariosFiltrados = this.filtrarVoluntarios('');
+      }
+    });
+
+    // Autocomplete de departamento: filtra opciones al teclear y fija departamentoId al seleccionar.
+    this.departamentoCtrl.valueChanges.subscribe(val => {
+      if (val && typeof val === 'object') {
+        this.form.get('departamentoId')!.setValue(val.id, { emitEvent: true });
+      } else {
+        this.departamentosAutocompletados = this.filtrarDepartamentos(val ?? '');
+        if (this.form.getRawValue().departamentoId != null) {
+          this.form.get('departamentoId')!.setValue(null, { emitEvent: true });
+        }
       }
     });
 
@@ -160,6 +180,7 @@ export class DescargaQrComponent implements OnInit {
         this.voluntarios = voluntarios;
         this.departamentos = departamentos;
         this.departamentosFiltrados = departamentos;
+        this.departamentosAutocompletados = departamentos;
         this.voluntariosFiltrados = this.filtrarVoluntarios('');
         this.loadingDatos = false;
       },
@@ -220,6 +241,7 @@ export class DescargaQrComponent implements OnInit {
       .filter(v => idsEvento.has(v.id!))
       .forEach(v => (v.departamentoIds ?? []).forEach(d => deptIds.add(d)));
     this.departamentosFiltrados = this.departamentos.filter(d => d.id != null && deptIds.has(d.id));
+    this.departamentosAutocompletados = this.departamentosFiltrados;
     this.voluntariosFiltrados = this.filtrarVoluntarios('');
   }
 
@@ -265,7 +287,9 @@ export class DescargaQrComponent implements OnInit {
   limpiarFiltros(): void {
     this.form.get('departamentoId')!.setValue(null, { emitEvent: false });
     this.form.get('voluntarioId')!.setValue(null, { emitEvent: false });
+    this.departamentoCtrl.setValue(null, { emitEvent: false });
     this.voluntarioCtrl.setValue(null, { emitEvent: false });
+    this.departamentosAutocompletados = this.departamentosFiltrados;
     this.voluntariosFiltrados = this.filtrarVoluntarios('');
     // Limpiar sí aplica de inmediato: vuelve a mostrar todos los pases del evento
     this.aplicarFiltros();
@@ -293,6 +317,18 @@ export class DescargaQrComponent implements OnInit {
         `${v.nombre} ${v.apellido1} ${v.apellido2 ?? ''} ${v.dni}`.toLowerCase().includes(q));
     }
     return base.slice(0, 50);
+  }
+
+  displayDepartamento = (d: DepartamentoDTO | string | null): string => {
+    if (!d) return '';
+    if (typeof d === 'string') return d;
+    return d.nombre;
+  };
+
+  private filtrarDepartamentos(query: string): DepartamentoDTO[] {
+    const q = query.trim().toLowerCase();
+    if (!q) return this.departamentosFiltrados;
+    return this.departamentosFiltrados.filter(d => d.nombre.toLowerCase().includes(q));
   }
 
   displayVoluntario = (v: VoluntarioDTO | string | null): string => {
@@ -402,13 +438,10 @@ export class DescargaQrComponent implements OnInit {
     this.generandoPdf = true;
     try {
       const evento = this.eventoSeleccionado;
-      const deptId  = this.form.getRawValue().departamentoId;
-      const dept    = deptId
-        ? (this.departamentos.find(d => d.id === deptId)?.nombre ?? 'todos')
-        : 'todos';
-      const nombreZip = `Pases_${(evento?.nombre ?? 'evento').replace(/\s+/g, '_')}_${dept.replace(/\s+/g, '_')}.zip`;
+      const nombreEvento = (evento?.nombre ?? 'evento').replace(/\s+/g, '_');
 
-      await this.qrPdfService.generarZipPorVoluntario(lista, this.voluntarios, nombreZip);
+      const nombreZip = `Pases_${nombreEvento}.zip`;
+      await this.qrPdfService.generarZipPorDepartamento(lista, this.voluntarios, nombreZip);
 
       this.snackBar.open(
         this.translate.instant('DescargaQr.Snack.Downloaded', { count: lista.length }),

@@ -539,6 +539,7 @@
       "EventLabel": "Evento:",
       "DateLabel": "Fecha:",
       "MatriculaLabel": "Matrícula:",
+      "WarningTitle": "Acceso no permitido",
       "ErrorTitle": "Error al registrar",
       "CameraErrorTitle": "Sin acceso a la cámara",
       "CameraErrorNoVideo": "No se encontró el elemento de vídeo. Intenta reabrir el diálogo.",

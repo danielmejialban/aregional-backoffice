@@ -72,6 +72,13 @@ export interface QrScannerDialogData {
         <p *ngIf="scanResult.matricula"><strong>{{ 'CheckIn.ScannerDialog.MatriculaLabel' | translate }}</strong> {{scanResult.matricula}}</p>
       </div>
 
+      <!-- Warning (acceso fuera de plazo o ya escaneado) -->
+      <div class="result-container warning" *ngIf="scanWarning && !processing">
+        <mat-icon class="result-icon warning-icon">warning</mat-icon>
+        <h3>{{ 'CheckIn.ScannerDialog.WarningTitle' | translate }}</h3>
+        <p>{{scanWarning}}</p>
+      </div>
+
       <!-- Error -->
       <div class="result-container error" *ngIf="scanError && !processing">
         <mat-icon class="result-icon error-icon">error</mat-icon>
@@ -89,7 +96,7 @@ export interface QrScannerDialogData {
 
     <mat-dialog-actions align="end">
       <button mat-button (click)="close()">{{ 'Common.Close' | translate }}</button>
-      <button mat-raised-button color="primary" *ngIf="scanResult || scanError" (click)="reset()">
+      <button mat-raised-button color="primary" *ngIf="scanResult || scanError || scanWarning" (click)="reset()">
         <mat-icon>refresh</mat-icon> {{ 'CheckIn.ScannerDialog.ScanAnother' | translate }}
       </button>
     </mat-dialog-actions>
@@ -106,7 +113,9 @@ export interface QrScannerDialogData {
     .result-container { display: flex; flex-direction: column; align-items: center; padding: 24px; gap: 8px; text-align: center; }
     .result-icon { font-size: 64px; width: 64px; height: 64px; }
     .success-icon { color: #4caf50; }
+    .warning-icon { color: #f57c00; }
     .error-icon { color: #f44336; }
+    .result-container.warning { background: #FFF8E1; border-radius: 8px; }
     mat-dialog-content { min-width: 340px; }
   `]
 })
@@ -118,6 +127,7 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
   processing = false;
   scanResult: CheckInDTO | null = null;
   scanError: string | null = null;
+  scanWarning: string | null = null;
   observaciones = '';
 
   private codeReader: BrowserMultiFormatReader | null = null;
@@ -191,7 +201,12 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
         },
         error: (err) => {
           this.processing = false;
-          this.scanError = err?.error?.message || this.translate.instant('CheckIn.ScannerDialog.CheckInError');
+          const msg: string = err?.error?.message || this.translate.instant('CheckIn.ScannerDialog.CheckInError');
+          if (this.isWarning(msg)) {
+            this.scanWarning = msg;
+          } else {
+            this.scanError = msg;
+          }
           this.stopCamera();
           this.playBeep('ko');
         }
@@ -234,10 +249,15 @@ export class QrScannerDialogComponent implements AfterViewInit, OnDestroy {
     oscillator.stop(ctx.currentTime + delaySeconds + duration);
   }
 
+  private isWarning(msg: string): boolean {
+    return msg.includes('Acceso no permitido') || msg.includes('Ya existe un check-in');
+  }
+
   reset(): void {
     this.stopCamera();
     this.scanResult = null;
     this.scanError = null;
+    this.scanWarning = null;
     this.cameraError = null;
     this.observaciones = '';
     this.loadingCamera = true;
